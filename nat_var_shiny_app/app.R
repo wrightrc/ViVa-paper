@@ -39,17 +39,39 @@ ui <- fluidPage(
 )
 #=================================================================
 
-source("VCF_downloader.R")
+source("VCF_Utils.R")
+source("Strains_and_Gene_Families.R")
 
 parseInput <- function (textIn) {
   names <- str_extract_all(textIn, "AT[1-5]G[0-9]{5}")
   return (names[[1]])
 }
 
+load_tab_2_Data <- function (geneInfo){
+  tab2VCF <- VCFByTranscript(geneInfo[1, ], strains)
+  tab2data <- tab2VCF$dat
+  tab2data <- parseEFF(tab2data, geneInfo[1, "transcript_ID"])
+  tab2data <- Nucleotide_diversity(tab2data)
+  
+  coding_variants <- coding_Diversity_Plot(tab2data)
+  
+  return(coding_variants)
+  
+}
 
 #writeData <- function (table, file){
 #  write.csv(tableData, file)
 #}
+
+plotPi <- function(unique_coding_variants) {
+  plot <- ggplot(unique_coding_variants, aes(x=Codon_Number,y=Diversity, colour=Effect)) +
+    geom_point() +
+    scale_y_log10(breaks=c(0.0001, 0.001, 0.01, 0.1),limits=c(0.0001, 1)) +
+    #scale_colour_manual(values=c(synonymous_diversity="blue", missense_diversity="red")) +
+    ylab("nucleotide diversity, log scale")
+  return(plot)
+  
+}
 
 
 server <- function(input, output){
@@ -86,16 +108,8 @@ server <- function(input, output){
   output$tab2GeneInfo <- renderTable(tab2Genes())
     #rendered table of Gene info
 
-  SNPData <- reactive({loadData(tab2Genes()[1, ], strains)})
+  tab2tableData <- reactive({load_tab_2_Data(tab2Genes())})
     #SNP reactive data
-
-  tab2tableData <- reactive({
-    syn_loci <- filtR(SNPData(),split_var="names",col_name="Effect",value="synonymous_variant")
-    missense_loci <- filtR(SNPData(),split_var="names",col_name="Effect",value="missense_variant")
-    tableData <- rbind(simplifySNP(missense_loci), simplifySNP(syn_loci))
-    tableData <- ddply(.data=tableData, .variables="names", .fun=codonNumberKernel)
-    return (tableData)
-  })
 
   output$Diversity_Table <- renderTable(tab2tableData(), rownames=TRUE)
     #render table of diversity data
@@ -105,11 +119,11 @@ server <- function(input, output){
       write.csv(tab2tableData(), file)
   })
 
-  output$diversityPlot <- renderPlot(plotPi(SNPData()))
+  output$diversityPlot <- renderPlot(plotPi(tab2tableData()))
     #plot output
 
   output$info <- renderPrint({
-    brushedPoints(Diversity_Table(), input$plot_brush, xvar="Codon_Number")
+    brushedPoints(tab2tableData(), input$plot_brush)
   })
 
 }

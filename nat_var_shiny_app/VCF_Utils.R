@@ -106,7 +106,7 @@ downloadMerge <- function (fName, strainVect, regionStr) {
 
 #' Parse the EFF field of the VCF files from 1001genomes.org
 #'
-#' @param tidyVCF tidyVCF object to be parsed. should have an "EFF" field in
+#' @param tidyVCF tidyVCF$dat tibble to be parsed. should have an "EFF" field in
 #' its $dat section
 #' @param Transcript_ID Character string of the transcript ID
 #'
@@ -118,9 +118,8 @@ parseEFF <- function (tidyVCF, Transcript_ID){
   EFFColNames = c("Effect", "Effect_Impact", "Functional_Class", "Codon_Change",
                   "Amino_Acid_Change", "Amino_Acid_Length", "Gene_Name", "Transcript_BioType",
                   "Gene_Coding", "Transcript_ID", "Exon_Rank", "Genotype_Number")
-  data <- tidyVCF$dat
-  output <- tidyVCF
-  output$dat <- ddply(data, "POS", .fun=parseEFFKernel, Transcript_ID, EFFColNames)
+  data <- tidyVCF
+  output <- ddply(data, "POS", .fun=parseEFFKernel, Transcript_ID, EFFColNames)
   return (output)
 }
 
@@ -292,8 +291,8 @@ polymorphTable <- function (geneInfo, strains) {
   #for each transcript
   for (i in 1:length(geneInfo$transcript_ID)) {
     tidyVCF <- VCFByTranscript(geneInfo[i, ], strains)
-    tidyVCF <- parseEFF(tidyVCF, geneInfo$transcript_ID[i])
-    data <- Nucleotide_diversity(tidyVCF$dat)
+    data <- parseEFF(tidyVCF$dat, geneInfo$transcript_ID[i])
+    data <- Nucleotide_diversity(data)
 
     #fill in the first part of the table
     variant_counts <- plyr::count(data, "Effect")
@@ -328,8 +327,8 @@ coding_Diversity_Plot <- function(data) {
   #input is tidy tibble/df with EFF field parsed and diversity calculated:
   # eg.
   # myvcf <- VCFByTranscript(geneInfo[1, ], strains)
-  # myvcf <- parseEFF(myvcf, geneInfo$transcript_ID)
-  # mydata <- Nucleotide_diversity(myvcf$dat)
+  # mydata <- parseEFF(myvcf$dat, geneInfo$transcript_ID)
+  # mydata <- Nucleotide_diversity(mydata)
   # coding_Diversity_Plot(mydata)
 
   coding_variants <- data[data$Effect %in% c("missense_variant", "synonymous_variant"), ]
