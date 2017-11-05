@@ -351,3 +351,50 @@ coding_Diversity_Plot <- function(data) {
   return(unique_coding_variants)
 }
 
+
+add_ecotype_details <- function(data, Ecotype_column="Indiv") {
+  # add ecotype details (location, collector, sequencer) to any df containing an "Indiv" column
+  ecoIDs <- read.csv("20170718_1135_accessions.csv", stringsAsFactors=FALSE)
+  return(merge(data, ecoIDs, by.x=Ecotype_column, by.y="Ecotype.ID", all.x==TRUE))
+  
+}
+
+
+buildGT <- function(indivData) {
+  # use with ddply, chunk by "Indiv"
+  indivGT <- unique(indivData[,c("POS", "gt_GT")])
+  Indiv <- indivData[1,"Indiv"]
+  rownames(indivGT) <- indivGT[,1]
+  indivGT <- t(indivGT[,2, drop=FALSE])
+  rownames(indivGT) <- Indiv
+  return(indivGT)
+}
+
+label_bySNPs <- function(data) {
+  output <- ddply(data, .variables="Indiv", .fun=label_by_SNPs_kernel)
+  
+  output <- add_ecotype_details(output)
+  return(output)
+}
+
+
+
+label_by_SNPs_kernel <- function(indivData) {
+  # creates a df with a single row per individual, with a new 
+  
+  # store ecotypeID as a single value
+  Indiv <- indivData[1,"Indiv"]
+  
+  # filter only rows with an effect (ie not reference or NA)
+  data <- indivData[!is.na(indivData$Effect)]
+  # order the rows by transcript ID frist, then Amino_Acid_change field
+  # note: Amino_Acid_change should be always present even on non coding UTRs and introns
+  data <- data[order(data[, "Transcript_ID"], data[, "Amino_Acid_Change"]), ]
+  
+  SNPstring <- paste("[", data[, "Transcript_ID"],"|", data[, "Amino_Acid_Change"], "]")
+  
+  output <- data.frame(Indiv, SNPs=SNPstring)
+  
+  
+}
+

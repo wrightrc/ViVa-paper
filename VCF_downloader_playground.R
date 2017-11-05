@@ -57,9 +57,9 @@ TIR1_VCF <- VCFByTranscript(geneInfo, strains)
 #parse the EFF field
 TIR1_VCF <- parseEFF(TIR1_VCF, geneInfo$transcript_ID)
 #calculate Nucleotide diversity at each position
-TIR1_VCF$dat <- Nucleotide_diversity(TIR1_VCF$dat)
+TIR1_VCF <- Nucleotide_diversity(TIR1_VCF)
 #list all Effects:
-unique(TIR1_VCF$dat$Effect)
+unique(TIR1_VCF$Effect)
 #make a data frame with only coding (missense and synonymous) variants
 coding_variants <- TIR1_VCF$dat[TIR1_VCF$dat$Effect %in% c("missense_variant", "synonymous_variant"), ]
 #extract uniuqe position and effect
@@ -126,3 +126,33 @@ for (i in 1:length(geneInfo$transcript_ID)) {
  tableData[i, "Pi_transcript"] <- sum(unique(reducedData[, c("POS", "Diversity")])$Diversity) / geneInfo[i, "transcript_length"]
 
 }
+
+
+# Color coding test
+###=============================================================================
+
+geneInfo <- getGeneInfo(genes)
+
+
+
+tidyVCF <- VCFByTranscript(geneInfo[1, ], strains)
+data <- parseEFF(tidyVCF$dat, geneInfo$transcript_ID[1])
+data <- Nucleotide_diversity(tidyVCF$dat)
+data <- add_ecotype_details(data)
+
+newGT <- ddply(data, .variables="Indiv", .fun=buildGT)
+
+indivData <- data[data$Indiv=="1002", ]
+indivGT <- unique(indivData[,c("POS", "gt_GT")])
+rownames(indivGT) <- indivGT[,1]
+indivGT <- t(indivGT[,2, drop=FALSE])
+rownames(indivGT) <- "1002"
+
+keyPOS <- c(4369773, 4369822, 4369852, 4369960, 4370739)
+keydata <- data[data$POS %in% keyPOS, ]
+keydata2 <- keydata[keydata$Effect %in% "missense_variant", ]
+
+keyGT <- ddply(keydata, .variables="Indiv", .fun=buildGT)
+
+
+
