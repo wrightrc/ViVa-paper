@@ -8,7 +8,7 @@ library(ggplot2)
 library(reshape2)
 library(vcfR)
 library(dplyr)
-
+library(ggmap)
 
 
 ### UTILITY FUNCTIONS ==========================================================
@@ -355,8 +355,7 @@ coding_Diversity_Plot <- function(data) {
 add_ecotype_details <- function(data, Ecotype_column="Indiv") {
   # add ecotype details (location, collector, sequencer) to any df containing an "Indiv" column
   ecoIDs <- read.csv("20170718_1135_accessions.csv", stringsAsFactors=FALSE)
-  return(merge(data, ecoIDs, by.x=Ecotype_column, by.y="Ecotype.ID", all.x==TRUE))
-  
+  return(merge(data, ecoIDs, by.x=Ecotype_column, by.y="Ecotype.ID", all.y=TRUE))
 }
 
 
@@ -371,6 +370,9 @@ buildGT <- function(indivData) {
 }
 
 label_bySNPs <- function(data) {
+  # creates a df with a single row per individual, with a new column "SNPs" that
+  # has a single text string detailing the 
+  
   output <- ddply(data, .variables="Indiv", .fun=label_by_SNPs_kernel)
   
   output <- add_ecotype_details(output)
@@ -380,21 +382,36 @@ label_bySNPs <- function(data) {
 
 
 label_by_SNPs_kernel <- function(indivData) {
-  # creates a df with a single row per individual, with a new 
   
   # store ecotypeID as a single value
   Indiv <- indivData[1,"Indiv"]
   
   # filter only rows with an effect (ie not reference or NA)
-  data <- indivData[!is.na(indivData$Effect)]
+  data <- indivData[!is.na(indivData$Effect), ]
   # order the rows by transcript ID frist, then Amino_Acid_change field
   # note: Amino_Acid_change should be always present even on non coding UTRs and introns
   data <- data[order(data[, "Transcript_ID"], data[, "Amino_Acid_Change"]), ]
   
   SNPstring <- paste("[", data[, "Transcript_ID"],"|", data[, "Amino_Acid_Change"], "]")
   
-  output <- data.frame(Indiv, SNPs=SNPstring)
+  output <- data.frame(Indiv, SNPs=SNPstring, stringsAsFactors=FALSE)
+  return(output)
   
+}
+
+
+
+map_test <- function(Accession_Data) {
+  europe <- get_map(location = 'europe', zoom = 4)
+  michigan <- get_map(location = 'michigan', zoom = 5)
   
+  # organize data so NAs are plotted first (grey) then non NA data is plotted on top.
+  Accession_Data <- rbind(Accession_Data[is.na(Accession_Data$SNPs), ], Accession_Data[!is.na(Accession_Data$SNPs), ])
+  
+  map <- ggmap(europe) +   xlab('longitude') + ylab('latitude') + 
+        geom_point(data = Accession_Data, 
+               aes(x = Long, y = Lat, color=SNPs)) 
+  print(map)
+  return(map)
 }
 

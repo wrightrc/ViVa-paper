@@ -136,21 +136,19 @@ geneInfo <- getGeneInfo(genes)
 
 
 tidyVCF <- VCFByTranscript(geneInfo[1, ], strains)
+# Parse the EFF field
 data <- parseEFF(tidyVCF$dat, geneInfo$transcript_ID[1])
+# calculate diversity
 data <- Nucleotide_diversity(tidyVCF$dat)
-data <- add_ecotype_details(data)
 
-newGT <- ddply(data, .variables="Indiv", .fun=buildGT)
-
-indivData <- data[data$Indiv=="1002", ]
-indivGT <- unique(indivData[,c("POS", "gt_GT")])
-rownames(indivGT) <- indivGT[,1]
-indivGT <- t(indivGT[,2, drop=FALSE])
-rownames(indivGT) <- "1002"
-
+# key loci (high diversity)
 keyPOS <- c(4369773, 4369822, 4369852, 4369960, 4370739)
 keydata <- data[data$POS %in% keyPOS, ]
-keydata2 <- keydata[keydata$Effect %in% "missense_variant", ]
+#keydata2 <- keydata[keydata$Effect %in% c("missense_variant"), ]
+
+keydata_labeled <- label_bySNPs(keydata)
+
+map_test(keydata_labeled)
 
 keyGT <- ddply(keydata, .variables="Indiv", .fun=buildGT)
 
