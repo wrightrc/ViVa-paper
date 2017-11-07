@@ -354,7 +354,7 @@ coding_Diversity_Plot <- function(data) {
 
 add_ecotype_details <- function(data, Ecotype_column="Indiv") {
   # add ecotype details (location, collector, sequencer) to any df containing an "Indiv" column
-  ecoIDs <- read.csv("20170718_1135_accessions.csv", stringsAsFactors=FALSE)
+  ecoIDs <- read.csv("Data/1135_accessions.csv", stringsAsFactors=FALSE)
   return(merge(data, ecoIDs, by.x=Ecotype_column, by.y="Ecotype.ID", all.y=TRUE))
 }
 
