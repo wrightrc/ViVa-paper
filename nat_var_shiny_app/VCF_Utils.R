@@ -392,7 +392,7 @@ label_by_SNPs_kernel <- function(indivData) {
   # note: Amino_Acid_change should be always present even on non coding UTRs and introns
   data <- data[order(data[, "Transcript_ID"], data[, "Amino_Acid_Change"]), ]
   
-  SNPstring <- paste("[", data[, "Transcript_ID"],"|", data[, "Amino_Acid_Change"], "]")
+  SNPstring <- paste("[", data[, "Transcript_ID"],"|", data[, "Amino_Acid_Change"], "]", collapse=",")
   
   output <- data.frame(Indiv, SNPs=SNPstring, stringsAsFactors=FALSE)
   return(output)
