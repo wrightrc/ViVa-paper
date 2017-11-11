@@ -1,5 +1,9 @@
 library(shiny)
 library(biomaRt)
+library(leaflet)
+library(RColorBrewer)
+
+
 
 ui <- fluidPage(
   headerPanel("Arabidopsis Natural Variation Webtool"),
@@ -22,15 +26,26 @@ ui <- fluidPage(
         ## Tab 2
       textInput(inputId = "plotGene", label = "Type a single gene locus in the box below",
                 value = "AT1G80490"),
-      actionButton(inputId="tab2Submit", label = "Submit"),
+      actionButton(inputId="tab2.Submit", label = "Submit"),
       tags$hr(),
-      tableOutput("tab2GeneInfo"),
+      tableOutput("tab2.GeneInfo"),
       h4("Nucleotide Diversity Statistic by Codon"),
       plotOutput("diversityPlot", brush="plot_brush", click="plot_click", height = 400),
       verbatimTextOutput("info"),
       downloadButton("downloadSNPData","Download"),
       tableOutput("Diversity_Table")
+    ),
+    
+    tabPanel("SNP Mapping",
+             ## Tab 3
+             textInput(inputId = "tab3.Gene", label = "Type a single gene locus in the box below",
+                       value = "AT1G80490"),
+             actionButton(inputId="tab3.Submit", label = "Submit"),
+             tags$hr(),
+             leafletOutput("tab3.map"),
+             tableOutput("tab3Table")
     )
+    
 
 
   ),
@@ -58,6 +73,9 @@ load_tab_2_Data <- function (geneInfo){
   return(coding_variants)
   
 }
+
+
+
 
 #writeData <- function (table, file){
 #  write.csv(tableData, file)
@@ -98,34 +116,103 @@ server <- function(input, output){
   ## ---------------           -------------------------------------
   ## Tab 2 stuff:
 
-  tab2Genes <- eventReactive(input$tab2Submit, {
+  tab2.Genes <- eventReactive(input$tab2.Submit, {
       #gene Info for gene on tab 2, updates on 'submit' button press
     names <- parseInput(input$plotGene)
     genes <- getGeneInfo(names[1])
     return(genes)
   })
 
-  output$tab2GeneInfo <- renderTable(tab2Genes())
+  output$tab2.GeneInfo <- renderTable(tab2.Genes())
     #rendered table of Gene info
 
-  tab2tableData <- reactive({load_tab_2_Data(tab2Genes())})
+  tab2.tableData <- reactive({load_tab_2_Data(tab2.Genes())})
     #SNP reactive data
 
-  output$Diversity_Table <- renderTable(tab2tableData(), rownames=TRUE)
+  output$Diversity_Table <- renderTable(tab2.tableData(), rownames=TRUE)
     #render table of diversity data
 
   output$downloadSNPData <- downloadHandler(filename="yourData.csv", content = function(file) {
       #download for diversity data
-      write.csv(tab2tableData(), file)
+      write.csv(tab2.tableData(), file)
   })
 
-  output$diversityPlot <- renderPlot(plotPi(tab2tableData()))
+  output$diversityPlot <- renderPlot(plotPi(tab2.tableData()))
     #plot output
 
   output$info <- renderPrint({
-    brushedPoints(tab2tableData(), input$plot_brush)
+    brushedPoints(tab2.tableData(), input$plot_brush)
   })
 
+  
+  ##                            _________
+  ##                           /  tab3   \
+  ## --------------------------           ----------------------------
+  ## Tab 3 stuff:
+  
+  tab3.Genes <- eventReactive(input$tab3.Submit, {
+    #gene Info for gene on tab 2, updates on 'submit' button press
+    names <- parseInput(input$tab3.Gene)
+    genes <- getGeneInfo(names[1])
+    return(genes)
+  })
+  
+  
+  tab3.tidyData <- reactive({
+    tidyVCF <- VCFByTranscript(tab3.Genes()[1, ], strains)
+    data <- tidyVCF$dat[tidyVCF$dat$gt_GT != "0|0",]
+    # Parse the EFF field
+    data <- parseEFF(tidyVCF = data, Transcript_ID = tab3.Genes()$transcript_ID[1])
+    
+    # calculate diversity
+    data <- Nucleotide_diversity(data)
+    
+    return(data)
+  })
+  
+  
+  tab3.labeledSNPs <- reactive({
+    
+    data <- tab3.tidyData()
+    keyPOS <- unique(data[which(data$Diversity >= 0.5*max(data$Diversity)), "POS"])
+    
+    keydata <- data[data$POS %in% keyPOS, ]
+    keydata_labeled <- label_bySNPs(keydata)
+    return(keydata_labeled)
+    
+  })
+  
+  output$tab3.map <- renderLeaflet({
+    
+    mapdata <- tab3.labeledSNPs()
+    
+    # Reorganize to plot NA's underneath non NA's
+    mapdata <- rbind(mapdata[is.na(mapdata$SNPs), ], mapdata[!is.na(mapdata$SNPs), ])
+    
+    # make a field with text to be displayed when clicking on a marker
+    mapdata$popup <- paste("EcoID:",  mapdata$Indiv,"Name:", mapdata$Name, " SNPs:", mapdata$SNPs)
+    
+    pallet <- colorFactor(palette="Set1", domain=mapdata$SNPs )
+    
+    map <- leaflet()
+    
+    map <- addProviderTiles(map, providers$Stamen.TonerLite,
+                     options = providerTileOptions(noWrap = TRUE))
+    
+    map <- addCircleMarkers(map, data=mapdata, color= ~pallet(SNPs), 
+                            radius=6, popup= ~popup, stroke=FALSE, fillOpacity=0.85)
+    
+    map <- addLegend(map, position="bottomright", pal=pallet, 
+                     values=mapdata$SNPs, title="Marker Colors", opacity=1)
+
+    
+    return(map)
+
+  })
+  
+  output$tab3Table <- renderTable(tab3.labeledSNPs()[1:350, ], digits=5)
+
+  
 }
 
 

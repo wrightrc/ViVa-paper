@@ -144,10 +144,6 @@ data <- Nucleotide_diversity(tidyVCF$dat)
 
 data[which(data$Diversity >= 0.9*max(data$Diversity)), ]
 
-# key loci (high diversity)
-# not sure which gene this is for?
-# try to make reproducible examples by keeping track of all of the code used
-keyPOS <- c(4369773, 4369822, 4369852, 4369960, 4370739)
 
 # for TIR1
 geneInfo <- getGeneInfo("AT3G62980",  useCache=FALSE)
@@ -161,10 +157,10 @@ data <- Nucleotide_diversity(data)
 
 keyPOS <- unique(data[which(data$Diversity >= 0.5*max(data$Diversity)), "POS"])
 
-keyPOS
+#keyPOS
 
 keydata <- data[data$POS %in% keyPOS, ]
-keydata
+#keydata
 #keydata2 <- keydata[keydata$Effect %in% c("missense_variant"), ]
 
 keydata_labeled <- label_bySNPs(keydata)
