@@ -38,16 +38,53 @@ ui <- fluidPage(
     
     tabPanel("SNP Mapping",
              ## Tab 3
-             textInput(inputId = "tab3.Gene", label = "Type a single gene locus in the box below",
-                       value = "AT1G80490"),
-             actionButton(inputId="tab3.Submit", label = "Submit"),
+             textInput(inputId="tab3.Gene", label="Type a single gene locus in the box below",
+                       value="AT1G80490"),
+             actionButton(inputId="tab3.Submit", label="Submit"),
+             sliderInput(inputId="tab3.filter_value", label="Nucleotide diversity filter limit",
+                         min=0, max=.7, value=0.01),
              tags$hr(),
              leafletOutput("tab3.map"),
              tableOutput("tab3Table")
+    ),
+    
+    tabPanel("Strains and Mutations",
+             ## Tab 4
+             textInput(inputId="tab4.Gene", label="Type list of gene ID's",
+                       value="AT1G80490"),
+             actionButton(inputId="tab4.Submit", label="Get Data"),
+             
+             selectInput(inputId="tab4.filter_type", label="select an option",
+                         choices=c("list ecotype IDs by mutation", "list mutations by ecotype ID")),
+             
+             
+             fluidRow(
+               column(6, 
+                      h3("Ecotype Filter"),
+                      textAreaInput(inputId = "tab4.ecoIDs", label = "Ecotype ID(s)",
+                                    width = 400, height = 250, value = "" )
+                      ),
+               column(6,
+                      h3("Mutation Filter"),
+                      textAreaInput(inputId = "tab4.SNPs", label = "SNP(s)",
+                                    width = 400, height = 250, value = "" )
+                      )
+             ),
+             
+             actionButton(inputId="tab4.reFilter", label="Submit"),
+             
+             #tableOutput("tab4Table")
+             DT::dataTableOutput("tab4.dataTable")
+             
+             
+             
     )
     
-
-
+    
+    
+    
+    
+    
   ),
 
   "THIS IS THE FOOTER"
@@ -90,6 +127,11 @@ plotPi <- function(unique_coding_variants) {
   return(plot)
   
 }
+
+
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 
 
 server <- function(input, output){
@@ -174,8 +216,9 @@ server <- function(input, output){
   tab3.labeledSNPs <- reactive({
     
     data <- tab3.tidyData()
-    keyPOS <- unique(data[which(data$Diversity >= 0.5*max(data$Diversity)), "POS"])
-    
+    #keyPOS <- unique(data[which(data$Diversity >= 0.5*max(data$Diversity)), "POS"])
+    keyPOS <- unique(data[which(data$Diversity >= input$tab3.filter_value), "POS"])
+      
     keydata <- data[data$POS %in% keyPOS, ]
     keydata_labeled <- label_bySNPs(keydata)
     return(keydata_labeled)
@@ -192,7 +235,8 @@ server <- function(input, output){
     # make a field with text to be displayed when clicking on a marker
     mapdata$popup <- paste("EcoID:",  mapdata$Indiv,"Name:", mapdata$Name, " SNPs:", mapdata$SNPs)
     
-    pallet <- colorFactor(palette="Set1", domain=mapdata$SNPs )
+    pal <- c(brewer.pal(8, "Set1"), brewer.pal(7, "Dark2"))
+    pallet <- colorFactor(palette=pal, domain=mapdata$SNPs )
     
     map <- leaflet()
     
@@ -212,6 +256,45 @@ server <- function(input, output){
   
   output$tab3Table <- renderTable(tab3.labeledSNPs()[1:350, ], digits=5)
 
+  
+  ##                                        _________
+  ##                                       /  tab4   \ 
+  ## --------------------------------------           ----------------
+  ## Tab 4 stuff:
+  
+  tab4.Genes <- eventReactive(input$tab4.Submit, {
+    #gene Info for gene on tab 2, updates on 'submit' button press
+    names <- parseInput(input$tab4.Gene)
+    genes <- getGeneInfo(names[1])
+    return(genes)
+  })
+  
+  tab4.tidyData <- reactive({
+    tidyVCF <- VCFByTranscript(tab4.Genes()[1, ], strains)
+    data <- tidyVCF$dat[tidyVCF$dat$gt_GT != "0|0",]
+    # Parse the EFF field
+    data <- parseEFF(tidyVCF = data, Transcript_ID = tab4.Genes()$transcript_ID[1])
+    
+    # calculate diversity
+    data <- Nucleotide_diversity(data)
+    data <- add_ecotype_details(data)
+    data <- subset(data, select=-c(EFF))
+    
+    
+    return(data)
+  })
+  
+
+  tab4.filteredData <- eventReactive(input$tab4.reFilter, {
+    
+    
+    
+    
+  })
+  
+  
+  output$tab4.dataTable <- DT::renderDataTable(DT::datatable(tab4.tidyData()))
+  
   
 }
 
