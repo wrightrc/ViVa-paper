@@ -7,7 +7,7 @@ library(RColorBrewer)
 
 ui <- fluidPage(
   headerPanel("Arabidopsis Natural Variation Webtool"),
-  "This app will provide an inteface to examine the natural variation of specified genes of interest in the 1001 Genomes project dataset",
+  "This app will provide an interface to examine the natural variation of specified genes of interest in the 1001 Genomes project dataset",
   tags$h5('style'="color:red", "this app is a work in progress"),
   tabsetPanel(
 
