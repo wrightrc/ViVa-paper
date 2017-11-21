@@ -48,7 +48,7 @@ ui <- fluidPage(
              tableOutput("tab3Table")
     ),
     
-    tabPanel("Strains and Mutations",
+    tabPanel("Accessions and Mutations",
              ## Tab 4
              textInput(inputId="tab4.Gene", label="Type list of gene ID's",
                        value="AT1G80490"),
@@ -60,7 +60,7 @@ ui <- fluidPage(
              
              fluidRow(
                column(6, 
-                      h3("Ecotype Filter"),
+                      h3("Accession Filter"),
                       textAreaInput(inputId = "tab4.ecoIDs", label = "Ecotype ID(s)",
                                     width = 400, height = 250, value = "" )
                       ),
