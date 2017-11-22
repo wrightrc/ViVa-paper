@@ -7,7 +7,7 @@ library(RColorBrewer)
 
 ui <- fluidPage(
   headerPanel("Arabidopsis Natural Variation Webtool"),
-  "This app will provide an inteface to examine the natural variation of specified genes of interest in the 1001 Genomes project dataset",
+  "This app will provide an interface to examine the natural variation of specified genes of interest in the 1001 Genomes project dataset",
   tags$h5('style'="color:red", "this app is a work in progress"),
   tabsetPanel(
 
@@ -48,19 +48,19 @@ ui <- fluidPage(
              tableOutput("tab3Table")
     ),
     
-    tabPanel("Strains and Mutations",
+    tabPanel("Accessions and Mutations",
              ## Tab 4
              textInput(inputId="tab4.Gene", label="Type list of gene ID's",
                        value="AT1G80490"),
              actionButton(inputId="tab4.Submit", label="Get Data"),
              
              selectInput(inputId="tab4.filter_type", label="select an option",
-                         choices=c("list ecotype IDs by mutation", "list mutations by ecotype ID")),
+                         choices=c("list accessions by mutation", "list mutations by accession")),
              
              
              fluidRow(
                column(6, 
-                      h3("Ecotype Filter"),
+                      h3("Accession Filter"),
                       textAreaInput(inputId = "tab4.ecoIDs", label = "Ecotype ID(s)",
                                     width = 400, height = 250, value = "" )
                       ),
