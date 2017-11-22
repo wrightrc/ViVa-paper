@@ -81,10 +81,6 @@ ui <- fluidPage(
     )
     
     
-    
-    
-    
-    
   ),
 
   "THIS IS THE FOOTER"
@@ -108,10 +104,14 @@ load_tab_2_Data <- function (geneInfo){
   coding_variants <- coding_Diversity_Plot(tab2data)
   
   return(coding_variants)
-  
 }
 
-
+parsebysep <- function (textIn, sep) {
+  text <- gsub(" ", "", ttext, fixed = TRUE)
+  output <- strsplit(text, sep)
+  
+  
+}
 
 
 #writeData <- function (table, file){
@@ -286,8 +286,11 @@ server <- function(input, output){
   
 
   tab4.filteredData <- eventReactive(input$tab4.reFilter, {
+    data <- tab4.tidyData
     
-    
+    if (input$tab4.ecoIDs != ""){
+      
+    }
     
     
   })
