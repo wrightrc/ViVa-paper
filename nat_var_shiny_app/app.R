@@ -52,8 +52,8 @@ ui <- fluidPage(
              textInput(inputId="tab3.Gene", label="Type a single gene locus in the box below",
                        value="AT1G80490"),
              actionButton(inputId="tab3.Submit", label="Submit"),
-             sliderInput(inputId="tab3.filter_value", label="Nucleotide diversity filter limit",
-                         min=0, max=.7, value=0.01),
+             sliderInput(inputId="tab3.filter_value", label="Log Nucleotide diversity filter limit",
+                         min=-4, max=0, value=-2, step=0.05),
              radioButtons("tab3.SNPtype", "Type of SNP to mark", 
                           choices=c("All", "Coding", "Missense")),
              verbatimTextOutput("tab3.debug"),
@@ -61,7 +61,7 @@ ui <- fluidPage(
              tags$br(),
              tags$h3("Accession Map"),
              tags$h5("Zoom with scroll wheel, click and drag to pan, click on individual point to see details"),
-             leafletOutput("tab3.map"),
+             leafletOutput("tab3.map", height="650"),
              tags$hr(),
              tags$br(),
              tags$h3("Map Data"),
@@ -247,12 +247,15 @@ server <- function(input, output){
   
   tab3.tidyData <- reactive({
     tidyVCF <- VCFByTranscript(tab3.Genes()[1, ], strains)
-    data <- tidyVCF$dat[tidyVCF$dat$gt_GT != "0|0",]
+    data <- tidyVCF$dat
     # Parse the EFF field
     data <- parseEFF(tidyVCF = data, Transcript_ID = tab3.Genes()$transcript_ID[1])
     
     # calculate diversity
     data <- Nucleotide_diversity(data)
+    
+    # remove 0|0 genotypes
+    data <- data[data$gt_GT != "0|0",]
     
     return(data)
   })
@@ -265,6 +268,8 @@ server <- function(input, output){
                  "missense_variant",
                  "upstream_gene_variant",
                  "downstream_gene_variant")
+    
+    effects <- unique(tab3.tidyData()$Effect)
     switch(input$tab3.SNPtype, 
            "All"=effects,
            "Missense"="missense_variant",
@@ -283,7 +288,7 @@ server <- function(input, output){
     
     data2 <- data[data$Effect %in% tab3.EffectValues(), ]
 
-    keyPOS <- unique(data2[which(data2$Diversity >= input$tab3.filter_value), "POS"])
+    keyPOS <- unique(data2[which(data2$Diversity >= 10**input$tab3.filter_value), "POS"])
 
     keydata <- data[data$POS %in% keyPOS, ]
    
@@ -304,19 +309,35 @@ server <- function(input, output){
     # make a field with text to be displayed when clicking on a marker
     mapdata$popup <- paste("EcoID:",  mapdata$Indiv,"Name:", mapdata$Name, " SNPs:", mapdata$SNPs)
     
-    pal <- c(brewer.pal(8, "Set1"), brewer.pal(7, "Dark2"))
-    pallet <- colorFactor(palette=pal, domain=mapdata$SNPs )
+    #pal <- c(brewer.pal(8, "Set1"), brewer.pal(7, "Dark2"))
+    pal <- brewer.pal(8, "Set1")
+    pallet <- colorFactor(palette=pal, domain=mapdata$SNPs)
     
     map <- leaflet()
     
     map <- addProviderTiles(map, providers$Stamen.TonerLite,
                      options = providerTileOptions(noWrap = TRUE))
     
-    map <- addCircleMarkers(map, data=mapdata, color= ~pallet(SNPs), 
+    groupnames <- unique(mapdata$SNPs)
+    groupnames <- groupnames[!is.na(groupnames)]
+    
+    map <- addCircleMarkers(map, data=mapdata[is.na(mapdata$SNPs), ], color= "#9b9b9b", group="NA", 
+                            radius=6, popup= ~popup, stroke=FALSE, fillOpacity=0.6)
+    
+    for (SNP in groupnames){
+          map <- addCircleMarkers(map, data=mapdata[mapdata$SNPs == SNP, ], color= ~pallet(SNPs), group= SNP, 
                             radius=6, popup= ~popup, stroke=FALSE, fillOpacity=0.85)
+    }
+
+
     
     map <- addLegend(map, position="bottomright", pal=pallet, 
                      values=mapdata$SNPs, title="Marker Colors", opacity=1)
+    
+    map <- addLayersControl(map, overlayGroups=c(groupnames, "NA"), 
+                            options = layersControlOptions(collapsed = TRUE),
+                            position="bottomleft")
+    
 
     return(map)
 

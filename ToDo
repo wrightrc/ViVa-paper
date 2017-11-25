@@ -1,12 +1,11 @@
 ToDo
 Little fixes
-- add exclude NA accessions checkbox to "SNP map"
 - "Diversity plot" handling for premature stops?
-- 
+-
 
 New Functionalities
 - hover-over/readme for each tab table
-- Highlight all accessions containing the same SNP when selecting in "SNP map"
+
 
 
 DONE!!!
@@ -14,5 +13,6 @@ DONE!!!
 - make download buttons more descriptive about what is being downloaded
 - add download button for "gene_info" table
 - add radio button for coding/missense/non-coding to "SNP map"
-
-
+- Highlight all accessions containing the same SNP when selecting in "SNP map" [layer select tool allows isolating one or more SNPs]
+- add exclude NA accessions checkbox to "SNP map" [layer select tool, bottom left corner of map]
+- make diversity filter slider logrithmic on map tab

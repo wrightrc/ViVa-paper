@@ -131,7 +131,7 @@ for (i in 1:length(geneInfo$transcript_ID)) {
 # Color coding test
 ###=============================================================================
 
-geneInfo <- getGeneInfo(genes)
+geneInfo <- getGeneInfo("AT1G80490")
 
 
 
@@ -142,7 +142,9 @@ data <- parseEFF(tidyVCF$dat, geneInfo$transcript_ID[1])
 # calculate diversity
 data <- Nucleotide_diversity(tidyVCF$dat)
 
-data[which(data$Diversity >= 0.9*max(data$Diversity)), ]
+data[which(data$Diversity >= 10**-4), ]
+
+
 
 
 # for TIR1
@@ -169,5 +171,37 @@ map_test(keydata_labeled)
 
 keyGT <- ddply(keydata, .variables="Indiv", .fun=buildGT)
 
+#-------------------------------------------------------------------
 
+
+geneInfo <- getGeneInfo("AT1G80490")
+tidyVCF <- VCFByTranscript(geneInfo[1, ], strains)
+data <- tidyVCF$dat
+# Parse the EFF field
+data <- parseEFF(tidyVCF = data, Transcript_ID = geneInfo$transcript_ID[1])
+
+# calculate diversity
+data <- Nucleotide_diversity(data)
+data <- data[data$gt_GT != "0|0", ]
+
+
+effects <- unique(data$Effect)
+
+
+
+
+
+keyPOS <- unique(data[which(data$Diversity >= 0.5*max(data$Diversity)), "POS"])
+
+#keyPOS
+
+keydata <- data[data$POS %in% keyPOS, ]
+#keydata
+#keydata2 <- keydata[keydata$Effect %in% c("missense_variant"), ]
+
+keydata_labeled <- label_bySNPs(keydata)
+
+map_test(keydata_labeled)
+
+keyGT <- ddply(keydata, .variables="Indiv", .fun=buildGT)
 
