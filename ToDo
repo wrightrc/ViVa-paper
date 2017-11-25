@@ -1,8 +1,5 @@
 ToDo
 Little fixes
-- make download buttons more descriptive about what is being downloaded
-- add download button for "gene_info" table
-- add radio button for coding/missense/non-coding to "SNP map"
 - add exclude NA accessions checkbox to "SNP map"
 - "Diversity plot" handling for premature stops?
 - 
@@ -14,4 +11,8 @@ New Functionalities
 
 DONE!!!
 - All mentions of ecotype changed to accession
+- make download buttons more descriptive about what is being downloaded
+- add download button for "gene_info" table
+- add radio button for coding/missense/non-coding to "SNP map"
+
 

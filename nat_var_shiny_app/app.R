@@ -14,11 +14,17 @@ ui <- fluidPage(
     tabPanel("SNP Stats",
         ## Tab 1
       textAreaInput(inputId = "gene_ids", label = "Type a list of gene loci in the box below, separated by commas ",
-                    width = 600, height = 250, value = "AT3G62980, AT4G03190, AT3G26810, AT1G12820, AT4G24390, AT5G49980, AT2G39940" ),
+                    width = 600, height = 75, value = "AT3G62980, AT4G03190, AT3G26810, AT1G12820, AT4G24390, AT5G49980, AT2G39940" ),
       actionButton(inputId="STATS_submit", label = "Submit"),
       tags$hr(),
+      tags$br(),
+      h3("Selected Gene Information"),
+      downloadButton("tab1.downloadGeneInfo","Download Content of Table Below"),
       tableOutput("table"),
-      downloadButton("downloadData","Download"),
+      tags$hr(),
+      tags$br(),
+      tags$h3("SNP Type and Diversity Statistics"),
+      downloadButton("tab1.downloadStats","Download Content of Table Below"),
       tableOutput("SNPStats_Table")
     ),
 
@@ -28,11 +34,16 @@ ui <- fluidPage(
                 value = "AT1G80490"),
       actionButton(inputId="tab2.Submit", label = "Submit"),
       tags$hr(),
+      tags$br(),
       tableOutput("tab2.GeneInfo"),
-      h4("Nucleotide Diversity Statistic by Codon"),
+      h3("Plot of Nucleotide Diversity Statistic by Codon"),
+      h5("click and drag a box accross the plot below to see details on specific points"),
       plotOutput("diversityPlot", brush="plot_brush", click="plot_click", height = 400),
       verbatimTextOutput("info"),
-      downloadButton("downloadSNPData","Download"),
+      tags$hr(),
+      tags$br(),
+      tags$h3("Diversity Plot Data"),
+      downloadButton("tab2.downloadSNPData","Download Content of Table Below"),
       tableOutput("Diversity_Table")
     ),
     
@@ -43,8 +54,18 @@ ui <- fluidPage(
              actionButton(inputId="tab3.Submit", label="Submit"),
              sliderInput(inputId="tab3.filter_value", label="Nucleotide diversity filter limit",
                          min=0, max=.7, value=0.01),
+             radioButtons("tab3.SNPtype", "Type of SNP to mark", 
+                          choices=c("All", "Coding", "Missense")),
+             verbatimTextOutput("tab3.debug"),
              tags$hr(),
+             tags$br(),
+             tags$h3("Accession Map"),
+             tags$h5("Zoom with scroll wheel, click and drag to pan, click on individual point to see details"),
              leafletOutput("tab3.map"),
+             tags$hr(),
+             tags$br(),
+             tags$h3("Map Data"),
+             downloadButton("tab3.downloadMapData","Download Content of Table Below"),
              tableOutput("tab3Table")
     ),
     
@@ -141,17 +162,37 @@ server <- function(input, output){
   ##             --------------------------------------------------
   ## Tab 1 stuff:
 
-  observeEvent(input$STATS_submit,{
+  tab1.Genes <- eventReactive(input$STATS_submit,{
     names <- parseInput(input$gene_ids)
     genes <- getGeneInfo(names)
     req(genes != FALSE)
-    output$table <- renderTable(genes)
-    output$downloadData <- downloadHandler(filename="yourData.csv", content = function(file) {
-      write.csv(genes, file)
-    })
-    SNPStats <- polymorphTable(genes, strains)
-    output$SNPStats_Table <- renderTable(SNPStats, rownames=TRUE, digits=5)
+    return(genes)
   })
+  
+  output$table <- renderTable(tab1.Genes())
+    
+  SNPStats <- reactive({polymorphTable(tab1.Genes(), strains)})
+  
+  output$SNPStats_Table <- renderTable(SNPStats(), rownames=TRUE, digits=5)
+  
+  output$tab1.downloadStats <- downloadHandler(
+    filename=function(){
+      paste("SNPStats-", Sys.Date(), ".csv", sep="")
+    }, 
+    content = function(file) {
+      write.csv(SNPStats(), file, row.names=FALSE)
+    }
+  )
+  
+  output$tab1.downloadGeneInfo <- downloadHandler(
+    filename=function(){
+      paste("GeneInfo-", Sys.Date(), ".csv", sep="")
+    }, 
+    content = function(file) {
+      write.csv(tab1.Genes(), file, row.names=FALSE)
+    }
+  )
+  
 
   ##                 _________
   ##                /  tab2   \
@@ -173,12 +214,16 @@ server <- function(input, output){
 
   output$Diversity_Table <- renderTable(tab2.tableData(), rownames=TRUE)
     #render table of diversity data
-
-  output$downloadSNPData <- downloadHandler(filename="yourData.csv", content = function(file) {
-      #download for diversity data
-      write.csv(tab2.tableData(), file)
-  })
-
+  
+  output$tab2.downloadSNPData <- downloadHandler(
+    filename=function(){
+      paste("SNPData-", Sys.Date(), ".csv", sep="")
+    }, 
+    content = function(file) {
+      write.csv(tab2.tableData(), file, row.names=FALSE)
+    }
+  )
+  
   output$diversityPlot <- renderPlot(plotPi(tab2.tableData()))
     #plot output
 
@@ -212,19 +257,43 @@ server <- function(input, output){
     return(data)
   })
   
+  tab3.EffectValues <- reactive({    
+    effects <- c("5_prime_UTR_variant",
+                 "intron_variant",
+                 "3_prime_UTR_variant",
+                 "synonymous_variant",
+                 "missense_variant",
+                 "upstream_gene_variant",
+                 "downstream_gene_variant")
+    switch(input$tab3.SNPtype, 
+           "All"=effects,
+           "Missense"="missense_variant",
+           "Coding"= c("missense_variant", "synonymous_variant"))
+    #return(input$tab3.filter_value)
+  })
   
-  tab3.labeledSNPs <- reactive({
+  output$tab3.debug <- renderPrint({
+    tab3.EffectValues()
+  })
     
+  tab3.labeledSNPs <- reactive({
+
     data <- tab3.tidyData()
     #keyPOS <- unique(data[which(data$Diversity >= 0.5*max(data$Diversity)), "POS"])
-    keyPOS <- unique(data[which(data$Diversity >= input$tab3.filter_value), "POS"])
-      
+    
+    data2 <- data[data$Effect %in% tab3.EffectValues(), ]
+
+    keyPOS <- unique(data2[which(data2$Diversity >= input$tab3.filter_value), "POS"])
+
     keydata <- data[data$POS %in% keyPOS, ]
+   
+    
     keydata_labeled <- label_bySNPs(keydata)
     return(keydata_labeled)
     
   })
   
+
   output$tab3.map <- renderLeaflet({
     
     mapdata <- tab3.labeledSNPs()
@@ -249,13 +318,22 @@ server <- function(input, output){
     map <- addLegend(map, position="bottomright", pal=pallet, 
                      values=mapdata$SNPs, title="Marker Colors", opacity=1)
 
-    
     return(map)
 
   })
   
   output$tab3Table <- renderTable(tab3.labeledSNPs()[1:350, ], digits=5)
 
+  output$tab3.downloadMapData <- downloadHandler(
+    filename=function(){
+      paste("MapData-", Sys.Date(), ".csv", sep="")
+    }, 
+    content = function(file) {
+      write.csv(tab3.labeledSNPs(), file, row.names=FALSE)
+    }
+  )
+  
+  
   
   ##                                        _________
   ##                                       /  tab4   \ 
