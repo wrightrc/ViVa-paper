@@ -3,9 +3,17 @@ library(biomaRt)
 library(leaflet)
 library(RColorBrewer)
 
+CSSCode <- tags$head(tags$style(HTML("
+                                       .checkboxformat {
+                                     -webkit-column-width: 350px;
+                                     -moz-column-width: 350px;
+                                     column-width: 350px;
+                                     }
+                                     ")))
 
 
 ui <- fluidPage(
+  CSSCode,
   headerPanel("Arabidopsis Natural Variation Webtool"),
   "This app will provide an interface to examine the natural variation of specified genes of interest in the 1001 Genomes project dataset",
   tags$h5('style'="color:red", "this app is a work in progress"),
@@ -44,7 +52,7 @@ ui <- fluidPage(
       tags$br(),
       tags$h3("Diversity Plot Data"),
       downloadButton("tab2.downloadSNPData","Download Content of Table Below"),
-      tableOutput("Diversity_Table")
+      DT::dataTableOutput("Diversity_Table")
     ),
     
     tabPanel("SNP Mapping",
@@ -67,7 +75,9 @@ ui <- fluidPage(
              tags$br(),
              tags$h3("Map Data"),
              downloadButton("tab3.downloadMapData","Download Content of Table Below"),
-             tableOutput("tab3Table")
+             #tableOutput("tab3Table")
+             
+             DT::dataTableOutput("tab3.dataTable")
     ),
     
     tabPanel("Accessions and Mutations",
@@ -152,6 +162,9 @@ plotPi <- function(unique_coding_variants) {
 }
 
 
+
+
+
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -214,7 +227,7 @@ server <- function(input, output){
   tab2.tableData <- reactive({load_tab_2_Data(tab2.Genes())})
     #SNP reactive data
 
-  output$Diversity_Table <- renderTable(tab2.tableData(), rownames=TRUE)
+  output$Diversity_Table <- DT::renderDataTable(tab2.tableData())
     #render table of diversity data
   
   output$tab2.downloadSNPData <- downloadHandler(
@@ -238,6 +251,8 @@ server <- function(input, output){
   ##                           /  tab3   \
   ## --------------------------           ----------------------------
   ## Tab 3 stuff:
+  
+  
   
   tab3.Genes <- eventReactive(input$tab3.Submit, {
     #gene Info for gene on tab 2, updates on 'submit' button press
@@ -306,7 +321,9 @@ server <- function(input, output){
     tagList(
       tags$hr(),
       tags$br(),      
-      checkboxGroupInput("tab3.mutation_select", "select_mutations to display", choices=tab3.mutationList()),
+      tags$div(class="checkboxformat", 
+               checkboxGroupInput("tab3.mutation_select", "select_mutations to display", choices=tab3.mutationList())
+      ),
       actionButton(inputId="tab3.update_map", label = "Update Map")
     )
     
@@ -325,26 +342,6 @@ server <- function(input, output){
     return(data)
   
   })
-  
-  
-
-  # tab3.labeledSNPs <- reactive({
-  # 
-  #   data <- tab3.tidyData()
-  #   #keyPOS <- unique(data[which(data$Diversity >= 0.5*max(data$Diversity)), "POS"])
-  #   
-  #   data2 <- data[data$Effect %in% tab3.EffectValues(), ]
-  # 
-  #   keyPOS <- unique(data2[which(data2$Diversity >= 10**input$tab3.filter_value), "POS"])
-  # 
-  #   keydata <- data[data$POS %in% keyPOS, ]
-  #  
-  #   
-  #   keydata_labeled <- label_bySNPs(keydata)
-  #   return(keydata_labeled)
-  #   
-  # })
- 
   
   output$tab3.map <- renderLeaflet({
     
@@ -391,13 +388,15 @@ server <- function(input, output){
   })
   
   output$tab3Table <- renderTable(tab3.labeledSNPs()[1:350, ], digits=5)
+  
+  output$tab3.dataTable <- DT::renderDataTable(tab3.labeled())
 
   output$tab3.downloadMapData <- downloadHandler(
     filename=function(){
       paste("MapData-", Sys.Date(), ".csv", sep="")
     }, 
     content = function(file) {
-      write.csv(tab3.labeledSNPs(), file, row.names=FALSE)
+      write.csv(tab3.labeled(), file, row.names=FALSE)
     }
   )
   

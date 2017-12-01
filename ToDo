@@ -2,10 +2,13 @@ ToDo
 Little fixes
 - "Diversity plot" handling for premature stops?
 - update comments and documentation in code (mainly VCF_Utils.R)
+- make table in map output a searchable table.
 
 New Functionalities
 - hover-over/readme for each tab table
 - make the last tab (SNP by Accession and Accessions by SNP) work.
+- add a filter to the map page to select specific SNPs after submitting gene, but before generating map.
+
 
 
 
