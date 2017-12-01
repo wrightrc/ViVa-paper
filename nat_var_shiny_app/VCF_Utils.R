@@ -369,11 +369,11 @@ buildGT <- function(indivData) {
   return(indivGT)
 }
 
-label_bySNPs <- function(data) {
+label_bySNPs <- function(data, collapse=TRUE) {
   # creates a df with a single row per individual, with a new column "SNPs" that
   # has a single text string detailing the 
   
-  output <- ddply(data, .variables="Indiv", .fun=label_by_SNPs_kernel)
+  output <- ddply(data, .variables="Indiv", .fun=label_by_SNPs_kernel, collapse=collapse)
   
   output <- add_ecotype_details(output)
   return(output)
@@ -381,7 +381,8 @@ label_bySNPs <- function(data) {
 
 
 
-label_by_SNPs_kernel <- function(indivData) {
+label_by_SNPs_kernel <- function(indivData, collapse=TRUE) {
+  #if collapse == TRUE, each accession will be a single line.
   
   # store ecotypeID as a single value
   Indiv <- indivData[1,"Indiv"]
@@ -392,7 +393,13 @@ label_by_SNPs_kernel <- function(indivData) {
   # note: Amino_Acid_change should be always present even on non coding UTRs and introns
   data <- data[order(data[, "Transcript_ID"], data[, "Amino_Acid_Change"]), ]
   
-  SNPstring <- paste("[", data[, "Transcript_ID"],"|", data[, "Amino_Acid_Change"], "]", collapse=",")
+  if (collapse == TRUE) {
+    collapseString <- ","
+  } else {
+    collapseString <- NULL
+  }
+
+  SNPstring <- paste("[", data[, "Transcript_ID"],"|", data[, "Amino_Acid_Change"], "]", collapse=collapseString)
   
   output <- data.frame(Indiv, SNPs=SNPstring, stringsAsFactors=FALSE)
   return(output)

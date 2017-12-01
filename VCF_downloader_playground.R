@@ -182,13 +182,11 @@ data <- parseEFF(tidyVCF = data, Transcript_ID = geneInfo$transcript_ID[1])
 
 # calculate diversity
 data <- Nucleotide_diversity(data)
+
 data <- data[data$gt_GT != "0|0", ]
 
 
 effects <- unique(data$Effect)
-
-
-
 
 
 keyPOS <- unique(data[which(data$Diversity >= 0.5*max(data$Diversity)), "POS"])

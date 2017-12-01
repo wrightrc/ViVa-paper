@@ -57,6 +57,7 @@ ui <- fluidPage(
              radioButtons("tab3.SNPtype", "Type of SNP to mark", 
                           choices=c("All", "Coding", "Missense")),
              verbatimTextOutput("tab3.debug"),
+             uiOutput("tab3.mutation_checkbox"),  
              tags$hr(),
              tags$br(),
              tags$h3("Accession Map"),
@@ -78,6 +79,7 @@ ui <- fluidPage(
              selectInput(inputId="tab4.filter_type", label="select an option",
                          choices=c("list accessions by mutation", "list mutations by accession")),
              
+             uiOutput("tab4.ui2"),
              
              fluidRow(
                column(6, 
@@ -278,30 +280,75 @@ server <- function(input, output){
   })
   
   output$tab3.debug <- renderPrint({
-    tab3.EffectValues()
-  })
-    
-  tab3.labeledSNPs <- reactive({
-
-    data <- tab3.tidyData()
-    #keyPOS <- unique(data[which(data$Diversity >= 0.5*max(data$Diversity)), "POS"])
-    
-    data2 <- data[data$Effect %in% tab3.EffectValues(), ]
-
-    keyPOS <- unique(data2[which(data2$Diversity >= 10**input$tab3.filter_value), "POS"])
-
-    keydata <- data[data$POS %in% keyPOS, ]
-   
-    
-    keydata_labeled <- label_bySNPs(keydata)
-    return(keydata_labeled)
-    
+    input$tab3.mutation_select
   })
   
+  tab3.filteredByDiv <- reactive({
+    # filter by diversity slider and SNP type radio button then add SNPs column
+    data <- tab3.tidyData()
+    
+    data2 <- data[data$Effect %in% tab3.EffectValues(), ]
+    
+    keyPOS <- unique(data2[which(data2$Diversity >= 10**input$tab3.filter_value), "POS"])
+    
+    keydata <- data[data$POS %in% keyPOS, ]
+    
+    return(keydata)
+  })
+  
+  tab3.mutationList <- reactive({
+    mutList <- label_bySNPs(tab3.filteredByDiv(), collapse=FALSE)$SNPs
+    mutList <- unique(mutList[!is.na(mutList)])
+    return(mutList)
+  })
+  
+  output$tab3.mutation_checkbox <- renderUI({
+    tagList(
+      tags$hr(),
+      tags$br(),      
+      checkboxGroupInput("tab3.mutation_select", "select_mutations to display", choices=tab3.mutationList()),
+      actionButton(inputId="tab3.update_map", label = "Update Map")
+    )
+    
+  })
+    
+  tab3.labeled <- eventReactive(input$tab3.update_map, {
+    data <- tab3.filteredByDiv()
+    
+    data <- label_bySNPs(data, collapse=FALSE)
+    data <- data[data$SNPs %in% input$tab3.mutation_select, ]
+    # combine mutations to single row (this is slow)
+    data <- ddply(data, "Indiv", summarise, SNPs=paste(SNPs, collapse=","))
+    # add back ecotype details
+    data <- add_ecotype_details(data)
+    
+    return(data)
+  
+  })
+  
+  
 
+  # tab3.labeledSNPs <- reactive({
+  # 
+  #   data <- tab3.tidyData()
+  #   #keyPOS <- unique(data[which(data$Diversity >= 0.5*max(data$Diversity)), "POS"])
+  #   
+  #   data2 <- data[data$Effect %in% tab3.EffectValues(), ]
+  # 
+  #   keyPOS <- unique(data2[which(data2$Diversity >= 10**input$tab3.filter_value), "POS"])
+  # 
+  #   keydata <- data[data$POS %in% keyPOS, ]
+  #  
+  #   
+  #   keydata_labeled <- label_bySNPs(keydata)
+  #   return(keydata_labeled)
+  #   
+  # })
+ 
+  
   output$tab3.map <- renderLeaflet({
     
-    mapdata <- tab3.labeledSNPs()
+    mapdata <- tab3.labeled()
     
     # Reorganize to plot NA's underneath non NA's
     mapdata <- rbind(mapdata[is.na(mapdata$SNPs), ], mapdata[!is.na(mapdata$SNPs), ])
@@ -383,7 +430,19 @@ server <- function(input, output){
     return(data)
   })
   
-
+  output$tab4.ui2 <- renderUI({
+    
+    if (input$tab4.submit==0) {
+      return(tags$h4("mot submitted"))
+    }
+    
+    return(tags$h4("submitted"))
+    
+    
+    
+  })
+  
+  
   tab4.filteredData <- eventReactive(input$tab4.reFilter, {
     data <- tab4.tidyData
     
