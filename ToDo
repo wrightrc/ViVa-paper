@@ -1,12 +1,15 @@
 ToDo
 Little fixes
-- "Diversity plot" handling for premature stops?
 - update comments and documentation in code (mainly VCF_Utils.R)
-
+- vignette for TIR1 and AFB2 as example for the lab
+- "Diversity plot" handling for premature stops?
 
 New Functionalities
 - hover-over/readme for each tab and table
 - about tab, with bibliography glossary...
+
+
+
 
 DONE!!!
 - All mentions of ecotype changed to accession
