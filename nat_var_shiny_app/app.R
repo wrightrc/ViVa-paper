@@ -4,12 +4,54 @@ library(leaflet)
 library(RColorBrewer)
 
 CSSCode <- tags$head(tags$style(HTML("
-                                       .checkboxformat {
+                                       .checkbox-format {
                                           -webkit-column-width: 350px;
                                           -moz-column-width: 350px;
                                           column-width: 350px;
+                                       }
+                                    
+                                      .input-format {
+                                          background-color: #dddddd;
+                                          border: 1px solid #dddddd;
+                                          border-radius: 12px;
+                                          padding:1px 15px 10px 10px;
+
+                                      }
+
+
+                                     .output-format {
+                                          border: 5px solid #dddddd;
+                                          border-radius: 12px;
+                                          padding:1px 15px 15px 20px;
                                      }
-                                     ")))
+
+
+                                      .btn-default{ 
+                                          color: #333;
+                                          background-color: #eeeeee;
+                                          border-color: #ccc;
+                                      }  
+
+                                      .form-control{ 
+                                          color: #333;
+                                          background-color: #eeeeee;
+                                          border-color: #ccc;
+                                      }  
+
+                                     h1 {
+                                         font-family: Cursive;
+                                         font-weight: 500;
+                                         line-height: 1.1;
+                                         color: #48ca3b;
+                                         background-color: #dce4f2;
+                                          border: 10px solid #dce4f2;
+                                          border-radius: 12px;
+                                     
+                                     }
+                                     
+                                     ")
+                                  
+                                ))
 
 
 ui <- fluidPage(
@@ -18,78 +60,105 @@ ui <- fluidPage(
   "This app will provide an interface to examine the natural variation of specified genes of interest in the 1001 Genomes project dataset",
   tags$h5('style'="color:red", "this app is a work in progress"),
   tabsetPanel(
-
     tabPanel("SNP Stats",
         ## Tab 1 ###############################################################
-      textAreaInput(inputId = "gene_ids", label = "Type a list of gene loci in the box below, separated by commas ",
-                    width = 600, height = 75, value = "AT3G62980, AT4G03190, AT3G26810, AT1G12820, AT4G24390, AT5G49980, AT2G39940" ),
-      actionButton(inputId="STATS_submit", label = "Submit"),
-      tags$hr(),
       tags$br(),
-      tags$h3("Selected Gene Information"),
-      tags$h5("this table provides details on the gene(s) input above, including transcript IDs, and chromosome position information on the start and end of the transcript"),
-      downloadButton("tab1.downloadGeneInfo","Download Content of Table Below"),
-      tableOutput("tab1.genes_table"),
+      tags$div(class="input-format",
+               tags$h3("Gene Selection"),
+               tags$h5("Type a list of gene loci in the box below, separated by commas "),
+               textAreaInput(inputId = "gene_ids", label = NULL,
+                             width = 600, height = 75, value = "AT3G62980, AT4G03190, AT3G26810, AT1G12820, AT4G24390, AT5G49980, AT2G39940" ),
+               actionButton(inputId="STATS_submit", label = "Submit"),
+               tags$br()
+      ),
       tags$hr(),
+      tags$div(class="output-format",
+               tags$h3("Selected Gene Information"),
+               tags$h5("this table provides details on the gene(s) input above, including transcript IDs, and chromosome position information on the start and end of the transcript"),
+               downloadButton("tab1.downloadGeneInfo","Download Content of Table Below"),
+               tableOutput("tab1.genes_table")
+      ),
       tags$br(),
+      tags$div(class="output-format",
       tags$h3("SNP Type and Diversity Statistics"),
-      HTML("<h5 style=color:grey>
-               This table provides basic statistics on the polymorphisms present in the given gene.
-               <br/>the columns \"5_prime_UTR_variant\" through \"coding_total\" are total, non unique numbers of variants, \"coding_total\" is the sum of missense and synonymous variants.
-               <br/>the final four columns are Nucleotide Diversity values, for different sections and SNP types
-            </h5>"),
-      downloadButton("tab1.downloadStats","Download Content of Table Below"),
-      tableOutput("SNPStats_Table")
+          HTML("<h5 style=color:grey>
+                   This table provides basic statistics on the polymorphisms present in the given gene.
+                   <br/>the columns \"5_prime_UTR_variant\" through \"coding_total\" are total, non unique numbers of variants, \"coding_total\" is the sum of missense and synonymous variants.
+                   <br/>the final four columns are Nucleotide Diversity values, for different sections and SNP types
+                </h5>"),
+          downloadButton("tab1.downloadStats","Download Content of Table Below"),
+          tableOutput("SNPStats_Table")
+      )
     ),
 
     tabPanel("Diversity Plot",
         ## Tab 2 ###############################################################
-      textInput(inputId = "plotGene", label = "Type a single gene locus in the box below",
-                value = "AT1G80490"),
-      actionButton(inputId="tab2.Submit", label = "Submit"),
-      tags$hr(),
       tags$br(),
-      tags$h3("Selected Gene Information"),
-      tableOutput("tab2.GeneInfo"),
+      tags$div(class="input-format", 
+               tags$h3("Gene Select"),
+               tags$h5("Type a single gene locus in the box below"),
+               textInput(inputId = "plotGene", label =NULL,
+                         value = "AT1G80490"),
+               actionButton(inputId="tab2.Submit", label = "Submit")
+      ),
+      
       tags$hr(),
+      tags$div(class="output-format", 
+          tags$h3("Selected Gene Information"),
+          tableOutput("tab2.GeneInfo")
+      ),
       tags$br(),
-      tags$h3("Plot of Nucleotide Diversity Statistic by Codon"),
-      tags$h5("click and drag a box accross the plot below to see details on specific points"),
-      plotOutput("diversityPlot", brush="plot_brush", click="plot_click", height = 400),
-      verbatimTextOutput("info"),
-      tags$hr(),
-      tags$br(),
-      tags$h3("Diversity Plot Data"),
-      tags$h5("This table provides the raw data from the plot. \"POS\" is the chromosomal position of the SNP, 
-              the Amino_Acid_Change field provides both the amino acid as well as the base change"),
-      downloadButton("tab2.downloadSNPData","Download Content of Table Below"),
-      DT::dataTableOutput("Diversity_Table")
+      
+      tags$div(class="output-format", 
+          tags$h3("Plot of Nucleotide Diversity Statistic by Codon"),
+          tags$h5("click and drag a box accross the plot below to see details on specific points"),
+          plotOutput("diversityPlot", brush="plot_brush", click="plot_click", height = 400),
+          verbatimTextOutput("info")
+      ),
+      tags$br(),    
+      tags$div(class="output-format", 
+
+          tags$h3("Diversity Plot Data"),
+          tags$h5("This table provides the raw data from the plot. \"POS\" is the chromosomal position of the SNP, 
+                  the Amino_Acid_Change field provides both the amino acid as well as the base change"),
+          downloadButton("tab2.downloadSNPData","Download Content of Table Below"),
+          DT::dataTableOutput("Diversity_Table")
+      )
     ),
     
     tabPanel("SNP Mapping",
              ## Tab 3 ##########################################################
-             textInput(inputId="tab3.Gene", label="Type a single gene locus in the box below",
-                       value="AT1G80490"),
-             actionButton(inputId="tab3.Submit", label="Submit"),
-             sliderInput(inputId="tab3.filter_value", label="Log Nucleotide diversity filter limit",
-                         min=-4, max=0, value=-2, step=0.05),
-             radioButtons("tab3.SNPtype", "Type of SNP to mark", 
-                          choices=c("All", "Coding", "Missense")),
-             verbatimTextOutput("tab3.debug"),
-             uiOutput("tab3.mutation_checkbox"),  
-             tags$hr(),
              tags$br(),
+             tags$div(class="input-format", 
+                 tags$h3("Gene Select and Filter Parameters"),
+                 tags$h5("Type a single gene locus in the box below"),
+                 textInput(inputId="tab3.Gene", label=NULL,
+                           value="AT1G80490"),
+                 actionButton(inputId="tab3.Submit", label="Submit"),
+                 sliderInput(inputId="tab3.filter_value", label="Log Nucleotide diversity filter limit",
+                             min=-4, max=0, value=-2, step=0.05),
+                 radioButtons("tab3.SNPtype", "Type of SNP to mark", 
+                              choices=c("All", "Coding", "Missense")),
+                 verbatimTextOutput("tab3.debug")
+             ),
+             
+             tags$br(),
+             tags$div(class="input-format",
+                uiOutput("tab3.mutation_checkbox")  
+             ),
+             tags$hr(),
+             tags$div(class="output-format",
              tags$h3("Accession Map"),
              tags$h5("Zoom with scroll wheel, click and drag to pan. click on individual point to see details. 
                      use the layers pop out to the lower left of the map to hide or show sets of markers with similar mutations"),
-             leafletOutput("tab3.map", height="650"),
-             tags$hr(),
+             leafletOutput("tab3.map", height="650")
+             ),
              tags$br(),
-             tags$h3("Map Data"),
-             downloadButton("tab3.downloadMapData","Download Content of Table Below"),
-             #tableOutput("tab3Table")
-             
-             DT::dataTableOutput("tab3.dataTable")
+             tags$div(class="output-format",
+                 tags$h3("Map Data"),
+                 downloadButton("tab3.downloadMapData","Download Content of Table Below"),
+                 DT::dataTableOutput("tab3.dataTable")
+             )
     )
     
     # tabPanel("Accessions and Mutations",
@@ -322,11 +391,9 @@ server <- function(input, output){
   
   output$tab3.mutation_checkbox <- renderUI({
     tagList(
-      tags$hr(),
-      tags$br(),     
       tags$h3("Mutation select"),
       tags$h5("Select the SNPs you want to see on the map by clicking the checkboxes"),
-      tags$div(class="checkboxformat", 
+      tags$div(class="checkbox-format", 
                checkboxGroupInput("tab3.mutation_select", "select_mutations to display", choices=tab3.mutationList())
       ),
       actionButton(inputId="tab3.update_map", label = "Update Map")
