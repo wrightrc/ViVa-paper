@@ -3,55 +3,52 @@ library(biomaRt)
 library(leaflet)
 library(RColorBrewer)
 
-CSSCode <- tags$head(tags$style(HTML("
-                                       .checkbox-format {
-                                          -webkit-column-width: 350px;
-                                          -moz-column-width: 350px;
-                                          column-width: 350px;
-                                       }
+CSSCode <- tags$head(tags$style(
+   HTML("
+      .checkbox-format {
+         -webkit-column-width: 350px;
+         -moz-column-width: 350px;
+         column-width: 350px;
+      }
                                     
-                                      .input-format {
-                                          background-color: #dddddd;
-                                          border: 1px solid #dddddd;
-                                          border-radius: 12px;
-                                          padding:1px 15px 10px 10px;
+      .input-format {
+         background-color: #dddddd;
+         border: 1px solid #dddddd;
+         border-radius: 12px;
+         padding:1px 15px 10px 10px;
+      }
 
-                                      }
+      .output-format {
+         border: 5px solid #dddddd;
+         border-radius: 12px;
+         padding:1px 15px 15px 20px;
+      }
 
+      .btn-default{ 
+         color: #333;
+         background-color: #eeeeee;
+         border-color: #ccc;
+      }  
 
-                                     .output-format {
-                                          border: 5px solid #dddddd;
-                                          border-radius: 12px;
-                                          padding:1px 15px 15px 20px;
-                                     }
+      .form-control{ 
+         color: #333;
+         background-color: #eeeeee;
+         border-color: #ccc;
+      }  
 
-
-                                      .btn-default{ 
-                                          color: #333;
-                                          background-color: #eeeeee;
-                                          border-color: #ccc;
-                                      }  
-
-                                      .form-control{ 
-                                          color: #333;
-                                          background-color: #eeeeee;
-                                          border-color: #ccc;
-                                      }  
-
-                                     h1 {
-                                         font-family: Cursive;
-                                         font-weight: 500;
-                                         line-height: 1.1;
-                                         color: #48ca3b;
-                                         background-color: #dce4f2;
-                                          border: 10px solid #dce4f2;
-                                          border-radius: 12px;
+      h1 {
+         font-family: Cursive;
+         font-weight: 500;
+         line-height: 1.1;
+         color: #48ca3b;
+         background-color: #dce4f2;
+         border: 10px solid #dce4f2;
+         border-radius: 12px;
+      }
                                      
-                                     }
-                                     
-                                     ")
+   ")
                                   
-                                ))
+))
 
 
 ui <- fluidPage(
@@ -71,23 +68,32 @@ ui <- fluidPage(
                actionButton(inputId="STATS_submit", label = "Submit"),
                tags$br()
       ),
+       #tags$hr(),
+       #uiOutput("tab1.gene_table_ui"),
       tags$hr(),
-      tags$div(class="output-format",
+      
+        tags$div(class="output-format",
                tags$h3("Selected Gene Information"),
                tags$h5("this table provides details on the gene(s) input above, including transcript IDs, and chromosome position information on the start and end of the transcript"),
                downloadButton("tab1.downloadGeneInfo","Download Content of Table Below"),
-               tableOutput("tab1.genes_table")
+               DT::dataTableOutput("tab1.genes_table")
+        
       ),
       tags$br(),
       tags$div(class="output-format",
       tags$h3("SNP Type and Diversity Statistics"),
-          HTML("<h5 style=color:grey>
+          HTML("<h5>
                    This table provides basic statistics on the polymorphisms present in the given gene.
                    <br/>the columns \"5_prime_UTR_variant\" through \"coding_total\" are total, non unique numbers of variants, \"coding_total\" is the sum of missense and synonymous variants.
                    <br/>the final four columns are Nucleotide Diversity values, for different sections and SNP types
+                   <br/> <strong>NOTE:</strong> download button downloads content of both tables to a single file.
                 </h5>"),
-          downloadButton("tab1.downloadStats","Download Content of Table Below"),
-          tableOutput("SNPStats_Table")
+          downloadButton("tab1.downloadStats","Download Content of Tables Below"),
+          #tableOutput("SNPStats_Table")
+          tags$h4("SNP Counts"),
+          DT::dataTableOutput("tab1.SNPcounts"),
+          tags$h4("Nucleotide Diversity Statistic"),
+          DT::dataTableOutput("tab1.Diversity_table")
       )
     ),
 
@@ -143,9 +149,9 @@ ui <- fluidPage(
              ),
              
              tags$br(),
-             tags$div(class="input-format",
-                uiOutput("tab3.mutation_checkbox")  
-             ),
+
+             uiOutput("tab3.mutation_checkbox"), 
+
              tags$hr(),
              tags$div(class="output-format",
              tags$h3("Accession Map"),
@@ -159,6 +165,23 @@ ui <- fluidPage(
                  downloadButton("tab3.downloadMapData","Download Content of Table Below"),
                  DT::dataTableOutput("tab3.dataTable")
              )
+    ),
+    
+    tabPanel("About",
+             ## Tab 4 ##########################################################
+             tags$br(),
+             column(6, 
+                    tags$div(class="output-format",
+                             includeHTML("Glossary.html")
+                    )
+             ),
+             column(6, 
+                    tags$div(class="output-format",
+                             includeMarkdown("Bibliography.Rmd")
+                    )                    
+             )
+             
+             
     )
     
     # tabPanel("Accessions and Mutations",
@@ -250,11 +273,14 @@ server <- function(input, output){
     return(genes)
   })
   
-  output$tab1.genes_table <- renderTable(tab1.Genes())
+  output$tab1.genes_table <- DT::renderDataTable(tab1.Genes()[, -c(5,6)], options=list(paging=FALSE, searching=FALSE))
     
   SNPStats <- reactive({polymorphTable(tab1.Genes(), strains)})
   
-  output$SNPStats_Table <- renderTable(SNPStats(), rownames=TRUE, digits=5)
+  output$SNPStats_Table <- renderTable(SNPStats())
+  
+  output$tab1.SNPcounts <- DT::renderDataTable(SNPStats()[,1:7], options=list(paging=FALSE, searching=FALSE))
+  output$tab1.Diversity_table <- DT::renderDataTable(SNPStats()[, 8:12], options=list(paging=FALSE, searching=FALSE))
   
   output$tab1.downloadStats <- downloadHandler(
     filename=function(){
@@ -275,6 +301,32 @@ server <- function(input, output){
   )
   
 
+    output$tab1.gene_table_ui <- renderUI({
+      if (input$STATS_submit==0){
+        return()
+      }
+      
+          
+      tagList(
+        tags$div(class="input-format",
+                 tags$h3("Mutation select"),
+                 tags$h5("Select the SNPs you want to see on the map by clicking the checkboxes"),
+                 tags$div(class="checkbox-format", 
+                          checkboxGroupInput("tab3.mutation_select", "select_mutations to display", choices=tab3.mutationList())
+                 ),
+                 
+                 actionButton(inputId="tab3.update_map", label = "Update Map")
+        )
+      )
+      
+      # tags$div(class="output-format",
+                # tags$h3("Selected Gene Information"),
+                # tags$h5("this table provides details on the gene(s) input above, including transcript IDs, and chromosome position information on the start and end of the transcript"),
+                # downloadButton("tab1.downloadGeneInfo","Download Content of Table Below")
+                # DT::dataTableOutput("tab1.genes_table")
+      # )
+    })
+ 
   ##                 _________
   ##                /  tab2   \
   ## ---------------           -------------------------------------
@@ -366,6 +418,7 @@ server <- function(input, output){
   output$tab3.debug <- renderPrint({
     # temporary debug output
     input$tab3.mutation_select
+    input$tab3.Submit
   })
   
   tab3.filteredByDiv <- reactive({
@@ -391,12 +444,14 @@ server <- function(input, output){
   
   output$tab3.mutation_checkbox <- renderUI({
     tagList(
-      tags$h3("Mutation select"),
-      tags$h5("Select the SNPs you want to see on the map by clicking the checkboxes"),
-      tags$div(class="checkbox-format", 
-               checkboxGroupInput("tab3.mutation_select", "select_mutations to display", choices=tab3.mutationList())
-      ),
-      actionButton(inputId="tab3.update_map", label = "Update Map")
+      tags$div(class="input-format",
+          tags$h3("Mutation select"),
+          tags$h5("Select the SNPs you want to see on the map by clicking the checkboxes"),
+          tags$div(class="checkbox-format", 
+                   checkboxGroupInput("tab3.mutation_select", "select_mutations to display", choices=tab3.mutationList())
+          ),
+          actionButton(inputId="tab3.update_map", label = "Update Map")
+      )
     )
     
   })
