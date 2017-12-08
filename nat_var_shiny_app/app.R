@@ -72,7 +72,7 @@ ui <- fluidPage(
        #uiOutput("tab1.gene_table_ui"),
       tags$hr(),
       
-        tags$div(class="output-format",
+      tags$div(class="output-format",
                tags$h3("Selected Gene Information"),
                tags$h5("this table provides details on the gene(s) input above, including transcript IDs, and chromosome position information on the start and end of the transcript"),
                downloadButton("tab1.downloadGeneInfo","Download Content of Table Below"),
@@ -102,10 +102,11 @@ ui <- fluidPage(
       tags$br(),
       tags$div(class="input-format", 
                tags$h3("Gene Select"),
-               tags$h5("Type a single gene locus in the box below"),
-               textInput(inputId = "plotGene", label =NULL,
-                         value = "AT1G80490"),
-               actionButton(inputId="tab2.Submit", label = "Submit")
+               tags$h5("Select a transcript ID in the box below"),
+               uiOutput("tab2.selectGene")
+               # textInput(inputId = "plotGene", label =NULL,
+               #           value = "AT1G80490"),
+               #actionButton(inputId="tab2.Submit", label = "Submit")
       ),
       
       tags$hr(),
@@ -138,9 +139,10 @@ ui <- fluidPage(
              tags$div(class="input-format", 
                  tags$h3("Gene Select and Filter Parameters"),
                  tags$h5("Type a single gene locus in the box below"),
-                 textInput(inputId="tab3.Gene", label=NULL,
-                           value="AT1G80490"),
-                 actionButton(inputId="tab3.Submit", label="Submit"),
+                 # textInput(inputId="tab3.Gene", label=NULL,
+                 #           value="AT1G80490"),
+                 uiOutput("tab3.selectGene"),
+                 # actionButton(inputId="tab3.Submit", label="Submit"),
                  sliderInput(inputId="tab3.filter_value", label="Log Nucleotide diversity filter limit",
                              min=-4, max=0, value=-2, step=0.05),
                  radioButtons("tab3.SNPtype", "Type of SNP to mark", 
@@ -232,7 +234,7 @@ parseInput <- function (textIn) {
 load_tab_2_Data <- function (geneInfo){
   tab2VCF <- VCFByTranscript(geneInfo[1, ], strains)
   tab2data <- tab2VCF$dat
-  tab2data <- parseEFF(tab2data, geneInfo[1, "transcript_ID"])
+  tab2data <- parseEFF(tab2data)
   tab2data <- Nucleotide_diversity(tab2data)
   
   coding_variants <- coding_Diversity_Plot(tab2data)
@@ -265,7 +267,7 @@ server <- function(input, output){
   ##             --------------------------------------------------
   ## Tab 1 stuff:
 
-  tab1.Genes <- eventReactive(input$STATS_submit,{
+  all.Genes <- eventReactive(input$STATS_submit,{
     # list of genes for tab 1, updated on pressing submit button
     names <- parseInput(input$gene_ids)
     genes <- getGeneInfo(names)
@@ -273,14 +275,23 @@ server <- function(input, output){
     return(genes)
   })
   
-  output$tab1.genes_table <- DT::renderDataTable(tab1.Genes()[, -c(5,6)], options=list(paging=FALSE, searching=FALSE))
+  output$tab1.genes_table <- DT::renderDataTable(all.Genes()[, -c(5,6)], options=list(paging=FALSE, searching=FALSE))
     
-  SNPStats <- reactive({polymorphTable(tab1.Genes(), strains)})
+  #SNPStats <- reactive({polymorphTable(tab1.Genes(), strains)})
+  
+  all.VCFList <- reactive({
+    output <- VCFList(all.Genes())
+    output <- llply(output, parseEFF)
+    output <- llply(output, Nucleotide_diversity)
+    return(output)
+  })
+  
+  SNPStats <- reactive({ ldply(all.VCFList(), polymorphRow, geneInfo=all.Genes(), .id="transcript_ID") })
   
   output$SNPStats_Table <- renderTable(SNPStats())
   
-  output$tab1.SNPcounts <- DT::renderDataTable(SNPStats()[,1:7], options=list(paging=FALSE, searching=FALSE))
-  output$tab1.Diversity_table <- DT::renderDataTable(SNPStats()[, 8:12], options=list(paging=FALSE, searching=FALSE))
+  output$tab1.SNPcounts <- DT::renderDataTable(SNPStats()[,1:8], options=list(paging=FALSE, searching=FALSE))
+  output$tab1.Diversity_table <- DT::renderDataTable(SNPStats()[, c(1,9:13)], options=list(paging=FALSE, searching=FALSE))
   
   output$tab1.downloadStats <- downloadHandler(
     filename=function(){
@@ -296,7 +307,7 @@ server <- function(input, output){
       paste("GeneInfo-", Sys.Date(), ".csv", sep="")
     }, 
     content = function(file) {
-      write.csv(tab1.Genes(), file, row.names=FALSE)
+      write.csv(all.Genes(), file, row.names=FALSE)
     }
   )
   
@@ -332,18 +343,32 @@ server <- function(input, output){
   ## ---------------           -------------------------------------
   ## Tab 2 stuff:
 
+  output$tab2.selectGene <- renderUI({
+    tagList(
+      selectInput("tab2.transcript_ID", label=NULL, choices=all.Genes()$transcript_ID),
+      actionButton(inputId="tab2.Submit", label = "Submit")
+    )
+  })
+    
   tab2.Genes <- eventReactive(input$tab2.Submit, {
       #gene Info for gene on tab 2, updates on 'submit' button press
-    names <- parseInput(input$plotGene)
-    genes <- getGeneInfo(names[1])
-    return(genes)
+    # names <- parseInput(input$plotGene)
+    # genes <- getGeneInfo(names[1])
+    # return(genes)
+    return(all.Genes()[ all.Genes()$transcript_ID == input$tab2.transcript_ID,])
   })
 
   output$tab2.GeneInfo <- renderTable(tab2.Genes())
     #rendered table of Gene info
 
-  tab2.tableData <- reactive({load_tab_2_Data(tab2.Genes())})
+  #tab2.tableData <- reactive({load_tab_2_Data(tab2.Genes())})
     #SNP reactive data
+  tab2.tableData <- eventReactive(input$tab2.Submit, {
+    tab2data <- all.VCFList()[[input$tab2.transcript_ID]]
+    coding_variants <- coding_Diversity_Plot(tab2data)
+    return(coding_variants)
+  })
+  
 
   output$Diversity_Table <- DT::renderDataTable(tab2.tableData())
     #render table of diversity data
@@ -370,26 +395,31 @@ server <- function(input, output){
   ## --------------------------           ----------------------------
   ## Tab 3 stuff:
   
-  
+  output$tab3.selectGene <- renderUI({
+    tagList(
+      selectInput("tab3.transcript_ID", label=NULL, choices=all.Genes()$transcript_ID),
+      actionButton(inputId="tab3.Submit", label = "Submit")
+    )
+  })
   
   tab3.Genes <- eventReactive(input$tab3.Submit, {
     #gene Info for gene on tab 3, updates on 'submit' button press
-    names <- parseInput(input$tab3.Gene)
-    genes <- getGeneInfo(names[1])
-    return(genes)
+    return(all.Genes()[ all.Genes()$transcript_ID == input$tab3.transcript_ID,])
   })
   
   
-  tab3.tidyData <- reactive({
+  tab3.tidyData <- eventReactive(input$tab3.Submit, {
     
     # Get the data
-    tidyVCF <- VCFByTranscript(tab3.Genes()[1, ], strains)
-    data <- tidyVCF$dat
-    # Parse the EFF field
-    data <- parseEFF(tidyVCF = data, Transcript_ID = tab3.Genes()$transcript_ID[1])
+    # tidyVCF <- VCFByTranscript(tab3.Genes()[1, ], strains)
+    # data <- tidyVCF$dat
+    # # Parse the EFF field
+    # data <- parseEFF(tidyVCF = data)
+    # 
+    # # calculate diversity
+    # data <- Nucleotide_diversity(data)
     
-    # calculate diversity
-    data <- Nucleotide_diversity(data)
+    data <- all.VCFList()[[input$tab3.transcript_ID]]
     
     # remove 0|0 genotypes
     data <- data[data$gt_GT != "0|0",]

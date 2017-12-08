@@ -115,31 +115,22 @@ downloadMerge <- function (fName, strainVect, regionStr) {
 #' @export
 #'
 #' @examples
-parseEFF <- function (tidyVCF, Transcript_ID=NULL){
+parseEFF <- function (tidyVCF){
   EFFColNames = c("Effect", "Effect_Impact", "Functional_Class", "Codon_Change",
                   "Amino_Acid_Change", "Amino_Acid_Length", "Gene_Name", "Transcript_BioType",
                   "Gene_Coding", "Transcript_ID", "Exon_Rank", "Genotype_Number")
   data <- tidyVCF
-  if (is.null(Transcript_ID)){
-    if (is.null(attr(tidyVCF, "transcript_ID"))) stop("Can not parse EFF field without transcript ID")
-    transcript_ID <- attr(tidyVCF, "transcript_ID")
-  } else {
-    transcript_ID <- Transcript_ID # note capitalization 
-  }
-  
+  # stop if there is no "transcript_ID" attribute 
+  if (is.null(attr(tidyVCF, "transcript_ID"))) stop("Can not parse EFF field without transcript ID")
+  transcript_ID <- attr(tidyVCF, "transcript_ID")
   output <- ddply(data, "POS", .fun=parseEFFKernel, transcript_ID, EFFColNames)
-  if (!is.null(attr(tidyVCF, "transcript_ID"))) {  
-    # if the input had the "transcript_ID" attribute, pass it to the output
-    attr(output, "transcript_ID") <- attr(tidyVCF, "transcript_ID")
-  }
-  
-  
+  attr(output, "transcript_ID") <- attr(tidyVCF, "transcript_ID")
   return (output)
 }
 
 parseEFFKernel <- function (data, transcript_ID, EFFColNames){
   if (length(unique(data$EFF)) > 1) {
-    print("warning multiple effects found")
+    warning("warning multiple effects found")
   }
 
   effect <- unique(data$EFF)
@@ -160,6 +151,7 @@ parseEFFKernel <- function (data, transcript_ID, EFFColNames){
     # merge the effect df with the original data df by the gt_GT field
     output <- merge(data, effect, by="gt_GT", all.x=TRUE)
   }
+  
   else{  #if there are no effects matching the transcript ID, return the data unaltered
     output <- data
   }
@@ -178,9 +170,7 @@ parseEFFKernel <- function (data, transcript_ID, EFFColNames){
 #' @export
 #'
 #' @examples
-VCFByTranscript <- function (geneInfo, strains, tidy=TRUE, dataOnly=FALSE){
-  #download a full c
-  #
+VCFByTranscript <- function (geneInfo, strains, tidy=TRUE, dataOnly=TRUE){
   transcript_ID <- as.character(geneInfo$transcript_ID)
   regionString <- as.character(geneInfo$regionString)
 
@@ -194,6 +184,8 @@ VCFByTranscript <- function (geneInfo, strains, tidy=TRUE, dataOnly=FALSE){
   if (dataOnly){
     VCF.out <- VCF.out$dat
   }
+  
+  attr(VCF.out, "transcript_ID") <- transcript_ID
 
   return (VCF.out)
 }
@@ -210,10 +202,11 @@ VCFByTranscript <- function (geneInfo, strains, tidy=TRUE, dataOnly=FALSE){
 #'
 #' @examples
 VCFList <- function (geneInfo, by="transcript", tidy=TRUE) {
-  output <- alply(geneInfo,.margins=1, .fun=VCFByTranscript, strains=strains,dataOnly=TRUE)
-  names(output) <- attr(output, "split_labels")$transcript_ID
+  output <- alply(geneInfo,.margins=1, .fun=VCFByTranscript, strains=strains)
+  #names(output) <- attr(output, "split_labels")$transcript_ID
   for (i in 1:length(output)){
-    attr(output[[i]], "transcript_ID") <- names(output)[i]
+    #attr(output[[i]], "transcript_ID") <- names(output)[i]
+    names(output)[i] <- attr(output[[i]], "transcript_ID")
   }
   return(output)
 }
@@ -284,20 +277,20 @@ diversity_calc <- function (GT_freq){
 
 #' calculates site nucleotide diversity for each site
 #'
-#' @param tidyVCF.dat the $dat field of a tidyVCF object
+#' @param tidyVCF the $dat field of a tidyVCF object
 #'
 #' @return
 #' @export
 #'
 #' @examples
-Nucleotide_diversity <- function (tidyVCF.dat){
-  data <- unique(tidyVCF.dat[, c("POS", "gt_GT", "Indiv")])
+Nucleotide_diversity <- function (tidyVCF){
+  data <- unique(tidyVCF[, c("POS", "gt_GT", "Indiv")])
   GT_Frequencies <- plyr::count(data, c("POS", "gt_GT"))
   GT_Frequencies <- group_by(GT_Frequencies, POS)
   diversityByPOS <- summarise(GT_Frequencies, Diversity = diversity_calc(freq))
   
-  output <- merge(tidyVCF.dat, diversityByPOS, by="POS")
-  if (!is.null(attr(tidyVCF.dat, "transcript_ID"))) {  
+  output <- merge(tidyVCF, diversityByPOS, by="POS")
+  if (!is.null(attr(tidyVCF, "transcript_ID"))) {  
     # if the input had the "transcript_ID" attribute, pass it to the output
     attr(output, "transcript_ID") <- attr(tidyVCF, "transcript_ID")
   }
@@ -338,7 +331,7 @@ polymorphTable <- function (geneInfo, strains) {
   #for each transcript
   for (i in 1:length(geneInfo$transcript_ID)) {
     tidyVCF <- VCFByTranscript(geneInfo[i, ], strains)
-    data <- parseEFF(tidyVCF$dat, geneInfo$transcript_ID[i])
+    data <- parseEFF(tidyVCF)
     data <- Nucleotide_diversity(data)
 
     #fill in the first part of the table
@@ -370,11 +363,57 @@ polymorphTable <- function (geneInfo, strains) {
 }
 
 
+
+
+polymorphRow <- function (data, geneInfo=NULL) {
+  effects <- c("5_prime_UTR_variant",
+               "intron_variant",
+               "3_prime_UTR_variant",
+               "synonymous_variant",
+               "missense_variant",
+               "upstream_gene_variant")
+  
+  variant_counts <- plyr::count(data, "Effect")
+  
+  tableData <- data.frame(row.names=attr(data,"transcript_ID"))
+  
+  for (effect in effects){
+    if (effect %in% variant_counts$Effect){
+      tableData[effect] <- variant_counts[variant_counts$Effect %in% effect, "freq"]
+    } else {
+      tableData[effect] <- 0
+    }
+  }
+  
+  tableData$coding_total <- tableData$missense_variant + tableData$synonymous_variant
+  
+  #nucleotide diversity sums:
+  reducedData <- unique(data[, c("POS", "Effect", "Diversity")])
+  AA_Length <- unique(data$Amino_Acid_Length)
+  AA_Length <- as.numeric(AA_Length[!is.na(AA_Length)])
+  
+  tableData$Pi_non_syn <- sum(reducedData[reducedData$Effect %in% "missense_variant", "Diversity"]) / (3*AA_Length)
+  tableData$Pi_syn <- sum(reducedData[reducedData$Effect %in% "synonymous_variant", "Diversity"]) / (3*AA_Length)
+  tableData$Pi_NS_Ratio <- tableData$Pi_non_syn / tableData$Pi_syn
+  
+  tableData$Pi_coding <- sum(unique(reducedData[reducedData$Effect %in% c("synonymous_variant","missense_variant") , c("POS", "Diversity")])$Diversity) / (3*AA_Length)
+  
+  if (!is.null(geneInfo)){
+     transcript_length <- geneInfo$transcript_length[geneInfo$transcript_ID == attr(data,"transcript_ID")]
+     tableData$Pi_transcript <- sum(unique(reducedData[, c("POS", "Diversity")])$Diversity) / transcript_length
+  }
+ 
+  return(tableData)
+  
+}
+
+
+
 coding_Diversity_Plot <- function(data) {
   #input is tidy tibble/df with EFF field parsed and diversity calculated:
   # eg.
   # myvcf <- VCFByTranscript(geneInfo[1, ], strains)
-  # mydata <- parseEFF(myvcf$dat, geneInfo$transcript_ID)
+  # mydata <- parseEFF(myvcf)
   # mydata <- Nucleotide_diversity(mydata)
   # coding_Diversity_Plot(mydata)
 
@@ -406,15 +445,15 @@ add_ecotype_details <- function(data, Ecotype_column="Indiv") {
 }
 
 
-buildGT <- function(indivData) {
-  # use with ddply, chunk by "Indiv"
-  indivGT <- unique(indivData[,c("POS", "gt_GT")])
-  Indiv <- indivData[1,"Indiv"]
-  rownames(indivGT) <- indivGT[,1]
-  indivGT <- t(indivGT[,2, drop=FALSE])
-  rownames(indivGT) <- Indiv
-  return(indivGT)
-}
+# buildGT <- function(indivData) {
+#   # use with ddply, chunk by "Indiv"
+#   indivGT <- unique(indivData[,c("POS", "gt_GT")])
+#   Indiv <- indivData[1,"Indiv"]
+#   rownames(indivGT) <- indivGT[,1]
+#   indivGT <- t(indivGT[,2, drop=FALSE])
+#   rownames(indivGT) <- Indiv
+#   return(indivGT)
+# }
 
 label_bySNPs <- function(data, collapse=TRUE) {
   # creates a df with a single row per individual, with a new column "SNPs" that

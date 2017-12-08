@@ -1,12 +1,15 @@
 ToDo
 Little fixes
-- "Diversity plot" handling for premature stops?
+- "Diversity plot" handling for premature stops (and frame shifts)?
 - update comments and documentation in code (mainly VCF_Utils.R)
-
+- Add tair symbol to tab1 tables eg. "AT1G12820(AFB3)"
+- split app into UI and Server files
 
 New Functionalities
 - hover-over/readme for each tab and table
 - about tab, with bibliography glossary...
+- ability to get all accessions with a mutation
+
 
 DONE!!!
 - All mentions of ecotype changed to accession
