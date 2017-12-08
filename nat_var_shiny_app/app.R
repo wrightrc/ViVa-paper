@@ -37,7 +37,7 @@ CSSCode <- tags$head(tags$style(
       }  
 
       h1 {
-         font-family: Cursive;
+         font-family: Helvetica;
          font-weight: 500;
          line-height: 1.1;
          color: #48ca3b;

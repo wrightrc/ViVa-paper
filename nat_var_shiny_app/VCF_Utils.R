@@ -108,22 +108,36 @@ downloadMerge <- function (fName, strainVect, regionStr) {
 #'
 #' @param tidyVCF tidyVCF$dat tibble to be parsed. should have an "EFF" field in
 #' its $dat section
-#' @param Transcript_ID Character string of the transcript ID
+#' @param Transcript_ID Character string of the transcript ID. if NULL, the
+#' function will look for it as the attribute "transcript_ID" of the dataframe
 #'
 #' @return new tidyVCF object with added columns for the parsed effect fields
 #' @export
 #'
 #' @examples
-parseEFF <- function (tidyVCF, Transcript_ID){
+parseEFF <- function (tidyVCF, Transcript_ID=NULL){
   EFFColNames = c("Effect", "Effect_Impact", "Functional_Class", "Codon_Change",
                   "Amino_Acid_Change", "Amino_Acid_Length", "Gene_Name", "Transcript_BioType",
                   "Gene_Coding", "Transcript_ID", "Exon_Rank", "Genotype_Number")
   data <- tidyVCF
-  output <- ddply(data, "POS", .fun=parseEFFKernel, Transcript_ID, EFFColNames)
+  if (is.null(Transcript_ID)){
+    if (is.null(attr(tidyVCF, "transcript_ID"))) stop("Can not parse EFF field without transcript ID")
+    transcript_ID <- attr(tidyVCF, "transcript_ID")
+  } else {
+    transcript_ID <- Transcript_ID # note capitalization 
+  }
+  
+  output <- ddply(data, "POS", .fun=parseEFFKernel, transcript_ID, EFFColNames)
+  if (!is.null(attr(tidyVCF, "transcript_ID"))) {  
+    # if the input had the "transcript_ID" attribute, pass it to the output
+    attr(output, "transcript_ID") <- attr(tidyVCF, "transcript_ID")
+  }
+  
+  
   return (output)
 }
 
-parseEFFKernel <- function (data, Transcript_ID, EFFColNames){
+parseEFFKernel <- function (data, transcript_ID, EFFColNames){
   if (length(unique(data$EFF)) > 1) {
     print("warning multiple effects found")
   }
@@ -138,7 +152,7 @@ parseEFFKernel <- function (data, Transcript_ID, EFFColNames){
   # add column names to effects
   colnames(effect) <- c(EFFColNames)
   # only keep effects that match the transcript ID
-  effect <- effect[effect$Transcript_ID == Transcript_ID, ]
+  effect <- effect[effect$Transcript_ID == transcript_ID, ]
 
   if (nrow(effect) > 0){   # if there are some effects remaining:
     #create a "gt_GT" column in the effect dataframe that matches the format of the VCF$dat
@@ -164,7 +178,7 @@ parseEFFKernel <- function (data, Transcript_ID, EFFColNames){
 #' @export
 #'
 #' @examples
-VCFByTranscript <- function (geneInfo, strains, tidy=TRUE){
+VCFByTranscript <- function (geneInfo, strains, tidy=TRUE, dataOnly=FALSE){
   #download a full c
   #
   transcript_ID <- as.character(geneInfo$transcript_ID)
@@ -176,9 +190,35 @@ VCFByTranscript <- function (geneInfo, strains, tidy=TRUE){
     VCF.out <- vcfR2tidy(VCF.out, single_frame = TRUE, info_fields = c("AC", "EFF"), format_fields = ("GT"))
     VCF.out$dat <- VCF.out$dat[!(is.na(VCF.out$dat$gt_GT)), ]
   }
+  
+  if (dataOnly){
+    VCF.out <- VCF.out$dat
+  }
 
   return (VCF.out)
 }
+
+
+
+#' download and store several VCFs in a list structure, named by their transcirpt ID
+#'
+#' @param geneInfo 
+#' @param by 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+VCFList <- function (geneInfo, by="transcript", tidy=TRUE) {
+  output <- alply(geneInfo,.margins=1, .fun=VCFByTranscript, strains=strains,dataOnly=TRUE)
+  names(output) <- attr(output, "split_labels")$transcript_ID
+  for (i in 1:length(output)){
+    attr(output[[i]], "transcript_ID") <- names(output)[i]
+  }
+  return(output)
+}
+  
+
 
 
 #' Get gene information
@@ -255,7 +295,14 @@ Nucleotide_diversity <- function (tidyVCF.dat){
   GT_Frequencies <- plyr::count(data, c("POS", "gt_GT"))
   GT_Frequencies <- group_by(GT_Frequencies, POS)
   diversityByPOS <- summarise(GT_Frequencies, Diversity = diversity_calc(freq))
-  return(merge(tidyVCF.dat, diversityByPOS, by="POS"))
+  
+  output <- merge(tidyVCF.dat, diversityByPOS, by="POS")
+  if (!is.null(attr(tidyVCF.dat, "transcript_ID"))) {  
+    # if the input had the "transcript_ID" attribute, pass it to the output
+    attr(output, "transcript_ID") <- attr(tidyVCF, "transcript_ID")
+  }
+  
+  return(output)
 }
 
 #' Add codon numbering to the nucleotide diversity kernel
@@ -331,7 +378,7 @@ coding_Diversity_Plot <- function(data) {
   # mydata <- Nucleotide_diversity(mydata)
   # coding_Diversity_Plot(mydata)
 
-  coding_variants <- data[data$Effect %in% c("missense_variant", "synonymous_variant"), ]
+  coding_variants <- data[data$Effect %in% c("missense_variant", "synonymous_variant"), ]  #"stop_gained", "frameshift_variant"
   #extract uniuqe position and effect
   unique_coding_variants <- unique(coding_variants[ , c("POS", "Effect",
                                                         "Amino_Acid_Change",
