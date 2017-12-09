@@ -9,6 +9,7 @@ library(reshape2)
 library(vcfR)
 library(dplyr)
 library(ggmap)
+library(ggthemes)
 
 
 ### UTILITY FUNCTIONS ==========================================================
@@ -409,7 +410,7 @@ polymorphRow <- function (data, geneInfo=NULL) {
 
 
 
-coding_Diversity_Plot <- function(data) {
+get_coding_diversity <- function(data){
   #input is tidy tibble/df with EFF field parsed and diversity calculated:
   # eg.
   # myvcf <- VCFByTranscript(geneInfo[1, ], strains)
@@ -425,16 +426,17 @@ coding_Diversity_Plot <- function(data) {
   #add codon number to unique_coding_variants
   unique_coding_variants <-ddply(unique_coding_variants, .fun=codonNumberKernel,
                                  .variables=c("POS", "Amino_Acid_Change"))
+  return(unique_coding_variants)
+}
 
+plot_coding_diversity <- function(unique_coding_variants){
   #plot the diversity
-  plot <- ggplot(unique_coding_variants, aes(x=Codon_Number,y=Diversity, colour=Effect)) +
-    geom_point() +
+  plot <- ggplot(unique_coding_variants, aes(x=Codon_Number,y=Diversity, colour=Effect, shape = Effect)) +
+    geom_point(size = 4) +
     scale_y_log10(breaks=c(0.0001, 0.001, 0.01, 0.1),limits=c(0.0001, 1)) +
     #scale_colour_manual(values=c(synonymous_diversity="blue", missense_diversity="red")) +
-    ylab("nucleotide diversity, log scale")
-  print(plot)
-  print(plyr::count(unique_coding_variants, "Effect"))
-  return(unique_coding_variants)
+    ylab("nucleotide diversity, log scale") + ggthemes::theme_few(base_size = 18) + scale_color_colorblind()
+  return(plot)
 }
 
 

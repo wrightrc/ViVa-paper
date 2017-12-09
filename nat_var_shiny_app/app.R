@@ -68,8 +68,10 @@ ui <- function(request){ fluidPage(
                tags$h3("Gene Selection"),
                tags$h5("Type a list of gene loci in the box below, separated by commas "),
                textAreaInput(inputId = "gene_ids", label = NULL,
-                             width = 600, height = 75, value = "AT3G62980, AT4G03190, AT3G26810, AT1G12820, AT4G24390, AT5G49980, AT2G39940" ),
-               actionButton(inputId="STATS_submit", label = "Submit"),
+                             width = 600, height = 75, value = "AT3G62980, AT3G26810"),
+               actionButton(inputId="STATS_submit", label = "Submit"), 
+               #actionButton(inputId = "STATS_quick_demo", label = "Quick Demo"), 
+               checkboxInput("STATS_quick_demo", label="Quick Demo"),
                tags$br()
       ),
        #tags$hr(),
@@ -251,14 +253,17 @@ parseInput <- function (textIn) {
 # }
 
 
-plotPi <- function(unique_coding_variants) {
-  plot <- ggplot(unique_coding_variants, aes(x=Codon_Number,y=Diversity, colour=Effect)) +
-    geom_point() +
-    scale_y_log10(breaks=c(0.0001, 0.001, 0.01, 0.1),limits=c(0.0001, 1)) +
-    #scale_colour_manual(values=c(synonymous_diversity="blue", missense_diversity="red")) +
-    ylab("nucleotide diversity, log scale")
-  return(plot)
-}
+
+# plotPi <- function(unique_coding_variants) {
+#   plot <- ggplot(unique_coding_variants, aes(x=Codon_Number,y=Diversity, colour=Effect)) +
+#     geom_point() +
+#     scale_y_log10(breaks=c(0.0001, 0.001, 0.01, 0.1),limits=c(0.0001, 1)) +
+#     #scale_colour_manual(values=c(synonymous_diversity="blue", missense_diversity="red")) +
+#     ylab("nucleotide diversity, log scale")
+#   return(plot)
+# 
+# }
+
 
 
 
@@ -275,6 +280,13 @@ server <- function(input, output){
   ## Tab 1 stuff:
 
   all.Genes <- eventReactive(input$STATS_submit,{
+    if (input$STATS_quick_demo){
+      names <- c("AT3G62980", "AT3G26810")
+      genes <- getGeneInfo(names)
+      req(genes != FALSE)
+      return(genes) 
+    }
+
     # list of genes for tab 1, updated on pressing submit button
     names <- parseInput(input$gene_ids)
     genes <- getGeneInfo(names)
@@ -282,24 +294,33 @@ server <- function(input, output){
     return(genes)
   })
   
+
+  
   output$tab1.genes_table <- DT::renderDataTable(all.Genes()[, -c(5,6)], options=list(paging=FALSE, searching=FALSE))
   output$tab1.genes_tableB <- renderTable(all.Genes()[, -c(5,6)])
     
   #SNPStats <- reactive({polymorphTable(tab1.Genes(), strains)})
   
-  all.VCFList <- reactive({
-    withProgress(message="downloading data from 1001genomes.org", 
-                 detail="this will take a while, progress bar will not move", 
-                 value=0.3, {
-      output <- VCFList(all.Genes())
-      setProgress(value=0.7, message="downloading complete, processing data...",
-                  detail="Parsing EFF field")
-      output <- llply(output, parseEFF)
-      setProgress(value=0.9, message=NULL,
-                  detail="Calculating nucleotide diversity")
-      output <- llply(output, Nucleotide_diversity)
-      setProgress(value=1)
-    })
+  all.VCFList <- eventReactive( input$STATS_submit, {
+    
+    if(input$STATS_quick_demo) { return(readRDS("Data/demo_VCFs.rds")) }
+
+      
+      withProgress(message="downloading data from 1001genomes.org", 
+                   detail="this will take a while, progress bar will not move", 
+                   value=0.3, {
+                     output <- VCFList(all.Genes())
+                     setProgress(value=0.7, message="downloading complete, processing data...",
+                                 detail="Parsing EFF field")
+                     output <- llply(output, parseEFF)
+                     setProgress(value=0.9, message=NULL,
+                                 detail="Calculating nucleotide diversity")
+                     output <- llply(output, Nucleotide_diversity)
+                     setProgress(value=1)
+      })
+      
+    
+    
     return(output)
   })
   
@@ -382,7 +403,7 @@ server <- function(input, output){
     #SNP reactive data
   tab2.tableData <- eventReactive(input$tab2.Submit, {
     tab2data <- all.VCFList()[[input$tab2.transcript_ID]]
-    coding_variants <- coding_Diversity_Plot(tab2data)
+    coding_variants <- get_coding_diversity(tab2data)
     return(coding_variants)
   })
   
@@ -399,11 +420,11 @@ server <- function(input, output){
     }
   )
   
-  output$diversityPlot <- renderPlot(plotPi(tab2.tableData()))
+  output$diversityPlot <- renderPlot(plot_coding_diversity(tab2.tableData()))
     #plot output
 
   output$info <- renderPrint({
-    brushedPoints(tab2.tableData(), input$plot_brush)
+    brushedPoints(tab2.tableData(), input$plot_brush, "Codon_Number", "Diversity")
   })
 
   
