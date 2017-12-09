@@ -2,6 +2,8 @@ library(shiny)
 library(biomaRt)
 library(leaflet)
 library(RColorBrewer)
+library(shinythemes)
+library(shinycssloaders)
 
 CSSCode <- tags$head(tags$style(
    HTML("
@@ -51,11 +53,13 @@ CSSCode <- tags$head(tags$style(
 ))
 
 
-ui <- fluidPage(
-  CSSCode,
+ui <- function(request){ fluidPage(
+
+  #CSSCode,
   headerPanel("Arabidopsis Natural Variation Webtool"),
   "This app will provide an interface to examine the natural variation of specified genes of interest in the 1001 Genomes project dataset",
   tags$h5('style'="color:red", "this app is a work in progress"),
+  themeSelector(),
   tabsetPanel(
     tabPanel("SNP Stats",
         ## Tab 1 ###############################################################
@@ -77,6 +81,7 @@ ui <- fluidPage(
                tags$h5("this table provides details on the gene(s) input above, including transcript IDs, and chromosome position information on the start and end of the transcript"),
                downloadButton("tab1.downloadGeneInfo","Download Content of Table Below"),
                DT::dataTableOutput("tab1.genes_table")
+
         
       ),
       tags$br(),
@@ -119,7 +124,7 @@ ui <- fluidPage(
       tags$div(class="output-format", 
           tags$h3("Plot of Nucleotide Diversity Statistic by Codon"),
           tags$h5("click and drag a box accross the plot below to see details on specific points"),
-          plotOutput("diversityPlot", brush="plot_brush", click="plot_click", height = 400),
+          withSpinner(plotOutput("diversityPlot", brush="plot_brush", click="plot_click", height = 400)),
           verbatimTextOutput("info")
       ),
       tags$br(),    
@@ -217,10 +222,13 @@ ui <- fluidPage(
     #)
     
     
-  )
+  ),
 
   # "THIS IS THE FOOTER"
-)
+  bookmarkButton()
+)}
+  
+
 #=================================================================
 
 source("VCF_Utils.R")
@@ -231,16 +239,16 @@ parseInput <- function (textIn) {
   return (names[[1]])
 }
 
-load_tab_2_Data <- function (geneInfo){
-  tab2VCF <- VCFByTranscript(geneInfo[1, ], strains)
-  tab2data <- tab2VCF$dat
-  tab2data <- parseEFF(tab2data)
-  tab2data <- Nucleotide_diversity(tab2data)
-  
-  coding_variants <- coding_Diversity_Plot(tab2data)
-  
-  return(coding_variants)
-}
+# load_tab_2_Data <- function (geneInfo){
+#   tab2VCF <- VCFByTranscript(geneInfo[1, ], strains)
+#   tab2data <- tab2VCF$dat
+#   tab2data <- parseEFF(tab2data)
+#   tab2data <- Nucleotide_diversity(tab2data)
+#   
+#   coding_variants <- coding_Diversity_Plot(tab2data)
+#   
+#   return(coding_variants)
+# }
 
 
 plotPi <- function(unique_coding_variants) {
@@ -250,7 +258,6 @@ plotPi <- function(unique_coding_variants) {
     #scale_colour_manual(values=c(synonymous_diversity="blue", missense_diversity="red")) +
     ylab("nucleotide diversity, log scale")
   return(plot)
-
 }
 
 
@@ -276,19 +283,29 @@ server <- function(input, output){
   })
   
   output$tab1.genes_table <- DT::renderDataTable(all.Genes()[, -c(5,6)], options=list(paging=FALSE, searching=FALSE))
+  output$tab1.genes_tableB <- renderTable(all.Genes()[, -c(5,6)])
     
   #SNPStats <- reactive({polymorphTable(tab1.Genes(), strains)})
   
   all.VCFList <- reactive({
-    output <- VCFList(all.Genes())
-    output <- llply(output, parseEFF)
-    output <- llply(output, Nucleotide_diversity)
+    withProgress(message="downloading data from 1001genomes.org", 
+                 detail="this will take a while, progress bar will not move", 
+                 value=0.3, {
+      output <- VCFList(all.Genes())
+      setProgress(value=0.7, message="downloading complete, processing data...",
+                  detail="Parsing EFF field")
+      output <- llply(output, parseEFF)
+      setProgress(value=0.9, message=NULL,
+                  detail="Calculating nucleotide diversity")
+      output <- llply(output, Nucleotide_diversity)
+      setProgress(value=1)
+    })
     return(output)
   })
   
   SNPStats <- reactive({ ldply(all.VCFList(), polymorphRow, geneInfo=all.Genes(), .id="transcript_ID") })
   
-  output$SNPStats_Table <- renderTable(SNPStats())
+  #output$SNPStats_Table <- renderTable(SNPStats())
   
   output$tab1.SNPcounts <- DT::renderDataTable(SNPStats()[,1:8], options=list(paging=FALSE, searching=FALSE))
   output$tab1.Diversity_table <- DT::renderDataTable(SNPStats()[, c(1,9:13)], options=list(paging=FALSE, searching=FALSE))
@@ -614,6 +631,6 @@ server <- function(input, output){
   
 }
 
-
+enableBookmarking(store = "url")
 shinyApp(ui = ui, server = server)
 
