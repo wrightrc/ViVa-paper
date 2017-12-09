@@ -386,7 +386,7 @@ server <- function(input, output){
     #plot output
 
   output$info <- renderPrint({
-    brushedPoints(tab2.tableData(), input$plot_brush)
+    brushedPoints(tab2.tableData(), input$plot_brush, "Codon_Number", "Diversity")
   })
 
   
