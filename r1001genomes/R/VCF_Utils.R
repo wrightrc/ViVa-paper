@@ -21,7 +21,7 @@ library(ggthemes)
 #'
 #' @examples
 run1001genomes <- function() {
-  appDir <- system.file("shiny-examples", "app", package = "r1001genomes")
+  appDir <- system.file("shiny-app", package = "r1001genomes")
   if (appDir == "") {
     stop("Could not find example directory. Try re-installing `mypackage`.", call. = FALSE)
   }
