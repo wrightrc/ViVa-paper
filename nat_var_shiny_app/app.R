@@ -231,27 +231,27 @@ parseInput <- function (textIn) {
   return (names[[1]])
 }
 
-load_tab_2_Data <- function (geneInfo){
-  tab2VCF <- VCFByTranscript(geneInfo[1, ], strains)
-  tab2data <- tab2VCF$dat
-  tab2data <- parseEFF(tab2data)
-  tab2data <- Nucleotide_diversity(tab2data)
-  
-  coding_variants <- coding_Diversity_Plot(tab2data)
-  
-  return(coding_variants)
-}
+# load_tab_2_Data <- function (geneInfo){
+#   tab2VCF <- VCFByTranscript(geneInfo[1, ], strains)
+#   tab2data <- tab2VCF$dat
+#   tab2data <- parseEFF(tab2data)
+#   tab2data <- Nucleotide_diversity(tab2data)
+#   
+#   coding_variants <- coding_Diversity_Plot(tab2data)
+#   
+#   return(coding_variants)
+# }
 
 
-plotPi <- function(unique_coding_variants) {
-  plot <- ggplot(unique_coding_variants, aes(x=Codon_Number,y=Diversity, colour=Effect)) +
-    geom_point() +
-    scale_y_log10(breaks=c(0.0001, 0.001, 0.01, 0.1),limits=c(0.0001, 1)) +
-    #scale_colour_manual(values=c(synonymous_diversity="blue", missense_diversity="red")) +
-    ylab("nucleotide diversity, log scale")
-  return(plot)
-
-}
+# plotPi <- function(unique_coding_variants) {
+#   plot <- ggplot(unique_coding_variants, aes(x=Codon_Number,y=Diversity, colour=Effect)) +
+#     geom_point() +
+#     scale_y_log10(breaks=c(0.0001, 0.001, 0.01, 0.1),limits=c(0.0001, 1)) +
+#     #scale_colour_manual(values=c(synonymous_diversity="blue", missense_diversity="red")) +
+#     ylab("nucleotide diversity, log scale")
+#   return(plot)
+# 
+# }
 
 
 
@@ -365,7 +365,7 @@ server <- function(input, output){
     #SNP reactive data
   tab2.tableData <- eventReactive(input$tab2.Submit, {
     tab2data <- all.VCFList()[[input$tab2.transcript_ID]]
-    coding_variants <- coding_Diversity_Plot(tab2data)
+    coding_variants <- get_coding_diversity(tab2data)
     return(coding_variants)
   })
   
@@ -382,11 +382,11 @@ server <- function(input, output){
     }
   )
   
-  output$diversityPlot <- renderPlot(plotPi(tab2.tableData()))
+  output$diversityPlot <- renderPlot(plot_coding_diversity(tab2.tableData()))
     #plot output
 
   output$info <- renderPrint({
-    brushedPoints(tab2.tableData(), input$plot_brush)
+    brushedPoints(tab2.tableData(), input$plot_brush, "Codon_Number", "Diversity")
   })
 
   
