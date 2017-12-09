@@ -64,8 +64,9 @@ ui <- fluidPage(
                tags$h3("Gene Selection"),
                tags$h5("Type a list of gene loci in the box below, separated by commas "),
                textAreaInput(inputId = "gene_ids", label = NULL,
-                             width = 600, height = 75, value = "AT3G62980, AT4G03190, AT3G26810, AT1G12820, AT4G24390, AT5G49980, AT2G39940" ),
-               actionButton(inputId="STATS_submit", label = "Submit"),
+                             width = 600, height = 75, value = "AT3G62980, AT3G26810"),
+               actionButton(inputId="STATS_submit", label = "Submit"), 
+               actionButton(inputId = "STATS_quick_demo", label = "Quick Demo"), 
                tags$br()
       ),
        #tags$hr(),
@@ -275,14 +276,23 @@ server <- function(input, output){
     return(genes)
   })
   
+  all.Genes <- eventReactive(input$STATS_quick_demo, {
+    names <- c("AT3G62980", "AT3G26810")
+    genes <- getGeneInfo(names)
+    req(genes != FALSE)
+    return(genes)
+  })
+  
   output$tab1.genes_table <- DT::renderDataTable(all.Genes()[, -c(5,6)], options=list(paging=FALSE, searching=FALSE))
     
   #SNPStats <- reactive({polymorphTable(tab1.Genes(), strains)})
   
   all.VCFList <- reactive({
-    output <- VCFList(all.Genes())
-    output <- llply(output, parseEFF)
-    output <- llply(output, Nucleotide_diversity)
+    if(input$STATS_quick_demo) output <- readRDS("Data/demo_VCFs.rds") else {
+      output <- VCFList(all.Genes())
+      output <- llply(output, parseEFF)
+      output <- llply(output, Nucleotide_diversity)
+    }
     return(output)
   })
   
