@@ -8,8 +8,7 @@ of the format "chrom:start-stop"}
 makeRegionString(data)
 }
 \arguments{
-\item{data}{a data.frame with columns `chromosome_name`,
-`transcript_start`, and `transcript_end`}
+\item{data}{a data.frame with columns `chromosome_name`, `transcript_start`, and `transcript_end`}
 }
 \value{
 a vector of strings with the format "chrom:start-stop"

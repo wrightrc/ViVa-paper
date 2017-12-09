@@ -2,16 +2,13 @@
 % Please edit documentation in R/VCF_Utils.R
 \name{parseEFFKernel}
 \alias{parseEFFKernel}
-\title{Kernel funtion for EFF field parsing. For internal use.}
+\title{Title}
 \usage{
-parseEFFKernel(data, Transcript_ID, EFFColNames)
+parseEFFKernel(data, transcript_ID, EFFColNames)
 }
 \arguments{
 \item{EFFColNames}{}
 }
-\value{
-
-}
 \description{
-Kernel funtion for EFF field parsing. For internal use.
+Title
 }

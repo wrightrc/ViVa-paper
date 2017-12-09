@@ -1,11 +1,40 @@
-### UTILITY FUNCTIONS ==========================================================
+### LIBRARIES ==================================================================
+
+library(VariantAnnotation)
+library(plyr)
+library(stringr)
+library(biomaRt)
+library(ggplot2)
+library(reshape2)
+library(vcfR)
+library(dplyr)
+library(ggmap)
+library(ggthemes)
+
+### APP FUNCTIONS =============================================================
 
 
-# makeRegionString
+#' Run 1001 genomes browser shiny app
+#'
+#' @return Runs the app
+#' @export
+#'
+#' @examples
+run1001genomes <- function() {
+  appDir <- system.file("shiny-examples", "app", package = "r1001genomes")
+  if (appDir == "") {
+    stop("Could not find example directory. Try re-installing `mypackage`.", call. = FALSE)
+  }
+
+  shiny::runApp(appDir, display.mode = "normal")
+}
+
+### UTILITY FUNCTIONS =========================================================
+
+
 #' Make a string containing the desired genomic ranges
 #' of the format "chrom:start-stop"
-#' @param data a data.frame with columns `chromosome_name`,
-#' `transcript_start`, and `transcript_end`
+#' @param data a data.frame with columns `chromosome_name`, `transcript_start`, and `transcript_end`
 #'
 #' @return a vector of strings with the format "chrom:start-stop"
 #' @export
@@ -21,9 +50,6 @@ makeRegionString <- function (data) {
                  as.character(data$transcript_end)), collapse=""))
 }
 
-
-# downloadData
-#'
 #' Download and save a .VCF file from 1001genomes.org.
 #'
 #' @param fName the file name the downloaded vcf will be saved as eg.
@@ -52,7 +78,7 @@ downloadData <- function (fName, strainStr, regionStr,
 }
 
 
-# downloadMerge
+
 #' Download two vcf files from 1001genomes.org and merge their contents
 #'
 #' @param fName a character string of the file name to save the final .vcf file to
@@ -95,40 +121,44 @@ downloadMerge <- function (fName, strainVect, regionStr) {
 }
 
 
-# parseEFF
+
 #' Parse the EFF field of the VCF files from 1001genomes.org
 #'
 #' @param tidyVCF tidyVCF$dat tibble to be parsed. should have an "EFF" field in
 #' its $dat section
-#' @param Transcript_ID Character string of the transcript ID
+#' @param Transcript_ID Character string of the transcript ID. if NULL, the
+#' function will look for it as the attribute "transcript_ID" of the dataframe
 #'
 #' @return new tidyVCF object with added columns for the parsed effect fields
 #' @export
 #'
 #' @examples
-parseEFF <- function (tidyVCF, Transcript_ID){
+parseEFF <- function (tidyVCF){
   EFFColNames = c("Effect", "Effect_Impact", "Functional_Class", "Codon_Change",
                   "Amino_Acid_Change", "Amino_Acid_Length", "Gene_Name", "Transcript_BioType",
                   "Gene_Coding", "Transcript_ID", "Exon_Rank", "Genotype_Number")
   data <- tidyVCF
-  output <- ddply(data, "POS", .fun=parseEFFKernel, Transcript_ID, EFFColNames)
+  # stop if there is no "transcript_ID" attribute
+  if (is.null(attr(tidyVCF, "transcript_ID"))) stop("Can not parse EFF field without transcript ID")
+  transcript_ID <- attr(tidyVCF, "transcript_ID")
+  output <- ddply(data, "POS", .fun=parseEFFKernel, transcript_ID, EFFColNames)
+  attr(output, "transcript_ID") <- attr(tidyVCF, "transcript_ID")
   return (output)
 }
 
-# parseEFFKernel
-#' Kernel funtion for EFF field parsing. For internal use.
+#' Title
 #'
 #' @param data
-#' @param Transcript_ID
+#' @param transcript_ID
 #' @param EFFColNames
 #'
 #' @return
-#'
+#' @export
 #'
 #' @examples
-parseEFFKernel <- function (data, Transcript_ID, EFFColNames){
+parseEFFKernel <- function (data, transcript_ID, EFFColNames){
   if (length(unique(data$EFF)) > 1) {
-    print("warning multiple effects found")
+    warning("warning multiple effects found")
   }
 
   effect <- unique(data$EFF)
@@ -141,7 +171,7 @@ parseEFFKernel <- function (data, Transcript_ID, EFFColNames){
   # add column names to effects
   colnames(effect) <- c(EFFColNames)
   # only keep effects that match the transcript ID
-  effect <- effect[effect$Transcript_ID == Transcript_ID, ]
+  effect <- effect[effect$Transcript_ID == transcript_ID, ]
 
   if (nrow(effect) > 0){   # if there are some effects remaining:
     #create a "gt_GT" column in the effect dataframe that matches the format of the VCF$dat
@@ -149,6 +179,7 @@ parseEFFKernel <- function (data, Transcript_ID, EFFColNames){
     # merge the effect df with the original data df by the gt_GT field
     output <- merge(data, effect, by="gt_GT", all.x=TRUE)
   }
+
   else{  #if there are no effects matching the transcript ID, return the data unaltered
     output <- data
   }
@@ -156,7 +187,6 @@ parseEFFKernel <- function (data, Transcript_ID, EFFColNames){
   return(output)
 }
 
-# VCFByTranscript
 #' download VCF, optionally in tidyVCF format
 #'
 #' @param geneInfo single row of geneInfo dataframe
@@ -164,11 +194,11 @@ parseEFFKernel <- function (data, Transcript_ID, EFFColNames){
 #' @param tidy logical, if true VCF will be provided in tidyVCF format, see
 #' vcfR documentation
 #'
-#' @return a long format tibble of the VCF data
+#' @return
 #' @export
 #'
 #' @examples
-VCFByTranscript <- function (geneInfo, strains, tidy=TRUE){
+VCFByTranscript <- function (geneInfo, strains, tidy=TRUE, dataOnly=TRUE){
   transcript_ID <- as.character(geneInfo$transcript_ID)
   regionString <- as.character(geneInfo$regionString)
 
@@ -179,32 +209,64 @@ VCFByTranscript <- function (geneInfo, strains, tidy=TRUE){
     VCF.out$dat <- VCF.out$dat[!(is.na(VCF.out$dat$gt_GT)), ]
   }
 
+  if (dataOnly){
+    VCF.out <- VCF.out$dat
+  }
+
+  attr(VCF.out, "transcript_ID") <- transcript_ID
+
   return (VCF.out)
 }
 
 
-# getGeneInfo
-#' Get gene information table
+
+#' download and store several VCFs in a list structure, named by their transcirpt ID
+#'
+#' @param geneInfo
+#' @param by
+#'
+#' @return
+#' @export
+#'
+#' @examples
+VCFList <- function (geneInfo, by="transcript", tidy=TRUE) {
+  output <- alply(geneInfo,.margins=1, .fun=VCFByTranscript, strains=strains)
+  #names(output) <- attr(output, "split_labels")$transcript_ID
+  for (i in 1:length(output)){
+    #attr(output[[i]], "transcript_ID") <- names(output)[i]
+    names(output)[i] <- attr(output[[i]], "transcript_ID")
+  }
+  return(output)
+}
+
+
+
+
+#' Get gene information
 #'
 #' @description Get the start and end position of each transcript of a set of
 #'  genes using `bioMart` package to query the TAIR10 database via plants.ensembl.org
 #'
-#' @param genes Character vector of a single attribute type for the desired genes. Defualt is TAIR locus ID.
-#' @param firstOnly Boolean, return only the first transcript?
-#' @param inputType String, what attribute is contained in the "genes" argument. Defaults to "tair_locus".
-#' @param useCache Boolean, first search the cache file to see if you have downloaded this data before.
+#' @param genes
+#' @param firstOnly
+#' @param inputType
+#' @param useCache
 #'
-#' @return A table containing "transcript_ID" and "regionString" columns required for other fuctions in this code
+#' @return
 #' @export
 #'
 #' @examples
 getGeneInfo <- function (genes, firstOnly=TRUE, inputType="tair_locus", useCache=TRUE) {
+  # input "genes" should be a character vector of tair IDs
   # use bioMart to find the start and end position and transcript IDs for a given set of genes
+  # outputs a table containing "transcript_ID" and "regionString" columns required for other fuctions in this code
 
   retrievedInfo <- NULL
   genes2 <- genes
   if (useCache == TRUE){
-    geneInfoCache <- read.table(system.file("extdata", "geneInfoCache.txt", package = "r1001genomes"),
+    geneInfoCache <- read.table(file=system.file("shiny-app",
+                                                 "geneInfoCache.txt",
+                                                 package = "r1001genomes"),
                                 header=TRUE, stringsAsFactors=FALSE)
     retrievedInfo <- geneInfoCache[geneInfoCache$tair_locus %in% genes, ]
     genes2 <- genes[!(genes %in% geneInfoCache$tair_locus)] #remove genes present in the cache from genes list
@@ -240,11 +302,11 @@ getGeneInfo <- function (genes, firstOnly=TRUE, inputType="tair_locus", useCache
   return (output)
 }
 
-#' Calculate nucleotide diversity
+#' Title
 #'
-#' @param GT_freq the vector of genotype frequencies at a specific site
+#' @param GT_freq
 #'
-#' @return the nucleotide diversity at that site
+#' @return
 #' @export
 #'
 #' @examples
@@ -252,25 +314,30 @@ diversity_calc <- function (GT_freq){
   result <- (sum(GT_freq)**2 - sum(GT_freq**2))/(sum(GT_freq)**2)
 }
 
-# Nucleotide_diversity
-#' Calculate nucleotide diversity for each site in a tidyVCF
+#' calculates site nucleotide diversity for each site
 #'
-#' @param tidyVCF.dat The $dat field of a tidyVCF object
+#' @param tidyVCF the $dat field of a tidyVCF object
 #'
-#' @return The tidyVCF.dat object with an additional column containing the Nucleotide diversity.
+#' @return
 #' @export
 #'
 #' @examples
-Nucleotide_diversity <- function (tidyVCF.dat){
-  data <- unique(tidyVCF.dat[, c("POS", "gt_GT", "Indiv")])
+Nucleotide_diversity <- function (tidyVCF){
+  data <- unique(tidyVCF[, c("POS", "gt_GT", "Indiv")])
   GT_Frequencies <- plyr::count(data, c("POS", "gt_GT"))
   GT_Frequencies <- group_by(GT_Frequencies, POS)
   diversityByPOS <- summarise(GT_Frequencies, Diversity = diversity_calc(freq))
-  return(merge(tidyVCF.dat, diversityByPOS, by="POS"))
+
+  output <- merge(tidyVCF, diversityByPOS, by="POS")
+  if (!is.null(attr(tidyVCF, "transcript_ID"))) {
+    # if the input had the "transcript_ID" attribute, pass it to the output
+    attr(output, "transcript_ID") <- attr(tidyVCF, "transcript_ID")
+  }
+
+  return(output)
 }
 
-# codonNumberKernel
-#' Add the codon number to a dataframe containing an "Amino_Acid_Change" column
+#' Add codon numbering to the nucleotide diversity kernel
 #'
 #' @param SNPData
 #'
@@ -279,6 +346,7 @@ Nucleotide_diversity <- function (tidyVCF.dat){
 #'
 #' @examples
 codonNumberKernel <- function (SNPData) {
+  # add the codon number to a dataframe containing a "Amino_Acid_Change"
   # use with ddply()
   changeStr <- SNPData$Amino_Acid_Change[grepl( "p.", SNPData$Amino_Acid_Change)][1]
   codonNumber <- str_extract_all(str_extract_all(changeStr, "p.[A-z]{3}[0-9]*")[[1]], "[0-9]+")[[1]]
@@ -287,10 +355,9 @@ codonNumberKernel <- function (SNPData) {
   return (cbind(SNPData, "Codon_Number"=codonNumber))
 }
 
-# polymorphTable
-#' Create a table summarising the polymorphisms within a set of genes
+#' Title
 #'
-#' @param geneInfo a table of gene structure info as created by `getGeneInfo`
+#' @param geneInfo
 #' @param strains
 #'
 #' @return
@@ -312,7 +379,7 @@ polymorphTable <- function (geneInfo, strains) {
   #for each transcript
   for (i in 1:length(geneInfo$transcript_ID)) {
     tidyVCF <- VCFByTranscript(geneInfo[i, ], strains)
-    data <- parseEFF(tidyVCF$dat, geneInfo$transcript_ID[i])
+    data <- parseEFF(tidyVCF)
     data <- Nucleotide_diversity(data)
 
     #fill in the first part of the table
@@ -344,21 +411,78 @@ polymorphTable <- function (geneInfo, strains) {
 }
 
 
-# coding_Diversity_Plot
+
+
 #' Title
 #'
-#' @param data tidy tibble/df with EFF field parsed and diversity calculated,
-#' e.g.
-#' \code{myvcf <- VCFByTranscript(geneInfo[1, ], strains)
-#'  mydata <- parseEFF(myvcf$dat, geneInfo$transcript_ID)
-#'  mydata <- Nucleotide_diversity(mydata)}
+#' @param data
+#' @param geneInfo
 #'
 #' @return
 #' @export
 #'
 #' @examples
-coding_Diversity_Plot <- function(data) {
-  coding_variants <- data[data$Effect %in% c("missense_variant", "synonymous_variant"), ]
+polymorphRow <- function (data, geneInfo=NULL) {
+  effects <- c("5_prime_UTR_variant",
+               "intron_variant",
+               "3_prime_UTR_variant",
+               "synonymous_variant",
+               "missense_variant",
+               "upstream_gene_variant")
+
+  variant_counts <- plyr::count(data, "Effect")
+
+  tableData <- data.frame(row.names=attr(data,"transcript_ID"))
+
+  for (effect in effects){
+    if (effect %in% variant_counts$Effect){
+      tableData[effect] <- variant_counts[variant_counts$Effect %in% effect, "freq"]
+    } else {
+      tableData[effect] <- 0
+    }
+  }
+
+  tableData$coding_total <- tableData$missense_variant + tableData$synonymous_variant
+
+  #nucleotide diversity sums:
+  reducedData <- unique(data[, c("POS", "Effect", "Diversity")])
+  AA_Length <- unique(data$Amino_Acid_Length)
+  AA_Length <- as.numeric(AA_Length[!is.na(AA_Length)])
+
+  tableData$Pi_non_syn <- sum(reducedData[reducedData$Effect %in% "missense_variant", "Diversity"]) / (3*AA_Length)
+  tableData$Pi_syn <- sum(reducedData[reducedData$Effect %in% "synonymous_variant", "Diversity"]) / (3*AA_Length)
+  tableData$Pi_NS_Ratio <- tableData$Pi_non_syn / tableData$Pi_syn
+
+  tableData$Pi_coding <- sum(unique(reducedData[reducedData$Effect %in% c("synonymous_variant","missense_variant") , c("POS", "Diversity")])$Diversity) / (3*AA_Length)
+
+  if (!is.null(geneInfo)){
+     transcript_length <- geneInfo$transcript_length[geneInfo$transcript_ID == attr(data,"transcript_ID")]
+     tableData$Pi_transcript <- sum(unique(reducedData[, c("POS", "Diversity")])$Diversity) / transcript_length
+  }
+
+  return(tableData)
+
+}
+
+
+
+#' Title
+#'
+#' @param data
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_coding_diversity <- function(data){
+  #input is tidy tibble/df with EFF field parsed and diversity calculated:
+  # eg.
+  # myvcf <- VCFByTranscript(geneInfo[1, ], strains)
+  # mydata <- parseEFF(myvcf)
+  # mydata <- Nucleotide_diversity(mydata)
+  # coding_Diversity_Plot(mydata)
+
+  coding_variants <- data[data$Effect %in% c("missense_variant", "synonymous_variant"), ]   #"stop_gained", "frameshift_variant"
   #extract uniuqe position and effect
   unique_coding_variants <- unique(coding_variants[ , c("POS", "Effect",
                                                         "Amino_Acid_Change",
@@ -366,53 +490,53 @@ coding_Diversity_Plot <- function(data) {
   #add codon number to unique_coding_variants
   unique_coding_variants <-ddply(unique_coding_variants, .fun=codonNumberKernel,
                                  .variables=c("POS", "Amino_Acid_Change"))
-
-  #plot the diversity
-  plot <- ggplot(unique_coding_variants, aes(x=Codon_Number,y=Diversity, colour=Effect)) +
-    geom_point() +
-    scale_y_log10(breaks=c(0.0001, 0.001, 0.01, 0.1),limits=c(0.0001, 1)) +
-    #scale_colour_manual(values=c(synonymous_diversity="blue", missense_diversity="red")) +
-    ylab("nucleotide diversity, log scale")
-  print(plot)
-  print(plyr::count(unique_coding_variants, "Effect"))
   return(unique_coding_variants)
 }
 
-
-#' Add accession metadata to a dataset containing an ecotype id
-#'
-#' @param data a data.frame or tibble with with a column containing ecotype ID's from the
-#' 1001 genomes collection
-#' @param Ecotype_column \code{"string"} the column name containing the ecotype ID values
-#'
-#' @return the original data with accession metadata merged appropriately
-#' @export
-#'
-#' @examples
-add_ecotype_details <- function(data, Ecotype_column="Indiv") {
-  # add ecotype details (location, collector, sequencer) to any df containing an "Indiv" column
-  ecoIDs <- read.csv("data/1135_accessions.csv", stringsAsFactors=FALSE)
-  return(merge(data, ecoIDs, by.x=Ecotype_column, by.y="Ecotype.ID", all.y=TRUE))
-}
-
-
 #' Title
 #'
-#' @param indivData
+#' @param unique_coding_variants
 #'
 #' @return
 #' @export
 #'
 #' @examples
-buildGT <- function(indivData) {
-  # use with ddply, chunk by "Indiv"
-  indivGT <- unique(indivData[,c("POS", "gt_GT")])
-  Indiv <- indivData[1,"Indiv"]
-  rownames(indivGT) <- indivGT[,1]
-  indivGT <- t(indivGT[,2, drop=FALSE])
-  rownames(indivGT) <- Indiv
-  return(indivGT)
+plot_coding_diversity <- function(unique_coding_variants){
+  #plot the diversity
+  plot <- ggplot(unique_coding_variants, aes(x=Codon_Number,y=Diversity, colour=Effect, shape = Effect)) +
+    geom_point(size = 4) +
+    scale_y_log10(breaks=c(0.0001, 0.001, 0.01, 0.1),limits=c(0.0001, 1)) +
+    #scale_colour_manual(values=c(synonymous_diversity="blue", missense_diversity="red")) +
+    ylab("nucleotide diversity, log scale") + ggthemes::theme_few(base_size = 18) + scale_color_colorblind()
+  return(plot)
 }
+
+
+#' Title
+#'
+#' @param data
+#' @param Ecotype_column
+#'
+#' @return
+#' @export
+#'
+#' @examples
+add_ecotype_details <- function(data, Ecotype_column="Indiv") {
+  # add ecotype details (location, collector, sequencer) to any df containing an "Indiv" column
+  ecoIDs <- r1001genomes::accessions
+  return(merge(data, ecoIDs, by.x=Ecotype_column, by.y="Ecotype.ID", all.y=TRUE))
+}
+
+
+# buildGT <- function(indivData) {
+#   # use with ddply, chunk by "Indiv"
+#   indivGT <- unique(indivData[,c("POS", "gt_GT")])
+#   Indiv <- indivData[1,"Indiv"]
+#   rownames(indivGT) <- indivGT[,1]
+#   indivGT <- t(indivGT[,2, drop=FALSE])
+#   rownames(indivGT) <- Indiv
+#   return(indivGT)
+# }
 
 #' Title
 #'

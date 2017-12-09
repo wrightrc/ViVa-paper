@@ -4,13 +4,14 @@
 \alias{parseEFF}
 \title{Parse the EFF field of the VCF files from 1001genomes.org}
 \usage{
-parseEFF(tidyVCF, Transcript_ID)
+parseEFF(tidyVCF)
 }
 \arguments{
 \item{tidyVCF}{tidyVCF$dat tibble to be parsed. should have an "EFF" field in
 its $dat section}
 
-\item{Transcript_ID}{Character string of the transcript ID}
+\item{Transcript_ID}{Character string of the transcript ID. if NULL, the
+function will look for it as the attribute "transcript_ID" of the dataframe}
 }
 \value{
 new tidyVCF object with added columns for the parsed effect fields

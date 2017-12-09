@@ -2,16 +2,13 @@
 % Please edit documentation in R/VCF_Utils.R
 \name{Nucleotide_diversity}
 \alias{Nucleotide_diversity}
-\title{Calculate nucleotide diversity for each site in a tidyVCF}
+\title{calculates site nucleotide diversity for each site}
 \usage{
-Nucleotide_diversity(tidyVCF.dat)
+Nucleotide_diversity(tidyVCF)
 }
 \arguments{
-\item{tidyVCF.dat}{The $dat field of a tidyVCF object}
-}
-\value{
-The tidyVCF.dat object with an additional column containing the Nucleotide diversity.
+\item{tidyVCF}{the $dat field of a tidyVCF object}
 }
 \description{
-Calculate nucleotide diversity for each site in a tidyVCF
+calculates site nucleotide diversity for each site
 }

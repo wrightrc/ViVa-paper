@@ -4,7 +4,7 @@
 \alias{VCFByTranscript}
 \title{download VCF, optionally in tidyVCF format}
 \usage{
-VCFByTranscript(geneInfo, strains, tidy = TRUE)
+VCFByTranscript(geneInfo, strains, tidy = TRUE, dataOnly = TRUE)
 }
 \arguments{
 \item{geneInfo}{single row of geneInfo dataframe}
@@ -13,9 +13,6 @@ VCFByTranscript(geneInfo, strains, tidy = TRUE)
 
 \item{tidy}{logical, if true VCF will be provided in tidyVCF format, see
 vcfR documentation}
-}
-\value{
-a long format tibble of the VCF data
 }
 \description{
 download VCF, optionally in tidyVCF format

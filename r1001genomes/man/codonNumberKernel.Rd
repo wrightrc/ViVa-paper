@@ -2,7 +2,7 @@
 % Please edit documentation in R/VCF_Utils.R
 \name{codonNumberKernel}
 \alias{codonNumberKernel}
-\title{Add the codon number to a dataframe containing an "Amino_Acid_Change" column}
+\title{Add codon numbering to the nucleotide diversity kernel}
 \usage{
 codonNumberKernel(SNPData)
 }
@@ -10,5 +10,5 @@ codonNumberKernel(SNPData)
 \item{SNPData}{}
 }
 \description{
-Add the codon number to a dataframe containing an "Amino_Acid_Change" column
+Add codon numbering to the nucleotide diversity kernel
 }

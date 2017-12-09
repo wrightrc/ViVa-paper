@@ -2,22 +2,13 @@
 % Please edit documentation in R/VCF_Utils.R
 \name{getGeneInfo}
 \alias{getGeneInfo}
-\title{Get gene information table}
+\title{Get gene information}
 \usage{
 getGeneInfo(genes, firstOnly = TRUE, inputType = "tair_locus",
   useCache = TRUE)
 }
 \arguments{
-\item{genes}{Character vector of a single attribute type for the desired genes. Defualt is TAIR locus ID.}
-
-\item{firstOnly}{Boolean, return only the first transcript?}
-
-\item{inputType}{String, what attribute is contained in the "genes" argument. Defaults to "tair_locus".}
-
-\item{useCache}{Boolean, first search the cache file to see if you have downloaded this data before.}
-}
-\value{
-A table containing "transcript_ID" and "regionString" columns required for other fuctions in this code
+\item{useCache}{}
 }
 \description{
 Get the start and end position of each transcript of a set of

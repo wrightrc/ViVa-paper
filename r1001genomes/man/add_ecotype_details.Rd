@@ -2,19 +2,13 @@
 % Please edit documentation in R/VCF_Utils.R
 \name{add_ecotype_details}
 \alias{add_ecotype_details}
-\title{Add accession metadata to a dataset containing an ecotype id}
+\title{Title}
 \usage{
 add_ecotype_details(data, Ecotype_column = "Indiv")
 }
 \arguments{
-\item{data}{a data.frame or tibble with with a column containing ecotype ID's from the
-1001 genomes collection}
-
-\item{Ecotype_column}{\code{"string"} the column name containing the ecotype ID values}
-}
-\value{
-the original data with accession metadata merged appropriately
+\item{Ecotype_column}{}
 }
 \description{
-Add accession metadata to a dataset containing an ecotype id
+Title
 }

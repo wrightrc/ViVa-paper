@@ -2,15 +2,13 @@
 % Please edit documentation in R/VCF_Utils.R
 \name{polymorphTable}
 \alias{polymorphTable}
-\title{Create a table summarising the polymorphisms within a set of genes}
+\title{Title}
 \usage{
 polymorphTable(geneInfo, strains)
 }
 \arguments{
-\item{geneInfo}{a table of gene structure info as created by `getGeneInfo`}
-
 \item{strains}{}
 }
 \description{
-Create a table summarising the polymorphisms within a set of genes
+Title
 }

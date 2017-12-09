@@ -16,7 +16,8 @@ Description: This web app and open source software package for the R
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.4), plyr, VariantAnnotation, stringr, biomaRt, ggplot2, reshape2,
-        vcfR, dplyr, ggmap
+        vcfR, dplyr, ggmap, shiny, leaflet, RColorBrewer, shinythemes, 
+        shinycssloaders, ggthemes, plyr
 License: Artistic-2.0
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
