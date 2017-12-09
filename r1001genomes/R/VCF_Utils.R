@@ -169,8 +169,6 @@ parseEFFKernel <- function (data, Transcript_ID, EFFColNames){
 #'
 #' @examples
 VCFByTranscript <- function (geneInfo, strains, tidy=TRUE){
-  #download a full c
-  #
   transcript_ID <- as.character(geneInfo$transcript_ID)
   regionString <- as.character(geneInfo$regionString)
 
