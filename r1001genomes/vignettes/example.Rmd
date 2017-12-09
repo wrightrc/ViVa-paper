@@ -9,6 +9,11 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, echo = FALSE, message=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", tidy = TRUE)
+library(r1001genomes)
+```
+
 ## Introduction
 
 This web app and open source software package for the R programming language was built to facilitate exploration of the naturally occuring sequence diversity for your favorite gene or gene family. We hope this product will help plant biologists without bioinformatics experience access the 1001 genomes project’s rich catalog of natural variation, formulate hypotheses and identify new alleles in their favorite gene family.
@@ -17,9 +22,19 @@ The 1001 genomes dataset was collected with the intention of genome scale analys
 
 
 
-So pick out your favorite gene, gene family or genomic region and follow the steps in this guide to analyze its natural variation.
+So pick out your favorite gene, gene family or genomic region and follow the steps in this guide to analyze its natural variation. For this example we will be using the auxin-signaling F-box genes, *TIR1* and *AFB2* which have the TAIR IDs [AT3G62980](https://www.arabidopsis.org/servlets/TairObject?id=39952&type=locus) and [AT3G26810](https://www.arabidopsis.org/servlets/TairObject?id=38086&type=locus). Click on one of the previous links to search TAIR for the TAIR IDs of your favorite genes. 
 
-## 
+## Download the chromosome positions and gene models 
+The first step in retrieving the natural variation in our genes is to retrieve the information about where the genes are in the genome of Col-0, the laboratory reference accession, and how the mRNA and coding sequence is laid out. This information is called the gene model. Occasionally there are multiple models for a single gene if there are multiple possible transcripts or splice variants.  
+
+To do this we use the `getGeneInfo` function. This function is just a simplifying wrapper for the `BioMart` function `getBM`.
+
+```{r}
+tair_ids <- c("AT3G62980", "AT3G26810")
+geneInfo <- getGeneInfo(genes = tair_ids, firstOnly = TRUE, inputType = "")
+
+```
+
 
 
 

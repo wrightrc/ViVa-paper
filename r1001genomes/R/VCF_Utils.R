@@ -206,7 +206,8 @@ getGeneInfo <- function (genes, firstOnly=TRUE, inputType="tair_locus", useCache
   retrievedInfo <- NULL
   genes2 <- genes
   if (useCache == TRUE){
-    geneInfoCache <- read.table(file="geneInfoCache.txt", header=TRUE, stringsAsFactors=FALSE)
+    geneInfoCache <- read.table(system.file("extdata", "geneInfoCache.txt", package = "r1001genomes"),
+                                header=TRUE, stringsAsFactors=FALSE)
     retrievedInfo <- geneInfoCache[geneInfoCache$tair_locus %in% genes, ]
     genes2 <- genes[!(genes %in% geneInfoCache$tair_locus)] #remove genes present in the cache from genes list
     print("new genes:")
