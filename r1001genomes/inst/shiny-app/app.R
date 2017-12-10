@@ -60,16 +60,17 @@ ui <- function(request){ fluidPage(
 
   #CSSCode,
   headerPanel("Arabidopsis Natural Variation Webtool"),
-  "This app will provide an interface to examine the natural variation of specified genes of interest in the 1001 Genomes project dataset",
-  tags$h5('style'="color:red", "this app is a work in progress"),
+  "This app provides an interface to examine the natural variation of specified genes of interest in the 1001 Genomes project dataset. To save or share a state of this app, use the bookmark button.", HTML("</br>"),
+  bookmarkButton(),
+  tags$h5('style'="color:red", "This app is currently a work in progress."),
   themeSelector(),
   tabsetPanel(
     tabPanel("SNP Stats",
         ## Tab 1 ###############################################################
       tags$br(),
       tags$div(class="input-format",
-               tags$h3("Gene Selection"),
-               tags$h5("Type a list of gene loci in the box below, separated by commas "),
+               tags$h3("Select Genes"),
+               tags$h5("Type a list of gene loci in the box below, separated by commas. "),
                textAreaInput(inputId = "gene_ids", label = NULL,
                              width = 600, height = 75, value = "AT3G62980, AT3G26810"),
                actionButton(inputId="STATS_submit", label = "Submit"),
@@ -82,8 +83,8 @@ ui <- function(request){ fluidPage(
       tags$hr(),
 
       tags$div(class="output-format",
-               tags$h3("Selected Gene Information"),
-               tags$h5("this table provides details on the gene(s) input above, including transcript IDs, and chromosome position information on the start and end of the transcript"),
+               tags$h3("Gene Information"),
+               tags$h5("This table provides details on the gene(s) input above, including transcript IDs and chromosomal locations."),
                downloadButton("tab1.downloadGeneInfo","Download Content of Table Below"),
                DT::dataTableOutput("tab1.genes_table")
 
@@ -91,18 +92,26 @@ ui <- function(request){ fluidPage(
       ),
       tags$br(),
       tags$div(class="output-format",
-      tags$h3("SNP Type and Diversity Statistics"),
+      tags$h3("Summary of Sequence Diversity"),
+      downloadButton("tab1.downloadStats","Download Content of Tables Below"),
+          tags$h4("Total Polymorphism Counts"),
           HTML("<h5>
-                   This table provides basic statistics on the polymorphisms present in the given gene.
-                   <br/>the columns \"5_prime_UTR_variant\" through \"coding_total\" are total, non unique numbers of variants, \"coding_total\" is the sum of missense and synonymous variants.
-                   <br/>the final four columns are Nucleotide Diversity values, for different sections and SNP types
-                   <br/> <strong>NOTE:</strong> download button downloads content of both tables to a single file.
+                   This table provides counts of the total, non-unique polymorphisms present in the given genes by gene structure. These numbers can be quite high if the reference (Col-0) has a minor allele. \"coding_total\" is the sum of missense, nonsense and synonymous variants.
                 </h5>"),
-          downloadButton("tab1.downloadStats","Download Content of Tables Below"),
-          #tableOutput("SNPStats_Table")
-          tags$h4("SNP Counts"),
           DT::dataTableOutput("tab1.SNPcounts"),
-          tags$h4("Nucleotide Diversity Statistic"),
+          tags$h4("Unique Allele Counts"),
+          HTML("<h5>
+              This table <i>WILL</i> provide counts of unique alleles by gene structure.
+               </h5>"),
+### Need to build unique allele table
+          tags$h4("Nucleotide Diversity Statistics"),
+          HTML("<h5>
+               This table provides for each given gene the nucleotide diversity as Nei and Li's <i>&pi;</i> (the average number of nucleotide differences per site between all possible pairs of sequence) at synonymous (pi_s) and missense (pi_n) sites.
+                </br>
+               In the future we plan to add
+               Fixation index (<i>F<sub>ST</sub></i>),
+               Tajima's <i>D</i> and
+               Watterson's <i>&theta;</i> to this table."),
           DT::dataTableOutput("tab1.Diversity_table")
       )
     ),
@@ -111,7 +120,7 @@ ui <- function(request){ fluidPage(
         ## Tab 2 ###############################################################
       tags$br(),
       tags$div(class="input-format",
-               tags$h3("Gene Select"),
+               tags$h3("Select a Gene"),
                tags$h5("Select a transcript ID in the box below"),
                uiOutput("tab2.selectGene")
                # textInput(inputId = "plotGene", label =NULL,
@@ -128,7 +137,7 @@ ui <- function(request){ fluidPage(
 
       tags$div(class="output-format",
           tags$h3("Plot of Nucleotide Diversity Statistic by Codon"),
-          tags$h5("click and drag a box accross the plot below to see details on specific points"),
+          tags$h5("To see details on specific points, click and drag to create a box selecting points."),
           withSpinner(plotOutput("diversityPlot", brush="plot_brush", click="plot_click", height = 400)),
           verbatimTextOutput("info")
       ),
@@ -147,8 +156,8 @@ ui <- function(request){ fluidPage(
              ## Tab 3 ##########################################################
              tags$br(),
              tags$div(class="input-format",
-                 tags$h3("Gene Select and Filter Parameters"),
-                 tags$h5("Type a single gene locus in the box below"),
+                 tags$h3("Select a Gene and Filter Diversity Parameter"),
+                 tags$h5("Type a single gene locus in the box below and use the slider to select a minimum sitewise nucleotide diversity"),
                  # textInput(inputId="tab3.Gene", label=NULL,
                  #           value="AT1G80490"),
                  uiOutput("tab3.selectGene"),
@@ -167,9 +176,9 @@ ui <- function(request){ fluidPage(
              tags$hr(),
              tags$div(class="output-format",
              tags$h3("Accession Map"),
-             tags$h5("Zoom with scroll wheel, click and drag to pan. click on individual point to see details.
-                     use the layers pop out to the lower left of the map to hide or show sets of markers with similar mutations"),
-             leafletOutput("tab3.map", height="650")
+             tags$h5("Zoom with scroll wheel, click and drag to pan, click on individual point to see details.
+                     Use the layers pop-out to the lower left of the map to hide or show sets of accessions with the same variant."),
+             leafletOutput("tab3.map", width = "80%")
              ),
              tags$br(),
              tags$div(class="output-format",
@@ -227,14 +236,13 @@ ui <- function(request){ fluidPage(
     #)
 
 
-  ),
+  )
 
   # "THIS IS THE FOOTER"
-  bookmarkButton()
 )}
 
 
-#=================================================================
+# Server =================================================================
 
 #source("VCF_Utils.R")
 #source("Strains_and_Gene_Families.R")
@@ -299,8 +307,8 @@ server <- function(input, output){
 
 
 
-  output$tab1.genes_table <- DT::renderDataTable(all.Genes()[, -c(5,6)], options=list(paging=FALSE, searching=FALSE))
-  output$tab1.genes_tableB <- renderTable(all.Genes()[, -c(5,6)])
+  output$tab1.genes_table <- DT::renderDataTable(DT::datatable(all.Genes()[, -c(5,6,9)], colnames = c("tair locus", "symbol", "transcript", "Chr", "transcript \nstart", "transcript \nend", "transcript \nlength"), rownames = FALSE, options=list(paging=FALSE, searching=FALSE)))
+  output$tab1.genes_tableB <- renderTable(all.Genes()[, -c(5,6,9)])
 
   #SNPStats <- reactive({polymorphTable(tab1.Genes(), strains)})
 
@@ -333,8 +341,25 @@ server <- function(input, output){
 
   #output$SNPStats_Table <- renderTable(SNPStats())
 
-  output$tab1.SNPcounts <- DT::renderDataTable(SNPStats()[,1:8], options=list(paging=FALSE, searching=FALSE))
-  output$tab1.Diversity_table <- DT::renderDataTable(SNPStats()[, c(1,9:13)], options=list(paging=FALSE, searching=FALSE))
+  output$tab1.SNPcounts <- DT::renderDataTable(
+    DT::datatable(SNPStats()[,1:8],
+                  colnames = c("transcript", "5' UTR", "intron", "3' UTR",
+                               "coding \n synonymous", "coding \n missense",
+                               "upstream", "coding \n total"),
+                  rownames = FALSE,
+    options=list(paging=FALSE, searching=FALSE)))
+  output$tab1.Diversity_table <- DT::renderDataTable(
+    formatRound(DT::datatable(SNPStats()[, c(1,9:13)],
+                  #
+                  colnames = c("transcript",
+                               "&pi;<sub>N</sub>",
+                               "&pi;<sub>S</sub>",
+                               "&pi;<sub>N</sub>/&pi;<sub>S</sub>",
+                               "&pi; coding",
+                               "&pi; transcript"),
+                  rownames = FALSE, escape = FALSE,
+                  options = list(paging=FALSE, searching=FALSE)),
+                columns = 2:6, digits = 6))
 
   output$tab1.downloadStats <- downloadHandler(
     filename=function(){
