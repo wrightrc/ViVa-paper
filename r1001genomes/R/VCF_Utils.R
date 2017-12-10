@@ -21,7 +21,7 @@
 #'
 #' @examples
 run1001genomes <- function() {
-  appDir <- system.file("shiny-examples", "app", package = "r1001genomes")
+  appDir <- system.file("shiny-app", package = "r1001genomes")
   if (appDir == "") {
     stop("Could not find example directory. Try re-installing `mypackage`.",
          call. = FALSE)
@@ -50,6 +50,7 @@ makeRegionString <- function (data) {
                  "-",
                  as.character(data$transcript_end)), collapse=""))
 }
+
 
 #' Download and save a .VCF file from 1001genomes.org.
 #'
@@ -100,19 +101,19 @@ downloadMerge <- function (fName, strainVect, regionStr) {
 
   # first file
   strainString <- paste(as.character(strains[1:splitPoint]), collapse=",")
-  fileName <- "tempData1.vcf"
-  downloadData(fileName, strainString, regionStr)
+  tempFile1 <- tempfile(fileext=".vcf")
+  downloadData(tempFile1, strainString, regionStr)
   # second file
   strainString <- paste(as.character(strains[(splitPoint + 1):length(strains)]), collapse=",")
-  fileName <- "tempData2.vcf"
-  downloadData(fileName, strainString, regionStr)
+  tempFile2 <- tempfile(fileext=".vcf")
+  downloadData(tempFile2, strainString, regionStr)
   #
   #load the two temporary vcf files then delete the temp files
-  data1 <- read.vcfR("tempData1.vcf", verbose=FALSE, convertNA=TRUE)
-  if (file.exists("tempData1.vcf")) file.remove("tempData1.vcf")
+  data1 <- read.vcfR(tempFile1, verbose=FALSE, convertNA=TRUE)
+  if (file.exists(tempFile1)) file.remove(tempFile1)
 
-  data2 <- read.vcfR("tempData2.vcf", verbose=FALSE, convertNA=TRUE)
-  if (file.exists("tempData2.vcf")) file.remove("tempData2.vcf")
+  data2 <- read.vcfR(tempFile2, verbose=FALSE, convertNA=TRUE)
+  if (file.exists(tempFile2)) file.remove(tempFile2)
 
   #combine the two gt fields, and write a new combined vcf file.
   data1@gt <- cbind(data1@gt, data2@gt[,-1])
@@ -203,7 +204,8 @@ VCFByTranscript <- function (geneInfo, strains, tidy=TRUE, dataOnly=TRUE){
   transcript_ID <- as.character(geneInfo$transcript_ID)
   regionString <- as.character(geneInfo$regionString)
 
-  VCF.out <- downloadMerge("fullVCF.vcf.gz", strains, regionString)
+  fName <- tempfile(fileext=".vcf.gz")
+  VCF.out <- downloadMerge(fName, strains, regionString)
 
   if (tidy == TRUE){
     VCF.out <- vcfR2tidy(VCF.out, single_frame = TRUE, info_fields = c("AC", "EFF"), format_fields = ("GT"))
