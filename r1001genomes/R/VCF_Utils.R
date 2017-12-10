@@ -1,15 +1,15 @@
 ### LIBRARIES ==================================================================
 
-library(VariantAnnotation)
-library(plyr)
-library(stringr)
-library(biomaRt)
-library(ggplot2)
-library(reshape2)
-library(vcfR)
-library(dplyr)
-library(ggmap)
-library(ggthemes)
+#library(VariantAnnotation)
+#library(plyr)
+#library(stringr)
+#library(biomaRt)
+#library(ggplot2)
+#library(reshape2)
+#library(vcfR)
+#library(dplyr)
+#library(ggmap)
+#library(ggthemes)
 
 ### APP FUNCTIONS =============================================================
 
@@ -23,7 +23,8 @@ library(ggthemes)
 run1001genomes <- function() {
   appDir <- system.file("shiny-examples", "app", package = "r1001genomes")
   if (appDir == "") {
-    stop("Could not find example directory. Try re-installing `mypackage`.", call. = FALSE)
+    stop("Could not find example directory. Try re-installing `mypackage`.",
+         call. = FALSE)
   }
 
   shiny::runApp(appDir, display.mode = "normal")

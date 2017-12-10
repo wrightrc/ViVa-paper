@@ -9,10 +9,11 @@ Maintainer: R. Clay Wright <wright.clay@gmail.com>
 Description: This web app and open source software package for the R 
         programming language was built to facilitate exploration of the 
         naturally occuring sequence diversity for your favorite gene or 
-        gene family. We hope this web app will help plant biologists 
-        without bioinformatics experience access the 1001 genomes project’s 
-        rich catalog of natural variation and formulate hypotheses and 
-        identify new alleles in their favorite gene family.
+        gene family in Arabidopsis thaliana. We hope this web app will 
+        help plant biologists without bioinformatics experience access 
+        the 1001 genomes project’s rich catalog of natural variation and 
+        formulate hypotheses and identify new alleles in their favorite 
+        gene family.
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.4), plyr, VariantAnnotation, stringr, biomaRt, ggplot2, reshape2,

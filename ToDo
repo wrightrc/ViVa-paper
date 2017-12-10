@@ -3,15 +3,18 @@ Little fixes
 - "Diversity plot" handling for premature stops (and frame shifts)?
 - update comments and documentation in code (mainly VCF_Utils.R)
 - Add tair symbol to tab1 tables eg. "AT1G12820(AFB3)"
-- split app into UI and Server files
+- clean up tables (shorter column names, round to 3-5 decimals, etc)
 
 New Functionalities
 - hover-over/readme for each tab and table
-- about tab, with bibliography glossary...
 - ability to get all accessions with a mutation
+- Search by tair_symbol
+- map accessions from multiple genes at once (checkboxes for genes and variants)
+- show diversity on a histogram of genome wide stats
 
 
 DONE!!!
+- about tab, with bibliography glossary...
 - All mentions of ecotype changed to accession
 - make download buttons more descriptive about what is being downloaded
 - add download button for "gene_info" table
