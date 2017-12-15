@@ -203,3 +203,7 @@ map_test(keydata_labeled)
 
 keyGT <- ddply(keydata, .variables="Indiv", .fun=buildGT)
 
+
+# Trying to speed up VCF list by passing multiple region strings ========
+system.time(downloadMerge("TIR1AFB2.vcf", strainVect = strains, regionStr = geneInfo$regionString))
+# Actually 1 second faster with VCFList!
