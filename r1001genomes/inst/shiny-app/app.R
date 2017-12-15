@@ -156,8 +156,8 @@ ui <- function(request){ fluidPage(
              ## Tab 3 ##########################################################
              tags$br(),
              tags$div(class="input-format",
-                 tags$h3("Select a Gene and Filter Diversity Parameter"),
-                 tags$h5("Type a single gene locus in the box below and use the slider to select a minimum sitewise nucleotide diversity"),
+                 tags$h3("Select Genes and Filter Diversity Parameter"),
+                 tags$h5("Select one or more transcript IDs below and use the slider to select a minimum sitewise nucleotide diversity"),
                  # textInput(inputId="tab3.Gene", label=NULL,
                  #           value="AT1G80490"),
                  uiOutput("tab3.selectGene"),
@@ -305,7 +305,13 @@ server <- function(input, output){
     return(genes)
   })
 
-
+  all.GeneChoices <- reactive({
+    displayNames <- paste(all.Genes()$transcript_ID, " (", all.Genes()$tair_symbol, ")", sep="" )
+    displayNames <- gsub(" \\(\\)", displayNames, replacement="")
+    output <- all.Genes()$transcript_ID
+    names(output) <- displayNames
+    return(output)
+  })
 
   output$tab1.genes_table <- DT::renderDataTable(DT::datatable(all.Genes()[, -c(5,6,9)], colnames = c("tair locus", "symbol", "transcript", "Chr", "transcript \nstart", "transcript \nend", "transcript \nlength"), rownames = FALSE, options=list(paging=FALSE, searching=FALSE)))
   output$tab1.genes_tableB <- renderTable(all.Genes()[, -c(5,6,9)])
@@ -349,7 +355,7 @@ server <- function(input, output){
                   rownames = FALSE,
     options=list(paging=FALSE, searching=FALSE)))
   output$tab1.Diversity_table <- DT::renderDataTable(
-    formatRound(DT::datatable(SNPStats()[, c(1,9:13)],
+    DT::formatRound(DT::datatable(SNPStats()[, c(1,9:13)],
                   #
                   colnames = c("transcript",
                                "&pi;<sub>N</sub>",
@@ -413,7 +419,7 @@ server <- function(input, output){
 
   output$tab2.selectGene <- renderUI({
     tagList(
-      selectInput("tab2.transcript_ID", label=NULL, choices=all.Genes()$transcript_ID),
+      selectInput("tab2.transcript_ID", label=NULL, choices=all.GeneChoices()),
       actionButton(inputId="tab2.Submit", label = "Submit")
     )
   })
@@ -465,29 +471,23 @@ server <- function(input, output){
 
   output$tab3.selectGene <- renderUI({
     tagList(
-      selectInput("tab3.transcript_ID", label=NULL, choices=all.Genes()$transcript_ID),
+      checkboxGroupInput("tab3.transcript_ID", label=NULL, choices=all.GeneChoices()),
       actionButton(inputId="tab3.Submit", label = "Submit")
     )
   })
 
+
+
+
+
   tab3.Genes <- eventReactive(input$tab3.Submit, {
     #gene Info for gene on tab 3, updates on 'submit' button press
-    return(all.Genes()[ all.Genes()$transcript_ID == input$tab3.transcript_ID,])
+    return(all.Genes()[ all.Genes()$transcript_ID %in% input$tab3.transcript_ID,])
   })
 
 
   tab3.tidyData <- eventReactive(input$tab3.Submit, {
-
-    # Get the data
-    # tidyVCF <- VCFByTranscript(tab3.Genes()[1, ], strains)
-    # data <- tidyVCF$dat
-    # # Parse the EFF field
-    # data <- parseEFF(tidyVCF = data)
-    #
-    # # calculate diversity
-    # data <- Nucleotide_diversity(data)
-
-    data <- all.VCFList()[[input$tab3.transcript_ID]]
+    data <- ldply(all.VCFList()[tab3.Genes()$transcript_ID])
 
     # remove 0|0 genotypes
     data <- data[data$gt_GT != "0|0",]
