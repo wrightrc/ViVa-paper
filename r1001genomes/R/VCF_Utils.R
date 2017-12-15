@@ -101,7 +101,7 @@ downloadMerge <- function (fName, strainVect, regionStr) {
 
   # first file
   strainString <- paste(as.character(strains[1:splitPoint]), collapse=",")
-  tempFile1 <- tempfile(fileext=".vcf")
+    tempFile1 <- tempfile(fileext=".vcf")
   downloadData(tempFile1, strainString, regionStr)
   # second file
   strainString <- paste(as.character(strains[(splitPoint + 1):length(strains)]), collapse=",")

@@ -18,7 +18,7 @@ Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.4), plyr, VariantAnnotation, stringr, biomaRt, ggplot2, reshape2,
         vcfR, dplyr, ggmap, shiny, leaflet, RColorBrewer, shinythemes, 
-        shinycssloaders, ggthemes, formattable
+        shinycssloaders, ggthemes, formattable, DT
 License: Artistic-2.0
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
