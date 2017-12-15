@@ -305,7 +305,13 @@ server <- function(input, output){
     return(genes)
   })
 
-
+  all.GeneChoices <- reactive({
+    displayNames <- paste(all.Genes()$transcript_ID, " (", all.Genes()$tair_symbol, ")", sep="" )
+    displayNames <- gsub(" \\(\\)", displayNames, replacement="")
+    output <- all.Genes()$transcript_ID
+    names(output) <- displayNames
+    return(output)
+  })
 
   output$tab1.genes_table <- DT::renderDataTable(DT::datatable(all.Genes()[, -c(5,6,9)], colnames = c("tair locus", "symbol", "transcript", "Chr", "transcript \nstart", "transcript \nend", "transcript \nlength"), rownames = FALSE, options=list(paging=FALSE, searching=FALSE)))
   output$tab1.genes_tableB <- renderTable(all.Genes()[, -c(5,6,9)])
@@ -413,7 +419,7 @@ server <- function(input, output){
 
   output$tab2.selectGene <- renderUI({
     tagList(
-      selectInput("tab2.transcript_ID", label=NULL, choices=all.Genes()$transcript_ID),
+      selectInput("tab2.transcript_ID", label=NULL, choices=all.GeneChoices()),
       actionButton(inputId="tab2.Submit", label = "Submit")
     )
   })
@@ -465,7 +471,7 @@ server <- function(input, output){
 
   output$tab3.selectGene <- renderUI({
     tagList(
-      checkboxGroupInput("tab3.transcript_ID", label=NULL, choices=all.Genes()$transcript_ID),
+      checkboxGroupInput("tab3.transcript_ID", label=NULL, choices=all.GeneChoices()),
       actionButton(inputId="tab3.Submit", label = "Submit")
     )
   })
