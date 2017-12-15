@@ -156,8 +156,8 @@ ui <- function(request){ fluidPage(
              ## Tab 3 ##########################################################
              tags$br(),
              tags$div(class="input-format",
-                 tags$h3("Select a Gene and Filter Diversity Parameter"),
-                 tags$h5("Type a single gene locus in the box below and use the slider to select a minimum sitewise nucleotide diversity"),
+                 tags$h3("Select Genes and Filter Diversity Parameter"),
+                 tags$h5("Select one or more transcript IDs below and use the slider to select a minimum sitewise nucleotide diversity"),
                  # textInput(inputId="tab3.Gene", label=NULL,
                  #           value="AT1G80490"),
                  uiOutput("tab3.selectGene"),
@@ -465,29 +465,23 @@ server <- function(input, output){
 
   output$tab3.selectGene <- renderUI({
     tagList(
-      selectInput("tab3.transcript_ID", label=NULL, choices=all.Genes()$transcript_ID),
+      checkboxGroupInput("tab3.transcript_ID", label=NULL, choices=all.Genes()$transcript_ID),
       actionButton(inputId="tab3.Submit", label = "Submit")
     )
   })
 
+
+
+
+
   tab3.Genes <- eventReactive(input$tab3.Submit, {
     #gene Info for gene on tab 3, updates on 'submit' button press
-    return(all.Genes()[ all.Genes()$transcript_ID == input$tab3.transcript_ID,])
+    return(all.Genes()[ all.Genes()$transcript_ID %in% input$tab3.transcript_ID,])
   })
 
 
   tab3.tidyData <- eventReactive(input$tab3.Submit, {
-
-    # Get the data
-    # tidyVCF <- VCFByTranscript(tab3.Genes()[1, ], strains)
-    # data <- tidyVCF$dat
-    # # Parse the EFF field
-    # data <- parseEFF(tidyVCF = data)
-    #
-    # # calculate diversity
-    # data <- Nucleotide_diversity(data)
-
-    data <- all.VCFList()[[input$tab3.transcript_ID]]
+    data <- ldply(all.VCFList()[tab3.Genes()$transcript_ID])
 
     # remove 0|0 genotypes
     data <- data[data$gt_GT != "0|0",]
