@@ -349,7 +349,7 @@ server <- function(input, output){
                   rownames = FALSE,
     options=list(paging=FALSE, searching=FALSE)))
   output$tab1.Diversity_table <- DT::renderDataTable(
-    formatRound(DT::datatable(SNPStats()[, c(1,9:13)],
+    DT::formatRound(DT::datatable(SNPStats()[, c(1,9:13)],
                   #
                   colnames = c("transcript",
                                "&pi;<sub>N</sub>",
