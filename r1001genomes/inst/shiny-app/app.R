@@ -3,7 +3,6 @@ library(biomaRt)
 library(leaflet)
 library(RColorBrewer)
 library(shinythemes)
-library(shinycssloaders)
 library(r1001genomes)
 
 CSSCode <- tags$head(tags$style(
@@ -57,6 +56,17 @@ CSSCode <- tags$head(tags$style(
 
 
 ui <- function(request){ fluidPage(
+
+  tags$head(tags$style(
+    HTML("
+      .checkbox-format {
+         -webkit-column-width: 350px;
+         -moz-column-width: 350px;
+         column-width: 350px;
+      }
+    ")
+  )),
+
 
   #CSSCode,
   headerPanel("Arabidopsis Natural Variation Webtool"),
@@ -138,7 +148,7 @@ ui <- function(request){ fluidPage(
       tags$div(class="output-format",
           tags$h3("Plot of Nucleotide Diversity Statistic by Codon"),
           tags$h5("To see details on specific points, click and drag to create a box selecting points."),
-          withSpinner(plotOutput("diversityPlot", brush="plot_brush", click="plot_click", height = 400)),
+          plotOutput("diversityPlot", brush="plot_brush", click="plot_click", height = 400),
           verbatimTextOutput("info")
       ),
       tags$br(),
@@ -188,8 +198,77 @@ ui <- function(request){ fluidPage(
              )
     ),
 
+
+    # tabPanel("Accessions and Mutations",
+    #           ## Tab 4 #########################################################
+    #          tags$br(),
+    #          tags$div(class="input-format",
+    #                   tags$h3("Gene Select"),
+    #                   tags$h5("select one or more transcipt IDs below"),
+    #                   uiOutput("tab4.selectGene"),
+    #                   tags$hr(),
+    #                   tags$br()
+    #
+    #          ),
+    #          tags$br(),
+    #          tags$div(class="input-format",
+    #                     tags$h3("Filters"),
+    #                     checkboxInput("tab4.filterRef", "hide 0|0 genotypes?", FALSE),
+    #
+    #                   fluidRow(
+    #
+    #
+    #                     column(3, wellPanel(
+    #                            tags$h4("Filter 1"),
+    #                            tags$br(),
+    #                            tags$h5("select a column to filter on"),
+    #                            selectInput("tab4.filter1.column", label="column select", choices=c("POS", "gt_GT", "...")),
+    #                            tags$br(),
+    #                            tags$h5("values to match, separated by commas"),
+    #                            textAreaInput("tab4.filter1.textIn", NULL)
+    #                     )),
+    #
+    #                     column(3, wellPanel(
+    #                       tags$h4("Filter 2"),
+    #                       tags$br(),
+    #                       tags$h5("select a column to filter on"),
+    #                       selectInput("tab4.filter2.column", label="column select", choices=c("POS", "gt_GT", "...")),
+    #                       tags$br(),
+    #                       tags$h5("values to match, separated by commas"),
+    #                       textAreaInput("tab4.filter2.textIn", NULL)
+    #                     )),
+    #
+    #                     column(3, wellPanel(
+    #                       tags$h4("Filter 3 (Numeric)"),
+    #                       tags$br(),
+    #                       tags$h5("select a column to filter on"),
+    #                       selectInput("tab4.filter3.column", label="column select", choices=c("POS", "gt_GT", "...")),
+    #                       tags$br(),
+    #                       tags$h5("Max value"),
+    #                       textInput("tab4.filter3.max", NULL),
+    #                       tags$br(),
+    #                       tags$h5("Min Value"),
+    #                       textInput("tab4.filter3.min", NULL)
+    #                     )),
+    #
+    #                     column(3, wellPanel(
+    #                       tags$h4("Filter 4 (Numeric)"),
+    #                       tags$br(),
+    #                       tags$h5("select a column to filter on"),
+    #                       selectInput("tab4.filter4.column", label="column select", choices=c("POS", "gt_GT", "...")),
+    #                       tags$br(),
+    #                       tags$h5("Max value"),
+    #                       textInput("tab4.filter4.max", NULL),
+    #                       tags$br(),
+    #                       tags$h5("Min Value"),
+    #                       textInput("tab4.filter4.min", NULL)
+    #                     ))
+    #                   )
+    #          )
+    # ),
+
     tabPanel("About",
-             ## Tab 4 ##########################################################
+             ## About Tab ######################################################
              tags$br(),
              column(6,
                     tags$div(class="output-format",
@@ -205,35 +284,7 @@ ui <- function(request){ fluidPage(
 
     )
 
-    # tabPanel("Accessions and Mutations",
-    #          ## Tab 4
-    #          textInput(inputId="tab4.Gene", label="Type list of gene ID's",
-    #                    value="AT1G80490"),
-    #          actionButton(inputId="tab4.Submit", label="Get Data"),
-    #
-    #          selectInput(inputId="tab4.filter_type", label="select an option",
-    #                      choices=c("list accessions by mutation", "list mutations by accession")),
-    #
-    #          uiOutput("tab4.ui2"),
-    #
-    #          fluidRow(
-    #            column(6,
-    #                   h3("Accession Filter"),
-    #                   textAreaInput(inputId = "tab4.ecoIDs", label = "Ecotype ID(s)",
-    #                                 width = 400, height = 250, value = "" )
-    #                   ),
-    #            column(6,
-    #                   h3("Mutation Filter"),
-    #                   textAreaInput(inputId = "tab4.SNPs", label = "SNP(s)",
-    #                                 width = 400, height = 250, value = "" )
-    #                   )
-    #          ),
-    #
-    #          actionButton(inputId="tab4.reFilter", label="Submit"),
-    #
-    #          #tableOutput("tab4Table")
-    #          DT::dataTableOutput("tab4.dataTable")
-    #)
+
 
 
   )
@@ -307,7 +358,7 @@ server <- function(input, output){
 
   all.GeneChoices <- reactive({
     displayNames <- paste(all.Genes()$transcript_ID, " (", all.Genes()$tair_symbol, ")", sep="" )
-    displayNames <- gsub(" \\(\\)", displayNames, replacement="")
+    displayNames <- gsub(" \\(\\)", displayNames, replacement="")  # if no tair symbol, remove empty parens.
     output <- all.Genes()$transcript_ID
     names(output) <- displayNames
     return(output)
@@ -634,50 +685,7 @@ server <- function(input, output){
   ## --------------------------------------           ----------------
   ## Tab 4 stuff:
 
-  # tab4.Genes <- eventReactive(input$tab4.Submit, {
-  #   #gene Info for gene on tab 2, updates on 'submit' button press
-  #   names <- parseInput(input$tab4.Gene)
-  #   genes <- getGeneInfo(names[1])
-  #   return(genes)
-  # })
-  #
-  # tab4.tidyData <- reactive({
-  #   tidyVCF <- VCFByTranscript(tab4.Genes()[1, ], strains)
-  #   data <- tidyVCF$dat[tidyVCF$dat$gt_GT != "0|0",]
-  #   # Parse the EFF field
-  #   data <- parseEFF(tidyVCF = data, Transcript_ID = tab4.Genes()$transcript_ID[1])
-  #
-  #   # calculate diversity
-  #   data <- Nucleotide_diversity(data)
-  #   data <- add_ecotype_details(data)
-  #   data <- subset(data, select=-c(EFF))
-  #
-  #
-  #   return(data)
-  # })
-  #
-  # output$tab4.ui2 <- renderUI({
-  #
-  #   if (input$tab4.submit==0) {
-  #     return(tags$h4("mot submitted"))
-  #   }
-  #
-  #   return(tags$h4("submitted"))
-  #
-  #
-  #
-  # })
-  #
-  # tab4.filteredData <- eventReactive(input$tab4.reFilter, {
-  #   data <- tab4.tidyData
-  #
-  #   if (input$tab4.ecoIDs != ""){
-  #   }
-  #
-  #
-  # })
-  #
-  # output$tab4.dataTable <- DT::renderDataTable(DT::datatable(tab4.tidyData()))
+
 
 
 }
