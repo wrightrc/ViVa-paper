@@ -14,6 +14,38 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", tidy = TRUE)
 library(r1001genomes)
 ```
 
+<style>
+  .using-app-insert {
+     background-color: #bfbfbf;
+     padding: 15px;
+     border-style: solid;
+     border-color:  #8c8c8c;
+     border-radius: 7px 7px 0 0;
+     border-width: 1px;
+  }
+  
+  .using-R-insert {
+     background-color: #e6e6e6;
+     padding: 15px;
+     border-style: solid;
+     border-color:  #8c8c8c;
+     border-radius: 0 0 7px 7px;
+     border-width: 1px;
+     border-top: 0;
+  }  
+  
+  
+  .using-app-insert h2, .using-app-insert h3, .using-app-insert h4 {
+     border-bottom: 0;
+  }
+  
+  .using-R-insert h2, .using-R-insert h3, .using-R-insert h4 {
+     border-bottom: 0;
+  }
+</style>
+
+
+
 ## Introduction
 
 This web app and open source software package for the R programming language was built to facilitate exploration of the naturally occuring sequence diversity for your favorite gene or gene family. We hope this product will help plant biologists without bioinformatics experience access the 1001 genomes project’s rich catalog of natural variation, formulate hypotheses and identify new alleles in their favorite gene family.
@@ -64,35 +96,67 @@ Does the genetics suggest these pairs are redundant?
 
 For example 
 F-box domain will be more conserved than 
+
 ***
 
+<!--=========================================================================-->
+<div  class="using-app-insert"><!--panel start--------------------------------->
+## Using the App 
+### A note on the format of this document
 
+In addition to calling the functions of the r1001genomes package in R directly. there is also a GUI provided in the form of a Shiny app. This app can perform some of the analysis tasks the package is capable of performing, without the need to have knowledge of programming in R. 
 
- 
+In this vignette panels like this one are used to show examples of using the app to achieve similar results as using  the R function calls directly in this vignette. Screenshots will usually be provided to make it clear what section or tab we are talking about
 
-Got your TAIR loci? Now run the shiny web app!
+```{r, echo = FALSE, out.width = "90%", out.extra='style="margin: auto; display: block; padding-top: 15px;"' }
+imagePath <- system.file("extdata", "Screenshots", "App_Initial.PNG", package = "r1001genomes")
+knitr::include_graphics(imagePath)
+knitr::asis_output("
+                   ") # This newline required for headings to render after image
+```
+## Starting the web app
+
+to start the Shiny app, run the following command:
 ```{r, eval=FALSE}
 run1001genomes()
 ```
+The app should appear in a new window, and look similar to the image above.
+</div><!--panel end------------------------------------------------------------>
+<div  class="using-R-insert"><!--panel start----------------------------------->
+## Using R
+in these lighter colored panels, the equivalent R code will be displayed.
+</div><!--panel end------------------------------------------------------------>
+<!--=========================================================================--> 
+
 
 ## Download the chromosome positions and gene models 
-The first step in retrieving the natural variation in our genes is to retrieve the information about where the genes are in the genome of Col-0, the laboratory reference accession, and how the mRNA and coding sequence is laid out. This information is called the gene model. The app will download this info as soon as you click submit. Copy and paste your TAIR loci in the box, separated by commas, and click submit. 
+The first step in retrieving the natural variation in our genes is to retrieve the information about where the genes are in the genome of Col-0, the laboratory reference accession, and how the mRNA and coding sequence is laid out. This information is called the gene model.
 
-Do you have a spreasheet of loci and want some quick code to make this list?
-```{r}
-AFB_loci <- read.csv(system.file("extdata", "AFB_gene_ids.csv", package = "r1001genomes"))
-paste(AFB_loci$tair_locus, collapse = ",")
+<!--=========================================================================-->
+<div  class="using-app-insert"><!--panel start--------------------------------->
+## Loading Gene Data in the App
+```{r, echo = FALSE, out.width = "90%", out.extra='style="margin: auto; display: block; padding-top: 15px;"' }
+imagePath <- system.file("extdata", "Screenshots", "Tab_1_Select_Genes.PNG", package = "r1001genomes")
+knitr::include_graphics(imagePath)
+knitr::asis_output("
+                   ") # This newline required for headings to render after image
 ```
+### Selecting Genes and Generating the Gene Model Table
+At the top of the first tab (the "SNP Stats" tab) is a text input field where you can input a list of TAIR loci.
 
-Occasionally there are multiple models for a single gene if there are multiple possible transcripts or splice variants. Does your gene have multiple models?
+The app will download the gene model information as soon as you click submit. Copy and paste your TAIR loci in the box, separated by commas, and click submit.
 
+The app may take a little while to process after clicking the submit button on the first tab, especially if you have a long list of genes, but once this process is complete on the first tab, the data for these genes will be already loaded for the subsequent tabs. 
 
+Once the loading process has finished, the first table you should see scrolling down the SNP Stats tab is the Gene Information table. it should look similar to the table produced in the "Using R" section below.
+</div><!--panel end------------------------------------------------------------>
+<div  class="using-R-insert"><!--panel start----------------------------------->
+## Using R
 The code the app uses to download this table is the `getGeneInfo` function. This function is just a simplifying wrapper for the `BioMart` function `getBM`. This downloads the gene model from ENSEMBL plants.
 
 ```{r}
 tair_ids <- c("AT3G62980", "AT3G26810")
 geneInfo <- getGeneInfo(genes = tair_ids, firstOnly = TRUE, inputType = "tair_locus", useCache = TRUE)
-
 ```
 
 Now we can give this table a look. We can also freshen up the table a bit with `datatable`. 
@@ -102,12 +166,34 @@ datatable(geneInfo[, -c(5,6,9)], colnames = c("tair locus", "symbol", "transcrip
                                               "transcript \nlength"), rownames = FALSE, 
           options=list(paging=FALSE, searching=FALSE))
 ```
+</div><!--panel end------------------------------------------------------------>
+<!--=========================================================================-->
+
+Do you have a spreasheet of loci and want some quick code to make a text string you can copy and paste into the app gene input box?
+```{r}
+AFB_loci <- read.csv(system.file("extdata", "AFB_gene_ids.csv", package = "r1001genomes"))
+paste(AFB_loci$tair_locus, collapse = ",")
+```
+
+Occasionally there are multiple models for a single gene if there are multiple possible transcripts or splice variants. Does your gene have multiple models?
+
 
 ## Download the variants in the 1001 genomes dataset for these genes
 The 1001 genomes dataset is stored as a VCF (Variant Call Format) file. This is 
 a very efficient format for storing such a large dataset (the 1135 genomes are ~17gb), 
-and for some analyses its matrix format is very useful. We can download a set of VCF files for 
-our favorite genes using the `VCFList` function.
+and for some analyses its matrix format is very useful. 
+
+<!--=========================================================================-->
+<div  class="using-app-insert"><!--panel start--------------------------------->
+## Downloading and processing of VCFs in the App
+upon clicking the submit button on the first tab the web app automatically creates a tidy dataframe and calculates the number of unique and nonunique polymorphisms in each region of the gene model as well as calculating the diversity in the protein coding sequence. The diversity is the average number of nucleotide differences per site between all possible pairs of sequences. Diversity is also calculated for only the set of synonymous and nonsynonymous polymorphisms.
+
+The results of these calculations are displayed on the three tables below the Gene Information table.
+
+</div><!--panel end------------------------------------------------------------>
+<div  class="using-R-insert"><!--panel start----------------------------------->
+## Using R
+We can download a set of VCF files for our favorite genes using the `VCFList` function.
 
 ```{r, eval=FALSE}
 YFG_VCF <- VCFList(geneInfo = geneInfo, by = "transcript", tidy = FALSE)
@@ -122,8 +208,7 @@ our VCF to a tidy data frame by setting the `tidy` argument to `TRUE`.
 YFG_VCF <- VCFList(geneInfo = geneInfo, by = "transcript", tidy = TRUE)
 ```
 
-The web app automatically creates a tidy dataframe and calculates the number of unique and nonunique polymorphisms in each region of the gene model as well as calculating the diversity in the protein coding sequence. The diversity is the average number of nucleotide differences per site between all possible pairs of sequences. Diversity is also calculated for only the set of synonymous and nonsynonymous polymorphisms.
-
+To generate the three tables of polymorphism stats the app calls the function `polymorphTable`. in R we can do the same thing.
 ```{r, cache=TRUE}
 TIR1_AFB2_table <- polymorphTable(geneInfo = geneInfo, strains = strains)
 
@@ -139,6 +224,16 @@ datatable(TIR1_AFB2_table[,1:8],
     options=list(paging=FALSE, searching=FALSE))
 
 ```
+
+</div><!--panel end------------------------------------------------------------>
+<!--=========================================================================-->
+
+
+
+<!--=========================================================================-->
+
+
+
 
 
 
