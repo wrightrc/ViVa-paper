@@ -373,10 +373,10 @@ server <- function(input, output){
 
     if(input$STATS_quick_demo) {
       return(readRDS(file = system.file("shiny-app", "demo_VCFs.rds",
-                                        package = "r1001genomes"))) }
+                                        package = "r1001genomes")))
+    }
 
-
-      withProgress(message="downloading data from 1001genomes.org",
+    withProgress(message="downloading data from 1001genomes.org",
                    detail="this will take a while, progress bar will not move",
                    value=0.3, {
                      output <- VCFList(all.Genes())
@@ -387,7 +387,7 @@ server <- function(input, output){
                                  detail="Calculating nucleotide diversity")
                      output <- llply(output, Nucleotide_diversity)
                      setProgress(value=1)
-      })
+    })
 
 
 

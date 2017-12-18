@@ -207,13 +207,22 @@ convert the matrix into a very long data frame. Most of the functions in `r1001g
 operate on a long data frame, often called a tidy data frame. We can automatically covert 
 our VCF to a tidy data frame by setting the `tidy` argument to `TRUE`.
 
-```{r, eval = FALSE}
+```{r, cache=TRUE}
 YFG_VCF <- VCFList(geneInfo = geneInfo, by = "transcript", tidy = TRUE)
 ```
 
-To generate the three tables of polymorphism stats the app calls the function `polymorphTable`. in R we can do the same thing.
+We now have a list of very long data frames with all the information on SNPs inside, but much of the details on the effects of these polymorphisms are contained in a single column labeld 'EFF' as a long text string, making it hard to filter and process the data by the individual attributes within that text string.
+the `parseEFF` function will separate indiual fields of the EFF string into separate columns on a single dataframe, and can be applied to our list of data frames with the `llply` function from the plyr package
+```{r}
+YFG_VCF <- llply(YFG_VCF, parseEFF)
+```
+
+
+To generate the three tables of polymorphism stats the app calls the function `polymorphRow`. in R we can do the same thing.
 ```{r, cache=TRUE}
-TIR1_AFB2_table <- polymorphTable(geneInfo = geneInfo, strains = strains)
+#TIR1_AFB2_table <- polymorphTable(geneInfo = geneInfo, strains = strains)
+YFG_VCF <- llply(YFG_VCF, Nucleotide_diversity)
+TIR1_AFB2_table <- ldply(YFG_VCF, polymorphRow, geneInfo = geneInfo, .id = "transcript_ID")
 
 ```
 
@@ -233,6 +242,61 @@ datatable(TIR1_AFB2_table[,1:8],
 
 
 
+## Plotting Nei's Diversity Statistic
+In addition to calculating the nucleotide diversity of a sequence like the transcipt of a gene, we can also plot the diversity statistic by individual position along the reference genome. This could be usefull if you suspect a particular region of your gene may be more important to function and or more sensitive to nucelotide or amino acid changes. 
+
+<!--=========================================================================-->
+<div  class="using-app-insert"><!--panel start--------------------------------->
+## Plotting Nucleotide Diversity in the App
+The second tab of the app, labeld "Diversity Plot" allows you to plot the nucleotide diversity for your favorite genes you selected in the "SNP Stats" tab.
+```{r, echo = FALSE, out.width = "90%", out.extra='style="margin: auto; display: block; padding-top: 15px;"' }
+imagePath <- system.file("extdata", "Screenshots", "Tab_2_Select_Gene.PNG", package = "r1001genomes")
+knitr::include_graphics(imagePath)
+knitr::asis_output("
+                   ") # This newline required for headings to render after image
+```
+After clicking to the "Diversity Plot" tab, select the first gene you would like to plot then click the submit button. 
+```{r, echo = FALSE, out.width = "90%", out.extra='style="margin: auto; display: block; padding-top: 15px;"' }
+imagePath <- system.file("extdata", "Screenshots", "Tab_2_Plot_Selection_Box.PNG", package = "r1001genomes")
+knitr::include_graphics(imagePath)
+knitr::asis_output("
+                   ") # This newline required for headings to render after image
+```
+You should see a plot like the one above. The plot shows Nei's nucleotide diversity by <strong>nucleotide position</strong> of the protein coding region of the gene, though the X axis is marked by codon number from the N-terminus for convenience. The symbols are differentiated by whether the site has a synonymous or missense variant. If multiple variant types are present at theh same loci of the reference genome, both markers will be plotted.
+
+Below The plot is a grey box. If you click and drag a selection box accross some points in the plot, some additional details on those points will appear in the grey box.
+
+Below the plot is a data table with this information provided for all points on the plot. You can click the download button above the table to get a .csv file of this complete table.
+
+</div><!--panel end------------------------------------------------------------>
+<div  class="using-R-insert"><!--panel start----------------------------------->
+
+## Using R
+The app uses the function `get_coding_diversity` to calculate the diversity stat at each nucleotide position of the coding sequence. then uses the function `plot_coding_diversity` to plot that information for a single gene. we can do the same thing for all our genes in the following manner:
+```{r out.width = "90%", fig.height=4,fig.width=7, out.extra='style="margin: auto; display: block; padding-top: 15px;"' }
+YFG_Coding_Diversity <- llply(YFG_VCF, get_coding_diversity)
+lapply(YFG_Coding_Diversity, plot_coding_diversity)
+
+```
+</div><!--panel end------------------------------------------------------------>
+
+
+
+
+<!--================== TEMPLATE START =======================================-->
+## Heading
+some explanation
+
+<!--=========================================================================-->
+<div  class="using-app-insert"><!--panel start--------------------------------->
+## how to do it in the App
+some text and picture
+
+</div><!--panel end------------------------------------------------------------>
+<div  class="using-R-insert"><!--panel start----------------------------------->
+## Using R
+some text and code snippet
+</div><!--panel end------------------------------------------------------------>
 <!--=========================================================================-->
 
 
