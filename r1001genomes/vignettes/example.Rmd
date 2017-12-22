@@ -112,8 +112,7 @@ In addition to calling the functions of the r1001genomes package in R directly. 
 In this vignette panels like this one are used to show examples of using the app to achieve similar results as using  the R function calls directly in this vignette. Screenshots will usually be provided to make it clear what section or tab we are talking about
 
 ```{r, echo = FALSE, out.width = "90%", out.extra='style="margin: auto; display: block; padding-top: 15px;"' }
-imagePath <- system.file("extdata", "Screenshots", "App_Initial.PNG", package = "r1001genomes")
-knitr::include_graphics(imagePath)
+knitr::include_graphics("Screenshots/App_Initial.PNG")
 knitr::asis_output("
                    ") # This newline required for headings to render after image
 ```
@@ -139,8 +138,7 @@ The first step in retrieving the natural variation in our genes is to retrieve t
 <div  class="using-app-insert"><!--panel start--------------------------------->
 ## Loading Gene Data in the App
 ```{r, echo = FALSE, out.width = "90%", out.extra='style="margin: auto; display: block; padding-top: 15px;"' }
-imagePath <- system.file("extdata", "Screenshots", "Tab_1_Select_Genes.PNG", package = "r1001genomes")
-knitr::include_graphics(imagePath)
+knitr::include_graphics("Screenshots/Tab_1_Select_Genes.PNG")
 knitr::asis_output("
                    ") # This newline required for headings to render after image
 ```
@@ -189,9 +187,10 @@ and for some analyses its matrix format is very useful.
 <!--=========================================================================-->
 <div  class="using-app-insert"><!--panel start--------------------------------->
 ## Downloading and processing of VCFs in the App
-upon clicking the submit button on the first tab the web app automatically creates a tidy dataframe and calculates the number of unique and nonunique polymorphisms in each region of the gene model as well as calculating the diversity in the protein coding sequence. The diversity is the average number of nucleotide differences per site between all possible pairs of sequences. Diversity is also calculated for only the set of synonymous and nonsynonymous polymorphisms.
+Upon clicking the "Submit" button on the "SNP Stats" tab, the web app automatically creates a tidy dataframe and calculates the number of unique and nonunique polymorphisms in each region of the gene model as well as calculating the diversity in the protein coding sequence. The diversity is the average number of nucleotide differences per site between all possible pairs of sequences. Diversity is also calculated for only the set of synonymous and nonsynonymous polymorphisms.
 
-The results of these calculations are displayed on the three tables below the Gene Information table.
+The results of these calculations are displayed in the three tables below the Gene Information table.
+
 
 </div><!--panel end------------------------------------------------------------>
 <div  class="using-R-insert"><!--panel start----------------------------------->
@@ -220,17 +219,41 @@ TIR1_AFB2_table <- polymorphTable(geneInfo = geneInfo, strains = strains)
 Before displaing this table we will again clean it up a bit.
 
 ```{r, echo = FALSE}
-datatable(TIR1_AFB2_table[,1:8],
+formatRound(datatable(TIR1_AFB2_table[,c(1:5, 7)],
                   colnames = c("transcript", "5' UTR", "intron", "3' UTR",
                                "coding \n synonymous", "coding \n missense",
-                               "upstream", "coding \n total"),
-    options=list(paging=FALSE, searching=FALSE))
-
+                               "coding \n total"), escape = FALSE,
+    options=list(paging=FALSE, searching=FALSE)), columns = 1:6, digits = 0)
 ```
+The nucleotide diversity for the chosen genes is also calculated in the call to `polymorphTable`.
+
+```{r}
+formatRound(datatable(TIR1_AFB2_table[, c(8:12)],
+                  #
+                  colnames = c("transcript",
+                               "&pi;<sub>N</sub>",
+                               "&pi;<sub>S</sub>",
+                               "&pi;<sub>N</sub>/&pi;<sub>S</sub>",
+                               "&pi; coding",
+                               "&pi; transcript"), escape = FALSE,
+                  options = list(paging=FALSE, searching=FALSE)),
+                columns = 1:5, digits = 6)
+```
+
+
+
 
 </div><!--panel end------------------------------------------------------------>
 <!--=========================================================================-->
 
+### Results
+Do these values match your hypotheses? Is there anything unexpected?  
+
+For TIR1 
+
+## Diversity within each gene  
+
+Now we'll move on to the second "Diversity Plot" tab. This tab will calculate the diversity at each position within the coding sequence of each gene. 
 
 
 <!--=========================================================================-->
