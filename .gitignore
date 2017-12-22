@@ -5,3 +5,4 @@
 *.gz
 *.vcf.gz
 *.vcf
+*cache*
