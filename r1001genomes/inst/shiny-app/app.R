@@ -188,7 +188,7 @@ ui <- function(request){ fluidPage(
              tags$h3("Accession Map"),
              tags$h5("Zoom with scroll wheel, click and drag to pan, click on individual point to see details.
                      Use the layers pop-out to the lower left of the map to hide or show sets of accessions with the same variant."),
-             leafletOutput("tab3.map", width = "80%")
+             leafletOutput("tab3.map", width = "95%")
              ),
              tags$br(),
              tags$div(class="output-format",
@@ -445,10 +445,10 @@ server <- function(input, output){
 
       tagList(
         tags$div(class="input-format",
-                 tags$h3("Mutation select"),
-                 tags$h5("Select the SNPs you want to see on the map by clicking the checkboxes"),
+                 tags$h3("Allele selection"),
+                 tags$h5("Select the alleles you want to see on the map by clicking the checkboxes"),
                  tags$div(class="checkbox-format",
-                          checkboxGroupInput("tab3.mutation_select", "select_mutations to display", choices=tab3.mutationList())
+                          checkboxGroupInput("tab3.allele_select", "select_alleles to display", choices=tab3.mutationList())
                  ),
 
                  actionButton(inputId="tab3.update_map", label = "Update Map")
@@ -566,7 +566,7 @@ server <- function(input, output){
 
   output$tab3.debug <- renderPrint({
     # temporary debug output
-    input$tab3.mutation_select
+    input$tab3.allele_select
     input$tab3.Submit
   })
 
@@ -579,7 +579,7 @@ server <- function(input, output){
     data2 <- data[data$Effect %in% tab3.EffectValues(), ]
 
     # filter on positions with diversity greater than or equal to the 10^slider value
-    keyPOS <- unique(data2[which(data2$Diversity >= 10**input$tab3.filter_value), "POS"])
+    keyPOS <- unique(data2[which(data2$Diversity >= 10^input$tab3.filter_value), "POS"])
     keydata <- data[data$POS %in% keyPOS, ]
 
     return(keydata)
@@ -594,10 +594,10 @@ server <- function(input, output){
   output$tab3.mutation_checkbox <- renderUI({
     tagList(
       tags$div(class="input-format",
-          tags$h3("Mutation select"),
-          tags$h5("Select the SNPs you want to see on the map by clicking the checkboxes"),
+          tags$h3("Allele selection"),
+          tags$h5("Select the alleles you want to see on the map by clicking the checkboxes"),
           tags$div(class="checkbox-format",
-                   checkboxGroupInput("tab3.mutation_select", "select_mutations to display", choices=tab3.mutationList())
+                   checkboxGroupInput("tab3.allele_select", "select_alleles to display", choices=tab3.mutationList())
           ),
           actionButton(inputId="tab3.update_map", label = "Update Map")
       )
@@ -613,7 +613,7 @@ server <- function(input, output){
     # label by SNPs creates column SNPs with text strings formatted [transcriptID|AA_Change]
     data <- label_bySNPs(data, collapse=FALSE)
     # filter on selected SNPs
-    data <- data[data$SNPs %in% input$tab3.mutation_select, ]
+    data <- data[data$SNPs %in% input$tab3.allele_select, ]
     # combine mutations to single row (this is slow)
     data <- ddply(data, "Indiv", summarise, SNPs=paste(SNPs, collapse=","))
     # add back ecotype details
