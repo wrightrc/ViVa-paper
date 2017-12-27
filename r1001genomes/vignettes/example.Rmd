@@ -16,7 +16,7 @@ vignette: >
 ---
 
 ```{r, echo = FALSE, message=FALSE, warning=FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>", tidy = TRUE, out.width = "90%", fig.height=4, fig.width=7, out.extra='style="margin: auto; display: block; padding-top: 15px;"')
+knitr::opts_chunk$set(warning = FALSE, collapse = TRUE, comment = "#>", tidy = TRUE, out.width = "90%", fig.height=4, fig.width=7, out.extra='style="margin: auto; display: block; padding-top: 15px;"')
 library(r1001genomes)
 library(DT)
 library(dplyr)
@@ -65,7 +65,7 @@ library(dplyr)
 
 # Introduction
 
-This web app and open source software package for the R programming language was built to facilitate exploration of the naturally occuring sequence diversity for your favorite gene or gene family. We hope this product will help plant biologists without bioinformatics experience access the 1001 genomes project’s rich catalog of natural variation, formulate hypotheses and identify new alleles in their favorite gene family.
+This web app and open source software package for the R programming language was built to facilitate exploration of the naturally occuring sequence diversity for your favorite gene or gene family. We hope this product will help plant biologists without bioinformatics experience access the 1001 genomes project’s rich catalog of natural variation, formulate hypotheses and identify new interesting alleles in their favorite gene family.
 
 The 1001 genomes dataset was collected with the intention of genome scale analyses, such as genome wide association studies, in which a particular phenotype is quantified for all of the accessions and sequence variants that are associated with phenotypic variation are identified. [In recent work](https://doi.org/10.1534/genetics.117.3000), we have utilized this rich dataset in a different manner to measure the effects of coding sequence variation on protein functional variation and phenotypic variation . This work has expanded the sequence-function-phenotype map for the auxin-signaling F-box gene family, and this product will facilitate similar analysis other genes, gene families, and genomic regions.
 
@@ -430,20 +430,23 @@ ggmap(michigan) +  xlab('longitude') + ylab('latitude') + geom_point(data = AFB2
 
 
 
-<!--================== TEMPLATE START =======================================-->
+
+
+
+<!--================== TEMPLATE START =======================================--
 # heading   
 description
 
-<!--=========================================================================-->
-<div  class="using-app-insert"><!--panel start--------------------------------->
+<!--=========================================================================--
+<div  class="using-app-insert"><!--panel start---------------------------------
 ## Tab title
 some text and picture
 
-</div><!--panel end------------------------------------------------------------>
-<div  class="using-R-insert"><!--panel start----------------------------------->
+</div><!--panel end------------------------------------------------------------
+<div  class="using-R-insert"><!--panel start-----------------------------------
 ## Using R
 some text and code snippet
-</div><!--panel end------------------------------------------------------------>
+</div><!--panel end------------------------------------------------------------
 <!--=========================================================================-->
 
 
