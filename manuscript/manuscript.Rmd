@@ -1,18 +1,13 @@
 ---
-title: "Example gene-wise analysis of the 1001 genomes data set"
+title: "A comprehensive analysis of natural sequence variation within the <i>Arabidopsis thaliana</i> nuclear auxin signaling pathway"
 author: "R. Clay Wright"
 date: "`r Sys.Date()`"
 output: 
-   rmarkdown::html_vignette: 
+   pdf_document: 
      toc: true
      number_sections: true
 bibliography: references.bib
 csl: apa.csl
-vignette: >
-  %\VignetteIndexEntry{Vignette Title}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
-
 ---
 
 ```{r, echo = FALSE, message=FALSE, warning=FALSE}
