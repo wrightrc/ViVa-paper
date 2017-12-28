@@ -542,6 +542,8 @@ add_ecotype_details <- function(data, Ecotype_column="Indiv") {
 # }
 
 
+
+
 #' Label
 #'
 #' @param data a data frame of variants with a column named "Indiv"
