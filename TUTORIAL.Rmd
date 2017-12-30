@@ -1,0 +1,122 @@
+---
+title: "Tutorial"
+author: "R Clay Wright"
+date: "12/28/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This tutorial will (hopefully) gently guide you through how to use the tools docker and Rmarkdown to analyze the natural variation in your set of genes and collaborate on our manuscript, tentatively titled A comprehensive analysis of natural sequence variation within the <i>Arabidopsis thaliana</i> nuclear auxin response pathway" (running title: "nuclear auxin response natural variation""). I assume that you have a basic working knowledge of how to download and install software as well as R and RStudio, 
+but if you feel you could use a refresher check out [this introduction](https://github.com/wrightrc/Intro_to_R_RStudio_and_ANOVA). We'll use docker to share with you a version of R and Rstudio that already has all of the necessary packages to do the analysis. We'll use Rmarkdown to write the manuscript and make figures and tables by integrating prose, R code and results from the code. 
+
+So in this tutorial I will guide you through in as abstracted a way as possible:
+1. Installing docker
+2. Starting the version of RStudio in docker 
+3. Working in docker/RStudio
+4. Saving your work in docker/RStudio
+5. Using Rmarkdown to format text
+6. Using Rmarkdown to insert R code and results into text
+7. Citations in Rmarkdown
+
+If you have any troubles with anything, find something unclear or even find a typo please email me and/or make the change in your version of these documents and I will integrate them in the next version. 
+
+Ready to get started? 
+
+## docker
+
+Docker is a program that allows software configurations to be shared across computers and time. We'll use docker to share the RStudio configuration that will allow you to run the `r1001genomes` package and shiny app without having to upgrade your computer, your R and Rstudio or deal with installing the packages `r1001genomes` depends on. Docker is kind of like a virtual machine that you may have used in the past to run Windows on your Mac or *visa versa*, but docker is better, faster, stronger than virtual machines. 
+
+First things first, let's install docker!
+
+### Installing docker  
+  
+Docker requires a 64bit processor and operating system. For Macs, you can check your processor by clicking the "apple" in the menu bar and selecting "About this Mac". If "Processor" says Core Duo, you unfortunately have a 32 bit processor, otherwise anything else is a new 64bit processor. On a machine running Windows, go to the start menu and settings, then click on "System" and finally "About". If under "System type" you see "32-bit operating system,..." you can't install docker. If you see "32-bit operating system, x64-based processor", you *can* update Windows to 64-bit and then install docker, but this update requires a clean install, meaning all of your files will be deleted. 
+
+Anyway, if you have 32-bit woes let me know and we'll come up with a way to allow you to collaborate. I've installed docker on the Macs in the lab so you can always work those.
+  
+#### Mac  
+If you are using a 2010 or newer Mac with OS X Yosemite (10.10) or newer you can simply [download the Community Edition of docker](https://download.docker.com/mac/stable/Docker.dmg)(click the link to begin download) and install it. 
+
+If you are using an older Mac or OS you will need to install the older [docker Toolbox](https://download.docker.com/mac/stable/DockerToolbox.pkg)(click the link to begin download). [Follow these directions](https://docs.docker.com/toolbox/toolbox_install_mac/) to help you get everything installed.
+
+#### Windows  
+If you are using Windows 10 Pro, Enterprise or Education you can simply [download the Community Edition of docker](https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe)(click the link to begin download) and install it.   
+
+If you are using an older version of Windows you will need to install the older [docker Toolbox](https://download.docker.com/mac/stable/DockerToolbox.pkg)(click the link to begin download). [Follow these directions](https://docs.docker.com/toolbox/toolbox_install_windows/) to help you get everything installed.
+
+### Using docker
+
+Before we jump in let's learn some docker vocabulary. The initial software setup that is a stable snapshot and can be shared is called an "image". Whenever you run that image, you create a "container", which is just an instance of that container. From the docker website: 
+
+>An **image** is a lightweight, stand-alone, executable package that includes everything needed to run a piece of software, including the code, a runtime, libraries, environment variables, and config files.  
+>  
+>A container is a runtime instance of an image—what the image becomes in memory when actually executed. It runs completely isolated from the host environment by default, only accessing host files and ports if configured to do so.
+
+So I have shared with you (and the rest of the world actually) the docker image that will allow you to easily run the r1001genomes package and Shiny app. When you run that image you will create your own container of that image that you can do work in, change settings, build on, save or erase. 
+
+Docker has recently built a graphical interface for managing images and containers called kitematic. We'll use this to simplify setting up your container from the image and allowing you to transfer files to and from the container.
+
+#### Installing kitematic
+
+If you click on the docker icon in the menu bar you will see kitematic listed as an option.  
+![](TUTORIAL_files/Screenshot 2017-12-29 16.01.58.png)  
+Select "Kitematic" to open a window with a link to download and install kitematic. Once you have installed kitematic selecting the "Kitematic" link will open the kitematic interface.  
+![](TUTORIAL_files/Screenshot 2017-12-29 16.50.28.png)  
+The containers that you currently have running on your system are listed in the left panel. You can see I have a "nuclear-auxin-natural-variation" container running, that docker has given the creative name "distracted-nobel". In the main pane of kitematic there are several popular images that we can create new containers from. 
+
+The image that we are going to work with here is called `r1001genomes`. Docker images build from previous images (like all programming does, and science for that matter). I built the `r1001genomes` image on top of a previous image called `verse` from the `rocker` project. The `verse` image contains R, Rstudio, the [tidyverse](www.tidyverse.org) packages, Rmarkdown and all of the dependencies for these things. To this, I added  the necessary packages that `r1001genomes` builds from and `r1001genomes`. Let's make a new container for this image!
+
+You can search in the box at the top of kitematic for "r1001genomes", then click "create" to download the image and create a container. This will take a **while**. You are downloading linux, R, Rstudio and all of those packages. Fortunately docker will reuse all of these components whenever you download a related image.  
+![](TUTORIAL_files/Screenshot 2017-12-29 21.08.01.png)
+  
+Once the image is downloaded and the container is created you'll see a log and some other information "IP & PORTS" and "VOLUMES".  
+![](TUTORIAL_files/Screenshot 2017-12-29 21.13.24.png) 
+
+  
+As it says: "You can access this container using the following IP address and port". This means that if you point your browser to the "ACCESS URL" you will see the version of Rstudio that we've built.  
+
+Go ahead give it a try!  
+![](TUTORIAL_files/Screenshot 2017-12-29 21.34.22.png)  
+Now we need some data to play with in our Rstudio container! You'll notice that the only folder available in the "Files" pane is "kitematic", which matches the folder in the "VOLUMES" pane back in kitematic. To make use of this folder we need to map it to a folder on our computer. Click on the "gear" settings icon in the "VOLUMES" pane, then click "CHANGE" and select a folder to be able to access it within your container. Go ahead and select the "natural-variation-webtool" folder that this tutorial is in.  
+
+Kitematic will then restart the container and the access URL might be changed. So go back to the "Home" tab and paste the new URL into your browser or, if the access URL didn't change, reload the page.  
+
+Now when you click on the "kitematic" folder you will see the contents of this folder. Set the working directory to the "manuscript" folder (using code, or the "More" button). Click on "manuscript.Rmd" to open the manuscript markdown file.  
+
+Time for some R markdown!
+
+## R Markdown
+
+The idea behind markdown and R markdown was to make html (hyper-text markUP language) more low key. So the goal of markDOWN, is to be easy to write and easy to read but still have a lot of the powers of HTML (text formatting, layout and templating). 
+
+This document was is actually written in R Markdown. If you haven't already, open the "code" markdown version of this document ("TUTORIAL.Rmd") in Rstudio, and navigate down to the "R Markdown" section using the navigation bar at the bottom of the "Source" pane.  
+![](TUTORIAL_files/Screenshot 2017-12-29 22.45.46.png)
+
+You can follow along with the code and the document side-by-side to learn how markdown text formatting works. Here's some example markdown from the R markdown file template. 
+
+Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+I would highly recommend checking out the "more details" link above and don't miss the [cheatsheet](http://rmarkdown.rstudio.com/lesson-15.html)! You can also find this and other cheatsheets and a Markdown reference in the RStudio "Help" menu.  
+![](TUTORIAL_files/Screenshot 2017-12-29 22.57.15.png)  
+
+
+
