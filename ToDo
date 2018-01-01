@@ -2,8 +2,10 @@ ToDo
 ===============================================
 Manuscript
 ===============================================
+- quick edit of tutorial
+- build skeleton
 
-- write tutorial for markdown and bibliography
+
 
 
 ===============================================
@@ -13,3 +15,4 @@ Done
 	- Autobuild from package
 - make install app for docker container
 	- I think kitematic will work well
+- write tutorial for markdown and bibliography

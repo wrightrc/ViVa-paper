@@ -3,34 +3,22 @@ title: "A comprehensive analysis of natural sequence variation within the <i>Ara
 author: 
   affiliation: University of Washington
   name: "R. Clay Wright"
-author: 
 
 date: "`r Sys.Date()`"
 
-output:
-  html_document:
-     fig_caption: yes
-#  word_document:
-#    fig_caption: yes
-#    fig_height: 6
-#    fig_width: 6
-#    highlight: haddock
+output: 
+    html_document:
+      toc: true
+      fig_caption: yes
+
 keywords: r markdown
 fontsize: 11pt
 fontfamily: Helvetica
-output: 
-   pdf_document: 
-     toc: true
-     number_sections: true
-bibliography: ["references.bib"]
+
+bibliography: ["natural_variation.bib", "TIR1_AFB.bib"]
 csl: apa.csl
 link-citations: true
 ---
-
-
-
-
-
 
 ```{r, echo = FALSE, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(warning = FALSE, collapse = TRUE, comment = "#>", tidy = TRUE, out.width = "90%", fig.height=4, fig.width=7, out.extra='style="margin: auto; display: block; padding-top: 15px;"')
@@ -40,7 +28,7 @@ library(dplyr)
 
 ```
 <!--This is a CSS (Cascading Style Sheet).
-It controls how panels and images are formatted.></!-->
+ It controls how panels and images are formatted.></!-->
 <style>
   img {
     display: block;
@@ -50,12 +38,11 @@ It controls how panels and images are formatted.></!-->
   }
 </style>
 
-#List of working titles  
-You should keep a list of titles and constantly be refining and tweaking it. A title helps focus you. The title should be in the same style as papers you plan to cite.
-You might also think of snappy titles or sub titles for press releases. Find some press releases for paper similar to yours to see how journalists interpret the results.
+# List of working titles  
+* A comprehensive analysis of natural sequence variation within the <i>Arabidopsis thaliana</i> nuclear auxin signaling pathway  
+* *Add your suggestions* 
 
-#Abstract  
-Your abstract should be in the following form, more or less exactly:
+# Abstract  
 
 * Motivating, high level statement  
 * Statement defining the cutting edge of your research area  
@@ -64,34 +51,40 @@ addressing.
 * A statement of the form:"Here, we ..."  that concisely states your contribution.  
 * A series of 3?5 statement about your results.  
 * A concluding statement.  
-When presenting your abstract to your advisor, these sentences should be clearly laid out, in a bullet list preferably.
+
 
     
-#Related work  
-You need a list of about 30 papers that are the most relevant. They should be weighted toward recent, well cited work. You should group them into two to four areas. For each paper, you should have a sentence that says what the paper is about and how it relates to your work.
-
-#Glossary  
-Make a list of all of the new terms that you have invented to talk about different parts of your work. This list will eventually be put into paragraph format, but for now it should look like a glossary. You can also add terms that from the literature that you will use in case you want to make sure that the reader (or you or your advisor) really knows what you mean when you use that term.
-
-#Results  
-This should be a list of 3-5  statements  that very exactly say what you are claiming as results, and then the support for that claim. Statements will be then supported by experimental, theoretical, or numerical evidence.
+# Related work  
+What and how have we, as a field, learned from natural variation?  
+[@hollister_genomic_2014; @bielawski_detecting_2013; @kryazhimskiy_population_2008; @schmid_multilocus_2005; @nieduszynski_sequence_2011; @melamed_combining_2015; @weigel_population_2015; @schmitz_patterns_2013; @weigel_natural_2005; @hardtke_case_2010; @koornneef_naturally_2004; @mitchell-olds_genetic_2006; @joly-lopez_developing_2016; @wright_insights_2017a; @park_distributions_2017; @_135_2016a]  
  
-Note that it is very important that you do not use mere titles for the sections of your paper. If you do, you end up with a laundry list. So do not say "transcription initiation" and list all of the things you know about the subject. Instead say, say "Transcription initiation is regulated by proteins that bind to or near promoters", and then list the evidence you have (or plan to get) that says why you suspect the sentence to be true.  
+# Methods
 
-Another way to think of these statements is that they are essentially your hypotheses, if you are a scientist, or they are statements of capabilities if you are an engineer.  
+# Results  
+## TIR1/AFB genes  
+[@gray_identification_1999; @kepinski_auxininduced_2004; @tan_mechanism_2007; @dezfulian_oligomerization_2016; @wu_evolution_2017b]
 
-#Figures and captions
+## Aux/IAA genes  
 
-You should have mock ups of three to five figures (with sub?figures) that you plan to get the data for. These figures are incredibly important to think about from an early stage. For example, if you know that you will have a certain data figure with certain x and y axes and certain error bars, then you have a specification of what data you will need to generate and what it ought to look like.
+### Group A Aux/IAAs
 
-You should also have working drafts of all of the captions for each sub figure. Captions have  titles and then descriptions.
+### Group B Aux/IAAs
 
-Finally, you should know what glossary terms or results statements the figures correspond to and roughly how you will use them in your paper.
+### Group C Aux/IAAs
 
-#List of things to do
+## TPL/TPR genes  
 
-Keep a running list of everything you need to do to finish the paper. Don’t put anything extraneous on the list. Make sure every unfinished result has a corresponding sub?list of things to do. Make sure that there are always items on your list that you can and will do t  his week,  as well as longer term items that help you plan ahead.
+## ARF genes  
+
+### Class A ARFs
+
+### Class B ARFs
+
+### Class C ARFs
 
 
-# Abstract
+
+
+
+
 
