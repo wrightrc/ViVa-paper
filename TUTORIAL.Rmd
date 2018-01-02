@@ -92,7 +92,7 @@ Once the image is downloaded and the container is created you'll see a log and s
 ![](TUTORIAL_screenshots/Screenshot 2017-12-29 21.13.24.png) 
 
   
-As it says: "You can access this container using the following IP address and port". This means that if you point your browser to the "ACCESS URL" you will see the version of Rstudio that we've built.  
+As it says: "You can access this container using the following IP address and port". This means that if you point your browser to the "ACCESS URL" you will see the version of Rstudio that we've built. The username and password are both "rstudio".   
 
 Go ahead give it a try!  
 ![](TUTORIAL_screenshots/Screenshot 2017-12-29 21.34.22.png)  
@@ -100,7 +100,9 @@ Now we need some data to play with in our Rstudio container! You'll notice that 
 
 Kitematic will then restart the container and the access URL might be changed. So go back to the "Home" tab and paste the new URL into your browser or, if the access URL didn't change just reload the page.  
 
-Now when you click on the "kitematic" folder you will see the contents of this folder. Any files you save in this folder will be saved to the folder you mapped on your computer. You can also open files from this folder in RStudio. In the RStudio "Files" pane, navigate to the "manuscript" folder and set it as your working directory (using the "More" button). Click on "manuscript.Rmd" to open the manuscript markdown file. 
+Now when you click on the "kitematic" folder you will see the contents of this folder. Any files you save in this folder will be saved to the folder you mapped on your computer. You can also open files from this folder in RStudio. You can save your data and the state of your RStudio session into this folder and it will stay on your computer. If you quit your browser you can navigate back to the same access url, because the docker container will be accessible unless you stop it in kitematic.   
+
+In the RStudio "Files" pane, navigate to the "manuscript" folder and set it as your working directory (using the "More" button). Click on "manuscript.Rmd" to open the manuscript markdown file. 
 
 Time for some R markdown!
 
