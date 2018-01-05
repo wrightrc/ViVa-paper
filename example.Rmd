@@ -15,6 +15,7 @@ knitr::opts_chunk$set(warning = FALSE, collapse = TRUE, comment = "#>", tidy = T
 library(r1001genomes)
 library(DT)
 library(dplyr)
+library(reshape2)
 
 ```
 
@@ -117,6 +118,64 @@ Do the genetics suggest these pairs are redundant?
 ## For example
 In TIR1 and AFB2 there are 2 domains. The F-box domain interacts with the SCF components [@gray_identification_1999], and the LRR domain binds auxin and Aux/IAA proteins [@kepinski_auxininduced_2004]. The F-box is roughly 40 amino acids and wraps tightly around the SKP1 component of the SCF complex. The LRR is greater than 500 amino acids and binds auxin in a pocket formed by a horseshoe shaped chain of LRRs [@tan_mechanism_2007]. The outside of this horseshoe shape does not have any known interactions other than a dimerization interface [@dezfulian_oligomerization_2016]. Because the F-box domain must interact with the SCF complex for TIR1/AFB2 to perform their known function, we might expect the F-box to be highly conserved. The small size of the F-box also helps strengthen this hypothesis. The LRR domain is much larger and may have differing specificities for Aux/IAAs, so we might expect it to be more diverse. 
 We would also expect the residues of the LRR that contact auxin and the Aux/IAA degron to be highly conserved. 
+
+## Creating annotations 
+
+We can build a table of all of these structure function annotations in Excel as a CSV or within R. For the AFBs we will annotate the protein domains and a micro RNA binding site. 
+
+```{r}
+# create matrix for F-box/LRR division in the coding sequence (CDS), 
+#  based on Tan et al. supplementary alignment 
+domains<-matrix(data = c(c(1,1,1,1,151,151,1), # Fbox start in CDS
+                         3*c(51,47,46,46,96,96,58), # Fbox end in AA * 3 = CDS 
+                         3*c(51,47,46,46,96,96,58)+1, # LRR start 
+                         c(1785,1758,1728,1734,1872,1860,1779)), # LRR end 
+             nrow = 4, ncol = 7, byrow = TRUE, 
+             dimnames = list(c('Fbox_start', 'Fbox_end', 
+                               'LRR_start', 'LRR_end'), 
+                           c("TIR1","AFB1","AFB2", "AFB3",
+                             "AFB4", "AFB5", "COI1")))
+
+#create columns for miR393
+miR393_start <- c(1519,1507,1504,1510,1657,1657,1551)
+miR393_end <- miR393_start+18
+
+# bind these columns to the domains
+domains<-rbind(domains,miR393_start,miR393_end)
+
+# convert to a data frame and convert values to AA numbering from CDS
+domains <- as.data.frame(t(round(domains/3))) 
+#domains
+write.csv(domains, "manuscript/annotations_wide.csv")
+```
+  
+You can used the `annotations_wide.csv` file as a basis to build annotations for your gene family. However because we can make alignments of our genes because they are so closely related it is not necessary to create an annotation for each gene in you family. Also this wide format doesn't make much sense if we are trying to annotate something unique to one gene. Instead I would recommend using a long format annotation. This will also make plotting these annotation on top of plots and alignments later much easier. Here is how we can convert the wide format annotation data frame into a long format.
+
+```{r}
+# create a column for the genes, which are currently the row names 
+domains$gene <- row.names(domains)
+
+# We'll order the gene names so that they will always be plotted in the 
+# conventional order
+domains$gene <- factor(x= domains$gene, levels = c('TIR1','AFB1','AFB2','AFB3','AFB4','AFB5','COI1'), ordered = T)
+
+# Now we'll use melt() from the reshape2 package to "melt" the data frame into 
+# long format. It's best to look at the output to figure out what melt does.
+domains_long <- reshape2::melt(data = domains, 
+                               id.vars = "gene", 
+                               variable.name = "annotation", # column name for 
+                               # all of the column names in the wide format
+                               value.name = "position") # what is the name 
+                               # of all of the values in the table
+domains_long
+
+# Let's add another column to indicate that these annotations are for 
+# amino acid positions
+domains_long$position_type <- "AA"
+#write.csv(domains_long, "manuscript/annotation_long.csv")
+```
+
+I would use this `annotation_long.csv` to keep track of the structure/function information on individual genes you come across as you are reading the literature. Then you can map this information on top of the diversity plots and alignments that we will create below to see if these annotations apply to the whole family or just the single genes cited in the literature. 
 
 ***
 

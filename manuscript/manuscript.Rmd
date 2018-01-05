@@ -86,7 +86,7 @@ Alex
 Amy
 
 ### Class B ARFs
-Andrew/Arjun
+Andrew
 
 ### Class C ARFs
 Hardik
