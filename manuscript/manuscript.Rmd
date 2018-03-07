@@ -64,7 +64,24 @@ What and how have we, as a field, learned from natural variation?
 ## TIR1/AFB genes  
 Romi
 [@gray_identification_1999; @kepinski_auxininduced_2004; @tan_mechanism_2007; @dezfulian_oligomerization_2016; @wu_evolution_2017b]
+1) Plant biologist of all types should use this web tool!
 
+>Makes it really easy to look at the evolution of genes in arabidopsis.
+>Makes it really easy to look at how families of genes are evolving.
+>Easy way to find accessions that might be interesting to you.
+
+2) This web tool can be used to identify domains or residues of potential functional importance in any gene or gene family. (E.g. stretches of conservation in regions of unknown function).
+
+>I was able to find that domains of iaa and phytate interaction are highly conserved, which is what we would expect.
+>I was able to show that extra flanking domains of AFB4 and 5 are very mutated and therefore probably not important.
+
+3) It can help identify sites of relevant functional divergence between sister pairs and more broadly within gene families (E.g. one sister has much higher diversity than the other. What are the shared regions of variation? What regions are highly variable in the more diverse sister?)
+
+>AFB4 the most diverse sister. All regions highly variable. Iaa binding mutated. likely not functional at all. All have higher variation before fbox binding domain and before dimerization domain.
+
+4) It can also identify accessions containing multiple nonsynonymous genes in a family or network that can be used for studying network evolution. (E.g. there is a nonsynonymous polymorphism in a key functional residue of a gene that you expect will alter its function, however there are many other polymorphisms in other genes in the pathway that may or may not compensate for this change. We can assess this by backcrossing this accession with Col-0 or other distantly related accessions and resequencing phenotypic segregants). 
+
+>Did not find this yet. None seem to be in a critical site, so I will be looking later on.
 ## Aux/IAA genes  
 
 
@@ -82,11 +99,37 @@ Alex
 
 ## ARF genes  
 
+Auxin response is mediated by the auxin responsive transcription factors, or ARFs. There are 23 ARFs in Arabidopsis that are divided into three phylogenetic classes. Class A ARFs, ARF5, ARF6, ARF7, ARF8, and ARF19, activate transcription. These ARFs have a Q-rich region in the middle of the protein that may mediate activation (Guilefoyle, 2007). It has recently been shown that the middle region of ARF5 interacts with the SWI/SNF chromatin remodeling ATPases BRAMA and SPLAYED, possibly to reduce nucleosome occupancy and allow for the recruitment of transcription machinery (Wu, 2016). Additionally ARF7 can interact with Mediator subunits, directly tethering transcriptional proteins to its binding regions (Ito, 2016). Class B and C ARFs are historically categorized as repressor ARFs, though the mechanism through which they confer repression has not been identified. Their middle regions tend to be proline- and serine-rich. 
+
+ARFs are comprised of three major domains, recent structures of which have informed structure-function analysis of the ARFs (Boer, 2014; Nanao, 2014; Korasick, 2014). These domains are conserved throughout land plants. ARFs share an N-terminal B3 DNA binding domain. Flanking this DNA-binding domain is a dimerization domain, which folds up into a single “taco-shaped” domain to allow for dimerization between ARFs. There is an auxillary domain that immediately follows and interacts with the dimerization domain. The middle region is the most variable between ARFs, as mentioned above, but is characterized by repetitive units of glutamine (class A), serine, or proline residues (classes B and C). On the C-terminal end of the protein a protein-protein interaction domain mediates interactions among ARFs, between ARFs and other transcription factors, and between ARFs and the Aux/IAA repressors. This interaction domain was recently characterized as a Phox and Bem1 (PB1) domain, which is comprised of a positive and negative face with conserved basic and acidic residues, respectively. Theoretically the dipolar nature of the PB1 domain can mediate multimerization by the pairwise interaction of these faces on different proteins, and indeed the ARF7 PB1 domain was crystallized as a multimer. It is unclear whether this multimerization occurs or plays a developmental significant role in vivo. Interfering with ARF dimerization in either the DNA-binding proximal dimerization domain or the PB1 domain decreases the ability of class A ARFs to activate transcription in a heterologous yeast system (Pierre-Jerome, 2016). 
+
+While domain architecture is broadly conserved among the ARFs, there are exceptional cases. Three ARFs do not contain a PB1 domain at all, ARF3, ARF13, and ARF17, and several more have lost the conserved acidic or basic residues in the PB1 domain, suggesting they may be reduced to a single interaction domain. Several ARFs additionally have an expanded conserved region within the DNA-binding domain, of unknown function. The majority of domain variation among ARFs occurs in the large B-class subfamily. The liverwort Marcantia polymorpha has a single representative ARF of each class (Flores-Sandoval, 2015). The much expanded classes of the flowering plants arise from both whole genome and tandem duplication events (Remington, 2004), and may have allowed for the expansion of the quantity and complexity of loci regulated by the ARFs and a consequent expansion in their regulation of developmental processes. Here we examine natural variation in the three ARF classes and how this variation may be informative of conservation and function among the ARFs. 
+
 ### Class A ARFs
 Amy
 
+Class A ARFs are the most well-studied ARF subfamily--the five family members all act as transcriptional activators and have well-characterized, distinct developmental targets. Class A ARFs all contain the canonical B3 DNA-binding domain and PB1 interaction domain, and all have glutamine-rich middle regions (Guilefoyle, 2007). Analysis of class A ARF nucleotide diversity showed that the majority of these ARFs had low nucleotide diveristy scores, all ${\pi_N/\pi_S}$ values substantially lower than 1 with the exception of ARF19, with a relatively high ${\pi_N/\pi_S}$ value of 1.8. Comparing diversity within sister pairs, the two class A ARF sister pairs had divergent diversity scores, with ARF19 and ARF8 having scores at least triple those of ARF7 and ARF6 respectively. This may suggest that ARF6 and ARF7 have more conserved function whereas ARF19 and ARF8 are more diverse. Overall the diversity of class A ARFs was generally low, especially compared to the class B and C ARFs, suggesting that class A ARFs are central to auxin signal transduction and plant development.
+
+For all class A ARFs, the middle region of the protein was the predominant high diversity region. The DNA-binding domain had very few, low-diversity missense mutations, as did the PB1 domain. Considering the necessity of their conserved functions, the low level of variation in these key DNA and protein-protein interaction domains is expected. 
+
+Within the middle region, ARF7 had several expansions of polyglutamine sequences compared to the other class A ARFs. Polyglutamine regions are known to readily expand and contract throughout evolutionary time due to replication error, and variation in polyQ length can be acted on by natural selection and have phenotypic consequences (Press, 2014). 
+
+A few missense variations in ARF5 highlighted potential functional variation among ecotypes. Two high-diversity changes at the positive face of the PB1 domain, very close to the conserved lysine residue, to phenylalanine were interstingly always found together in all ecotypes in which they occured: Tu-B2-3,Ru-2, Haes-1, Rd-0, 627ME-13Y1, Le-0,Bu-0, Bsch-0. These mutations to a rather bulky side chain may change the folding of the PB1 domain and interfere with interactions on the positive face. A high diversity polymorphism that results in change in the 17th amino acid of ARF5 from a leucine to a methionine is also intriguing. ARF5 has an N-terminal extension of unknown function relative to the other class A ARFs *how many amino acids*. It is possible that this methionine acts as an alternative start site in the accessions in which it is found yielding a truncated ARF5 variant without this N-terminal extension. 
+
+
 ### Class B ARFs
 Andrew
+
+ARF23, which is truncated in its DNA-binding region, has a high ${\pi_N/\pi_S}$ value of 4.1, and has many high-diversity valued nonsense variants, as may be expected of a gene that is pseudogenizing. 
+
+ARF3, ARF13, and ARF17 all lack a PB1 C-terminal domain, which suggests they may be unable to interact with Aux/IAA repressors and may act as an auxin-insensitive mechanism of adding competitive inhibition to ARF-mediated transcription. These ARFs span the range of ${\pi_N/\pi_S}$ ratios relative to the other ARFs, ranging from 0.85 to 4.1. ARF13, with the highest ${\pi_N/\pi_S}$ of 4.1 has many nonsense variants of high diversity, perhaps suggesting it is pseudogenizing. 
+
+ARF14, ARF15, ARF16, ARF20, and ARF21 all do not have one or multiple of the conserved acidic residues in the PB1 domain, and themselves form a subclade of the B ARFs. Interestingly, no non-synonymous variation is seen in these amino acid residues of these ARFs, suggesting that the amino acids that are in the regions may still be important for PB1 function. 
+
+
+
+
+
 
 ### Class C ARFs
 Hardik
