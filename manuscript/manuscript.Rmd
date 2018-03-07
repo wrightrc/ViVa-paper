@@ -15,7 +15,7 @@ keywords: r markdown
 fontsize: 11pt
 fontfamily: Helvetica
 
-bibliography: ["natural_variation.bib", "TIR1_AFB.bib"]
+bibliography: ["natural_variation.bib", "TIR1_AFB.bib", "ARF_C.bib"]
 csl: apa.csl
 link-citations: true
 ---
@@ -92,10 +92,10 @@ Andrew
 Hardik (All figure cite below are in folder "/Dropbox/natural-variation-webtool/manuscript_ARF_C/FIGURES")
 
 Class C ARFs shows low nucleotide diveristy scores, all pi_N/pi_S values substantially lower than 1.
-Comparing diversity within coding region of class C ARF, ARF16  has least diversity whereas its family members (ARF10, ARF17) shows  scores at least four times higher (PMCID: PMC519086).
+Comparing diversity within coding region of class C ARF, ARF16  has least diversity whereas its family members (ARF10, ARF17) shows  scores at least four times higher [@remington_contrasting_2004].
 Structurally, all three members of Class C ARFs contain both canonical B3 DNA-binding domain and whereas only ARF10 and ARF16 contains PB1 interaction domain. DNA binding domain exhibit overall low diversity and presence of largely synonymous changes for all the ARFs. Only ARF10, shows mis-sense variants (p.Ser147Thr/c.439T>A  and p.Ala157Ser/c.469G>T) DNA binding domains with higher diversity score for conservative variation (codon 147) compared to non conservation variation (codon 157) (Fig. ARF10_DBD Variants distribution). Of the PB1 domain containing class C ARFs, ARF16 exhibits several naturally occurring non-synonymous variants in contrast to ARF10 (Fig.  Arf16_PB_variants distribution) and is sporadically distributed in location.
 
-Few members of class B ARFs (ARF 2,3,4) and C ARFs (ARF10,16, 17) distinguish from other ARFs on the basis of its ability to be post transcriptionally regulated by trans-acting small interfering RNA (tasiRNA) and microRNA (miRNA) (PMID: 12202040, PMID: 15851028, ).  (@AMY Arf 6 and 8 targeted by miRNA 167 - check for conservation).  Interestingly, miRNA binding motif of the class C ARFs show high degree of conservation across the natural variation of 1001 genomes queried here (Fig. ARF10_16_17_Alignment). This is consistent with perturbation studies that has shown drastic developmental phenotype for class C ARFs (PMID: 16006581, PMID: 17672844, PMID: 15829600). For the class B ARFs (2,3,4) tasiRNA binding motif is highly conserved and show no variation suggesting strong regulatory constrains at the locus (Fig ARF2_3_4_Alignment). DNA binding domain of ARF4 exhibits non-synonymous variation in 4 accession and would be interesting to carry out phenotypic characterize them for developmental growth defects (Fig ARF4_DBD Variants distribution).
+Few members of class B ARFs (ARF 2,3,4) and C ARFs (ARF10,16, 17) distinguish from other ARFs on the basis of its ability to be post transcriptionally regulated by trans-acting small interfering RNA (tasiRNA) and microRNA (miRNA) [@rhoades_prediction_2002; @allen_micrornadirected_2005].  (@AMY Arf 6 and 8 targeted by miRNA 167 - check for conservation).  Interestingly, miRNA binding motif of the class C ARFs show high degree of conservation across the natural variation of 1001 genomes queried here (Fig. ARF10_16_17_Alignment). This is consistent with perturbation studies that has shown drastic developmental phenotype for class C ARFs [@wang_control_2005; @mallory_micrornadirected_2005; @liu_repression_2007]. For the class B ARFs (2,3,4) tasiRNA binding motif is highly conserved and show no variation suggesting strong regulatory constrains at the locus (Fig ARF2_3_4_Alignment). DNA binding domain of ARF4 exhibits non-synonymous variation in 4 accession and would be interesting to carry out phenotypic characterize them for developmental growth defects (Fig ARF4_DBD Variants distribution).
 
 
 
