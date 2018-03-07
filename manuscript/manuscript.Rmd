@@ -64,7 +64,37 @@ What and how have we, as a field, learned from natural variation?
 ## TIR1/AFB genes  
 Romi
 [@gray_identification_1999; @kepinski_auxininduced_2004; @tan_mechanism_2007; @dezfulian_oligomerization_2016; @wu_evolution_2017b]
+@Terrile_Nitric_2012 nitrosylation residues C140 important in SCFTIR1 dimerization and interaction with Aux/IAAs
+@Wright_Insights_2017 residues in TIR1 and AFB2 relevant in their degradation of Aux/IAAs.
+@Yu_Untethering_2015 E12K E15K residues important in TIR1s interaction with CUL1 (SCF complex).
+@tan_mechanism_2007 R401 R484 K485 K74 K113 R114 R403 R344 All important residues binding phytate.
+R403 hydrogen bonds with auxin compounds
+E487 R489 I488 residues grab the non-polar rings of auxin in place. convex wall part.
+I107 P409 F465 F380 C405 P347 P350 F351 mostly non-polar residues interacting with IAAs. Part of Loop 14, 12, and 2.
+G142A, F143A, I151A, V117A and G147A mutants dimerization
 
+Auxin acts by binding to receptors that in turn target co-repressors for degradation. Auxin receptors (six in the model plant Arabidopsis thaliana) evolved through gene duplication and diversification early in the history of vascular plants @Parry_Complex_2009. The Nemhauser lab has recently shown that the rate of co-repressor degradation is determined by the identity of both the receptor and co-repressor @Havens_Synthetic_2012, and that this rate sets the pace of development3. 
+Although it is unknown whether different receptors play different roles at the organismal level, a number of studies have pointed out differences in the ways the six different receptors in A. thaliana differ in their expression. The expression of AFB5 is induced in the presence of auxin, making this a circadian-regulated gene @Covington_Circadian_2007. It also appears AFB3 is more highly expressed in the roots in the presence of nitrate, allowing increased lateral root formation @Vidal_Nitrate_2010. Although TIR1/AFBs are expressed ubiquitously in A. thaliana tissues, TIR1, AFB2, and AFB3 have been shown to accumulate in the shoot and root meristems and leaf tissues, with slightly different expression patterns in TIR1 @Parry_Complex_2009. AFB1 has been found to have a mutation drastically reducing its ability to assemble into an SCF complex, contributing to it’s increased accumulation, as well as preventing it from degrading Aux/IAAs. Higher order TIR1/AFB mutants show AFB1 to have inconclusive organismal function. However, AFB1 is shown to be able to accumulate ubiquitously in all tissues @Yu_Untethering_2015. When it comes to binding auxins, AFB4 and AFB5 have been shown to preferentially and functionally bind the synthetic auxin picloram, while others have a preference for naturally occurring auxin 3-IAA @Prigge_Arabidopsis_2016. Interestingly, the ways in which TIR1/AFBs are able to bind and mark Aux/IAAs for degradation are variable. TIR1 and AFB2 have slightly different speed at which they perform this function, with AFB2 being generally quicker, as shown by our lab’s yeast degradation system @Havens_Synthetic_2012. Finally, higher order TIR1/AFB mutants show AFB1 to have inconclusive organismal function.
+  Using the Natural Variation Webtool developed in our lab, I will characterize the natural variation in the TIR1/AFB family of auxin receptors by looking at the genomes of 1001 accessions of A. thaliana. This webtool allows me to	quantify and compare the nucleotide diversity of different genes in this family, as well as find relevant potentially function-altering variants. 
+Using its diversity statistic function has shown me TIR1 and AFB1 both seem to be low diversity, hinting at their likely functional importance. AFB3 and 4 appear to be higher diversity, while their sisters are more conserved. This matches our current understanding of AFB3 and 4 as being minor players in the auxin signaling pathway, but brings up questions about the function of AFB1, which is inconclusive. Using this webtool, the AFB1 sequence can be aligned to the highly characterized TIR1 AA sequence showing locations of known non-synonymous variants. Although the most important functional regions do not contain variants in AFB1, there is a low diversity mutant, only found in the Can-1 accession, which is in the highly conserved TIR1/AFB oligomerization domain. Because variants eliciting significant changes in function often are not selected for, the fact that this variant is extremely low diversity holds promise that it is associated with a strong auxin signaling phenotype. I will order and characterize this accession in order to identify potential auxin signaling phenotypes. This would support that AFB1 functions through oligomerization with other TIR1/AFBs.
+  The AFB4 and AFB4 receptors are known to have an extension in their N-terminal domains. Using the alignment feature on this webtool has indicated this region to be the highest in diversity in these proteins, containing lots of missense variants (Fig. 4). This suggests that this extension does not play an important functional role in these proteins. 
+
+Figure 4: Alignment of A. thaliana TIR1/AFB F-box domains showing variants. Cyan marks the Fbox binding domain. Yellow, green, and magenta, mark missense and synonymous, synonymous only, and missense only variant locations respectively. Yellow squared E’s show Cul1-interacting residues, differing in AFB1.
+
+@Parry_Complex_2009
+1.	Parry G, Calderon-Villalobos LI, Prigge M, et al. Complex regulation of the TIR1/AFB family of auxin receptors. Proceedings of the National Academy of Sciences of the United States of America. 2009;106(52):22540-22545. doi:10.1073/pnas.0911967106.
+@Havens_Synthetic_2012
+2.	Kyle A. Havens, et al. A Synthetic Approach Reveals Extensive Tunability of Auxin Signaling. Plant Physiology Sep 2012, 160 (1) 135-142; doi: 10.1104/pp.112.202184
+@Guseman_Auxin-induced_2015
+3.	Guseman JM, et al. Auxin-induced degradation dynamics set the pace for lateral root development. Development (Cambridge, England). 2015;142(5):905-909. doi:10.1242/dev.117234.
+@Covington_Circadian_2007
+8.	Covington MF, Harmer SL. The Circadian Clock Regulates Auxin Signaling and Responses in Arabidopsis . Weigel D, ed. PLoS Biology. 2007;5(8):e222. doi:10.1371/journal.pbio.0050222.
+@Vidal_Nitrate_2010
+9.	Vidal EA, Araus V, Lu C, et al. Nitrate-responsive miR393/AFB3 regulatory module controls root system architecture in Arabidopsis thaliana. Proceedings of the National Academy of Sciences of the United States of America. 2010;107(9):4477-4482. doi:10.1073/pnas.0909571107.
+@Prigge_Arabidopsis_2016
+10.	Prigge MJ, Greenham K, Zhang Y, et al. The Arabidopsis Auxin Receptor F-Box Proteins AFB4 and AFB5 Are Required for Response to the Synthetic Auxin Picloram. G3: Genes|Genomes|Genetics. 2016;6(5):1383-1390. doi:10.1534/g3.115.025585.
+@Yu_Untethering_2015
+11.	Yu H, Zhang Y, Moss BL, et al. Untethering the TIR1 auxin receptor from the SCF complex increases its stability and inhibits auxin response. Nature plants. 2015;1(3):14030. doi:10.1038/nplants.2014.30.
 ## Aux/IAA genes  
 
 
