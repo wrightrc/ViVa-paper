@@ -1,5 +1,5 @@
 ---
-title: "A comprehensive analysis of natural sequence variation within the <i>Arabidopsis thaliana</i> nuclear auxin signaling pathway"
+title: "A comprehensive analysis of natural sequence variation within the <i>Arabidopsis thaliana</i> nuclear auxin signaling pathway using an accessible web application"
 author: 
   affiliation: University of Washington
   name: "R. Clay Wright"
@@ -52,8 +52,10 @@ addressing.
 * A series of 3?5 statement about your results.  
 * A concluding statement.  
 
+# Intro  
 
-    
+The first genome sequence of *Arabidopsis thaliana* facilitated rapid advancement of plant biology through molecular genetics. Since this initial genome, massive scaling of sequencing technology has allowed a pioneering group to survey the global genomic variation in natural *Arabidopsis thaliana* populations. This valuable population genetics resource has led to several associations of genetic loci with phenotypic traits. Beyond these genome-wide studies for gene- and variant- discovery this valuable dataset has seen little use. This natural genomic variation also provides a set of feasible functional variation at the gene, gene family, and gene network level that may provide insight into the function and evolution of genes, families, and networks. We present a web application and R-package through which plant molecular biologists with little to no bioinformatics experience can make use of this rich dataset of genetic variation to formulate hypotheses as to the sequence/function/phenotype relationships determined by the gene, family, or network of their interest. This candidate gene/family tool also allows family-wise alignments of variants to facilitate de novo functional domain identification and evolutionary analysis, easy access to lists of missense polymorphisms to facilitate biochemical assays of variant effects, as well as lists of accessions containing missense (or any type of) polymorphisms to facilitate genetic segregation analysis for deterimining the phenotypic effects of variants and the study of gene network evolution. Here, we have utilized this tool to analyze the genetic variation in the nuclear auxin signaling pathway, and formulate hypotheses regarding the functional implications of this variation and the evolution of the genes and gene families in this pathway. 
+
 # Related work  
 What and how have we, as a field, learned from natural variation?  
 [@hollister_genomic_2014; @bielawski_detecting_2013; @kryazhimskiy_population_2008; @schmid_multilocus_2005; @nieduszynski_sequence_2011; @melamed_combining_2015; @weigel_population_2015; @schmitz_patterns_2013; @weigel_natural_2005; @hardtke_case_2010; @koornneef_naturally_2004; @mitchell-olds_genetic_2006; @joly-lopez_developing_2016; @wright_insights_2017a; @park_distributions_2017; @_135_2016a]  
