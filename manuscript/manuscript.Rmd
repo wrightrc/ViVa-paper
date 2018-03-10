@@ -161,12 +161,17 @@ Within the available natural sequence variation, we found that for the canonical
 
 ###Sister Pair Diversification
 
+
 Previous research has ~~pointed to~~ **found evidence of** both broad genetic redundancy and specificity within closely related pairs or groups of IAA proteins [@overvoorde_functional_2005]. For example, the iaa8-1, iaa9-1 double mutant and the iaa5-1, iaa6-1, iaa19-1 triple mutant have wild-type phenotypes [@overvoorde_functional_2005], yet the IAA6/19 sister pair has significant differences in expression patterns, protein abundances and functions, suggesting they have undergone functional specialization since their divergence [@winkler_variation_2017]. 
 
 In our analysis of the full IAA gene family, one member of most IAA sister pairs had high nonsynonymous diversity while the other sister was more conserved (Figure IAA phylogeny heat map). In an interspecific comparison between *A. thaliana* and *A. lyrata*, IAA19 is more conserved, while IAA6 showed regions of increased sequence divergence upstream of the degron and in the N-terminal half of the PB1 domain [@winkler_variation_2017]. Consistent with these results, our analysis of intraspecific natural variation revealed higher conservation for IAA19 (${\pi_N/\pi_S}$ = 0.55) compared to IAA6 (${\pi_N/\pi_S}$ = 2.3) (Figure IAA phylogeny heat map), and also detected high diversity within the same regions of IAA6 as seen in Winkler et al. (Supp Fig IAA6 diversity plot). 
 
 Within the Group B IAA genes, there are four sister pairs--IAA10/IAA11, IAA12/IAA13, IAA18/IAA26, and IAA20/IAA30 (Fig X) [@remington_contrasting_2004]. Interestingly, among these sister pairs only IAA12 and 13 have a noticeable difference in nonsynonymous diversity. The *Arabidopsis thaliana* EFP browser shows that IAA10 and 11 have almost identical expression patterns, with the exception of IAA10 being more highly expressed in the developing seed, and IAA11 being more highly expressed in root tissue during lateral root development. In our analysis, IAA10 and IAA11 both showed functional conservation (${\pi_N/\pi_S}$ of 0.80 and 0.67 respectively) in support of IAA10 and IAA11 playing redundant roles. Accessions and associated variants identified here provide a potentially expedited route to elucidating the extent of redundancy between family members such as IAA10 and 11.
-	
+
+```{r}
+
+```
+
 ###Identification of new Loss-of-Function/Gain-of-Function mutations
 Accessions with functional variants can be potentially used to investigate the extent of redundancy/specialization within sister pairs. For example, it has been shown that IAA10 has a missense mutation in the EAR domain, which converts the second leucine in the LxLxL motif to a serine (L49S), a mutation likely to reduce the ability of the IAA to recruit the TOPLESS co-repressor [@lee_biological_2016]. This mutation was found in three accessions from the southern UK. A second potentially stronger mutation, represented in one accession from northeastern Spain is a ~~missense~~ **frameshift?** resulting in an early stop codon in the PB1 domain (need Supp. Fig?). This likely prevents IAA10 from interacting with an ARF. ~~These alleles would be strong candidates for loss-of-function mutants, allowing researchers to discover the function of IAA10. In particular, it would make possible a straightforward path for creating an iaa10/11 double mutant using CRISPR/Cas9 directed mutagenesis, allowing for examination of the extent of redundancy between these family members.~~ **I don't think we can say this. There are SALK lines in the 5' UTR and first intron of IAA10 and IAA11.** 
 
