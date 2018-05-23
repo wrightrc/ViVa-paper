@@ -346,8 +346,8 @@ The Aux/IAA proteins (IAAs) mediate both auxin perception and transcriptional co
 gene_info <- geneInfoFromFile(
   fname = system.file("shiny-app", "gene_family_data",
                       "IAA_gene_ids.csv", package = "r1001genomes"))
-annotation <- readAnnotationFile(filename = system.file("shiny-app", "gene_family_data",
-                      "IAA_annotations.csv", package = "r1001genomes"), gene_info = gene_info)
+#annotation <- readAnnotationFile(filename = system.file("shiny-app", "gene_family_data",
+#                      "IAA_annotations.csv", package = "r1001genomes"), gene_info = gene_info)
 alignment <- alignCDS(gene_info$transcript_ID)
 # make an alignment data frame
 aln_df <- makeAlnDF(alignment[[2]])
@@ -389,12 +389,12 @@ write.nexus.data(as.matrix(alignment[[2]]), file = "IAAs.nex", format = "protein
 aliscore(as.AAbin(alignment[[2]]), path = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/")
 id <- scan(file = "input.fas_List_random.txt", sep = " ", quiet = TRUE)
 AAAlign_no_gaps <- as.matrix(alignment[[2]])[, id]
-write.nexus.data(AAAlign_no_gaps, file = "~/Desktop/natural-variation-webtool/manuscript/IAAs.nex", format = "protein")
+write.nexus.data(AAAlign_no_gaps, file = "manuscript/IAAs.nex", format = "protein")
 ```
 ```{bash eval=FALSE}
 mb
 
-execute /Volumes/SSD/Users/clayw/Desktop/natural-variation-webtool/manuscript/IAAs.nex
+execute manuscript/IAAs.nex
 # set IAA33 as the outgroup
 outgroup AT5G57420.1
 
@@ -413,9 +413,9 @@ sumt
 ```
 
 ```{r}
-tree <- treeio::read.beast(file = "~/Desktop/natural-variation-webtool/manuscript/IAAs.nex.con.tre")
+tree <- treeio::read.beast(file = "IAAs.nex.con.tre")
 
-IAA_data <- read.csv("~/Dropbox/natural-variation-webtool/manuscript_IAA_A/Alex_Tree_work/IAAs_table.csv")
+IAA_data <- read.csv("IAAs_table.csv")
 #tip_labels need to be in the first column
 IAA_data %<>% select(name, everything())
 IAA_data$name %<>% as.character()
