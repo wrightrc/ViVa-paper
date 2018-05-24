@@ -415,19 +415,18 @@ sumt
 ```{r}
 tree <- treeio::read.beast(file = "IAAs.nex.con.tre")
 
+
 IAA_data <- read.csv("IAAs_table.csv")
 #tip_labels need to be in the first column
 IAA_data %<>% select(name, everything())
 IAA_data$name %<>% as.character()
 IAA_data$AGI %<>% as.character()
 
-IAA_data <- IAA_data[match(IAA_data$AGI, gsub(x = tree@phylo$tip.label, pattern = "\\.1",replacement = "")), ]
+IAA_data <- IAA_data[match(gsub(x = tree@phylo$tip.label, pattern = "\\.1",replacement = ""), IAA_data$AGI), ] 
 tree@phylo$tip.label <- IAA_data$name
-  IAA_data$AGI
-  IAA_data[match(IAA_data$AGI, gsub(x = tree@phylo$tip.label, pattern = "\\.1",replacement = "")), c("name", "AGI")]
-tree@phylo$tip.label
-
-
+ggtree(tree, layout = "rectangular", color = "grey") %<+% IAA_data + theme_tree() + scale_x_continuous(expand = c(0, 1.2)) + geom_tiplab(mapping = aes(color = Class), hjust = -0.25) + 
+  theme(legend.position = c(.9,.7)) + 
+  geom_nodelab(mapping = aes(label = round(prob,digits = 2)), nudge_x = -.3, nudge_y = .5, size = 3)
 
 ```
 
@@ -438,7 +437,7 @@ p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% IAA_data + theme_
                                         max(IAA_data$PiN_PiS)), 
                                       to = c(0,1)), guide = "colourbar") + scale_size(guide = "none") + 
   theme(legend.position = c(.9,.7)) + 
-  geom_nodelab(mapping = aes(label = round(prob,digits = 2)), nudge_x = -.3, nudge_y = .5, size = 3)
+  geom_nodelab(mapping = aes(label = round(prob,digits = 2)), nudge_x = -.3, nudge_y = .5, size = 3) 
 p
 ```
 
