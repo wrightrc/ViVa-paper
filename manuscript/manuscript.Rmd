@@ -299,7 +299,7 @@ VCF <- readRDS(system.file("shiny-app", "gene_family_data",
 div_stats <- ldply(VCF, diversityStats, geneInfo=gene_info, .id="transcript_ID")
 ```
 
-```{r AFB1 variants for PyMOL}
+```{r AFB variants for PyMOL}
 coding_vcf <- ldply(.data = VCF, .fun = subset, 
              !is.na(Transcript_ID) & gt_GT != "0|0")
 aln_df <- addSNPsToAlnDF(aln_df, coding_vcf, seq_name = Transcript_ID, 
@@ -433,6 +433,8 @@ set ray_trace_mode, 3
 
 # used get_view() to return the current view (position) of the molecule 
 # copy the code to be able to set the identical viewpoint later
+# to return the current view from Pymol
+# get_view
 
 set_view (\
      0.044671144,    0.083668359,   -0.995409012,\
@@ -625,6 +627,20 @@ Several examples of possible gain-of-function degron missense variants were foun
 
 ###Identifying novel functional sequences in IAAs
 An exciting possible use for the Natural Variation Webtool is to search for conserved, low-diversity sites that may represent possible sites of post-translational modification or protein-protein interaction. For example, recent detailed biochemical analysis identified putative lysine ubiquitination sites in members of the IAA6/19 sister pairs [@winkler_variation_2017]; Supp Fig IAA6/19 alignment). These sites are conserved across natural sequence variation, while several other lysine residues vary (Supp Figs alignment and map). In IAA6, there are 17 lysines of which 6 are putative ubiquitination sites, one is in the KR motif, while two others show natural variation. In IAA19, there are 15 total lysines, with 8 as putative ubiquitination sites, 2 in the KR motif and degron, and 1 that exhibits natural variation. **This sentence is not clear. Only 1 of the ubiquitination sites varies?** Natural sequence diversity may be used to narrow down a subset of lysines to assess for functional ubiquitination.
+
+```{r}
+coding_vcf <- ldply(.data = VCF, .fun = subset, 
+             !is.na(Transcript_ID) & gt_GT != "0|0")
+aln_df <- addSNPsToAlnDF(aln_df, coding_vcf, seq_name = Transcript_ID, 
+               seq_pos = Codon_Number)
+collapsed_aln_df %<>% left_join(y = subset(aln_df, seq_name == gene_info[gene_info$tair_symbol == "TIR1", "transcript_ID"]))
+
+selections <- select_variants(gene_info, aln_df, structure_ref = "IAA17")
+selections$V2 <- paste0("chain X and resi ", selections$V2)
+write.table(selections, file = "IAA_variant_selections", row.names = FALSE, 
+          col.names = FALSE, sep = ",", quote = FALSE)
+```
+
 
 The members of the IAA8/9/27 clade have a unique N-terminal extension with a highly conserved region common to orthologs in several other species [@dreher_arabidopsis_2006]. IAA8/9 play redundant roles in leaf serration [@koenig_auxin_2009], while IAA8 important in lateral roots [@arase_iaa8_2012]. IAA8 has been reported to uniquely localize in the cytosol [@arase_iaa8_2012] where it may interact with LSD1 protein [@coll_programmed_2011]. The N-terminal extension has a conserved region shared between IAA8 and IAA9 with low natural sequence diversity (Supp Fig IAA8/9 alignment) that may represent a site of novel functionality, possibly mediating interaction with LSD1. There are a few accessions with missense alleles in this region in both IAA8 and IAA9 that may be valuable in probing the functionality of this region (Supplemental Fig IAA8/9 map).
 
