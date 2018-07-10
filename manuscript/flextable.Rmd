@@ -1,0 +1,271 @@
+---
+title: "Testing flextable"
+author: "R Clay Wright"
+date: "7/6/2018"
+output:
+  word_document:
+    reference_docx: "template.docx"
+    toc: yes
+  html_document:
+    fig_caption: yes
+    toc: yes
+  pdf_document:
+    toc: yes
+bibliography:
+- natural_variation.bib
+- TIR1_AFB.bib
+- ARF_C.bib
+- AuxIAA_citations.bib
+#fontfamily: Helvetica
+fontsize: 11pt
+keywords: r markdown
+link-citations: yes
+csl: apa.csl
+always_allow_html: yes
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE, collapse = TRUE, comment = "#>", tidy = TRUE,  out.width = "90%", fig.height=4, fig.width=7, out.extra='style="margin: auto; display: block; padding-top: 15px;"')
+#cache = TRUE, cache.lazy = FALSE,
+
+#devtools::install_github("wrightrc/r1001genomes", ref = "auxin-natural-variation")
+library(ape)
+library(r1001genomes)
+library(DT)
+library(tidyverse)
+library(magrittr)
+library(RColorBrewer)
+library(ggpmisc)
+library(ggthemes)
+library(ggseqlogo)
+library(ggtree)
+library(reticulate)
+library(scales)
+library(viridis)
+library(ips)
+library(knitr)
+
+#use_python(python = "/usr/local/bin/python")
+```
+<!--This is a CSS (Cascading Style Sheet).
+ It controls how panels and images are formatted.></!-->
+<style>
+  img {
+    display: block;
+    margin: auto;
+    width: 90%;
+    height: auto;
+  }
+</style>
+
+# List of working titles  
+* A comprehensive analysis of natural sequence variation within the <i>Arabidopsis thaliana</i> nuclear auxin signaling pathway  
+* **Add your suggestions** 
+
+# Abstract  
+
+* Motivating, high level statement  
+* Statement defining the cutting edge of your research area  
+* A statement of the form: "However, it remains unclear ..." that defines what problem you are  
+addressing.  
+* A statement of the form:"Here, we ..."  that concisely states your contribution.  
+* A series of 3?5 statement about your results.  
+* A concluding statement.  
+
+# Intro  
+
+The first genome sequence of *Arabidopsis thaliana* facilitated rapid advancement of plant biology through molecular genetics. Since this initial genome, massive scaling of sequencing technology has allowed a pioneering group to survey the global genomic variation in natural *Arabidopsis thaliana* populations. This valuable population genetics resource has led to several associations of genetic loci with phenotypic traits and provided insights into how selective pressure has and is influencing the evolution of plant genomes. Outside of genome-wide studies however, this valuable dataset has seen little use. Natural genomic variation also provides a set of feasible functional variation at the gene, gene family and gene network level that may provide insight into the function and evolution of genes, families and networks. Here, we present a web application and R-package through which plant molecular biologists with little-to-no bioinformatics experience can make use of this rich dataset of genetic variation to formulate hypotheses as to the sequence/function/phenotype relationships determined by the gene, family, or network of their interest. We demonstrate the utility of this tool through comprehensive analysis and identification of potential functional variation in the nuclear auxin signaling pathway.
+
+This application allows easy access to 
+1. lists of missense polymorphisms to facilitate biochemical assays of variant effects [@starita_variant_2017],
+2. family-wise alignments of variants to facilitate de novo functional domain identification [@melamed_combining_2015], 
+3. lists of accessions containing missense (or any type of) polymorphisms to facilitate segregation analysis and measurment of the distribution of variant effects on phenotype [@park_distributions_2017], 
+4. as well as the study of gene and network evolution [@delker_natural_2010; @kliebenstein_role_2008]. 
+
+Here, we have utilized this tool to analyze the genetic variation in the nuclear auxin signaling pathway and formulate hypotheses regarding the functional implications of this variation and the evolution of the genes and gene families in this pathway. Our analysis also provided further confirmation of much of the existing knowledge of these genes demonstrating the validity of this approach. 
+ 
+# Methods
+
+## Nucleotide Diversity Calculation
+Nei  defined the nucleotide diversity statistic in his original paper as:
+“…the average number of nucleotide differences per site between two randomly chosen DNA sequences.” (Nei, 1979)
+And provided the equation:
+
+$\displaystyle \pi = \sum_{ij}x_{i}x_{j}\pi_{ij}$
+
+Where Where $x_{i}$ is the frequency of the ith sequence in the population and $\pi_{ij}$ is the number of sites that are different between the ith and jth sequence divided by sequence length.
+
+a more general form, that treats each sequence in the population as unique can be written as:
+
+$\displaystyle \pi = \frac{1}{L*n^2} \sum_{i=1}^n \sum_{j=1}^n \sum_{k=1}^L{\pi_{ijk}}
+\qquad
+\displaystyle \pi_{ijk} = \left\{\begin{array}{l}
+1 \quad \textrm{if} \quad N_{ik} \neq N_{jk} \\
+0 \quad \textrm{if} \quad N_{ik} = N_{jk}
+\end{array}\right.$
+
+where $N_{ik}$ is the nucleotide (A, T, C or G) at position k on the ith sequence of the population.
+$L$ is the length of the sequence (the same for all sequences in the population, 
+assumes only SNPs exist, no indels). n is the total number of sequences in the population.
+
+from this form we can re-arrange summations to the form below:
+
+$\displaystyle \pi = \frac{1}{L} \sum_{k=1}^L{\pi_{k}}
+\qquad
+\pi_{k} = \frac{1}{n^2} \sum_{i=1}^n \sum_{j=1}^n {\pi_{ijk}}$
+
+here $\pi_k$ can be thought of as the site-wise nucleotide diversity at position k, and is equal to 
+the nucleotide diversity of a sequence of length 1 at location k. we can calculate $\pi_k$ for each
+site, then average those over the sequence length to calculate $\pi$, the nucleotide diversity 
+of the sequence.
+
+The function `Nucleotide_diversity` in the r1001genomes package calculates $\pi_k$ for each position in the gene or region that contains a variant. note, $\pi_k$ is equal to 0 at all locations without variants.
+This is also what is displayed in the Diversity Plot tab of the web app.
+
+## Detailed $\pi_k$ calculaiton simplification.
+
+The formula for $\pi_k$ above requires comparing every sequence to every other sequence at location k,
+however, we know there are only a few variant forms at each individual location.
+
+so we can revert back to using Nei's original formula, modifying it slightly,
+replacing $x_i$ with $\frac{n_i}{n}$, $n_i$ being the number of sequences in the population of the form $N_i$ at location k: subscripts i and k are summed only over unique forms [need to clarify this]
+
+$\displaystyle \pi_k = \sum_{ij} \frac{n_i}{n}\frac{n_j}{n} \pi_{ij} = 
+\frac{1}{n^2}\sum_{ij} n_i n_j \pi_{ij}$
+
+$\pi_{ij(k)} = \left\{\begin{array}{l}
+1 \quad \textrm{if} \quad i \neq j \\
+0 \quad \textrm{if} \quad i = j
+\end{array}\right.$
+
+we will define $n_{!i} = n - n_i$ as the number of sequences different from i at k.
+
+we can see the summed term will be zero if $i=j$, and $n_i n_j$ if $i\neq j$ so:
+
+$\displaystyle \pi_k = \frac{1}{n^2} \sum_{i} n_i n_{!i}$
+
+next we substitute our definition of $n_{!i}$
+
+$\displaystyle \pi_k = \frac{1}{n^2} \sum_{i} n_i (n - n_{i})$
+
+then distribute and split summation:
+
+$\displaystyle \pi_k = \frac{1}{n^2} (n \sum_{i} n_i - \sum_{i} n_{i}^2)$
+
+finally, summing $\displaystyle \sum_{i}n_i$ is equal to n:
+
+$\displaystyle \pi_k = \frac{1}{n^2} (n^2 - \sum_{i} n_{i}^2)$
+
+this simplified form for $\pi_k$ is used by the app, because the counts of unique 
+variants at a single nucleotide location can easily be summarized in R.
+
+# Results  
+## *TIR1/AFB* genes  
+
+Auxin acts by binding to receptors that in turn target co-repressors for degradation. Auxin receptors (six in the model plant *Arabidopsis thaliana*) evolved through gene duplication and diversification early in the history of vascular plants [@Parry_Complex_2009]. The rate of co-repressor degradation is determined by the identity of both the receptor and co-repressor [@Havens_Synthetic_2012], and this rate sets the pace of lateral root development [@Guseman_Auxin-induced_2015]. 
+
+Although it is unclear what unique roles each receptor plays in growth and development, a number of studies have pointed out differences in the ways the six different receptors in A. thaliana differ in biochemical function and expression domain[@dharmasiri_plant_2005; @parry_complex_2009; @prigge_arabidopsis_2016]. Although TIR1/AFBs are expressed ubiquitously in A. thaliana tissues, TIR1, AFB2, and AFB3 have been shown to accumulate in the shoot and root meristems and leaf tissues, with slightly different expression patterns for TIR1 [@Parry_Complex_2009]. Additionally, the expression of AFB5 is stronly circadian-regulated [@Covington_Circadian_2007] and AFB3 is more highly expressed in the roots in the presence of nitrate, allowing increased lateral root formation [@Vidal_Nitrate_2010], suggesting more broad environmental regulation of this gene family may exist. 
+  Functionally, all members of this family have been shown to bind auxin and Aux/IAA proteins. However, AFB1 has drastically reduced ability to assemble into an SCF complex, due to the substitution E8K in its F-box domain, preventing it from inducing degradation of Aux/IAAs[@Yu_Untethering_2015]. This lack of complexation may allow observed high ubiquitous AFB1 accumulation [@Parry_Complex_2009]. Higher order mutants in the family containing *afb1* mutants suggest that *AFB1* has a moderate positive effect on auxin signaling. Additionally, AFB4 and AFB5 have been shown to preferentially and functionally bind the synthetic auxin picloram, while other family members preferentially bind indole-3-acetic acid [@Prigge_Arabidopsis_2016]. Interestingly, the strength and rate with which TIR1/AFBs are able to bind and mark Aux/IAAs for degradation are variable [@calderonvillalobos_combinatorial_2012; @Havens_Synthetic_2012]. AFB2 induced the degradation of certain Aux/IAA proteins at a faster rate than TIR1, suggesting some functional specificity has arisen since the initial duplication between the *TIR1/AFB1* and *AFB2/AFB3* clades.
+
+```{r TIR1_AFB_div_stats}
+gene_info <- geneInfoFromFile(
+  fname = system.file("shiny-app", "gene_family_data",
+                      "AFB_gene_ids.csv", package = "r1001genomes"))
+
+VCF <- readRDS(system.file("shiny-app", "gene_family_data",
+                      "AFBs_VCF.rds", package = "r1001genomes"))
+div_stats <- ldply(VCF, diversityStats, geneInfo=gene_info, .id="transcript_ID")
+
+#DT table
+DT <- formatRound(datatable(div_stats,
+                  colnames = c("transcript",
+                               "symbol",
+                               "&pi;<sub>N</sub>",
+                               "&pi;<sub>S</sub>",
+                               "&pi;<sub>N</sub>/&pi;<sub>S</sub>",
+                               "&pi; coding",
+                               "&pi; transcript"),
+                  rownames = FALSE, escape = FALSE,
+                  options = list(paging=FALSE, searching=FALSE)),
+                columns = 2:7, digits = 6)
+
+
+
+```
+
+```{r using kable }
+dt <- div_stats
+names(dt) <- c("transcript",
+                               "symbol",
+                               "&pi;~N~",
+                               "&pi;~S~",
+                               "&pi;~N~/&pi;~S~",
+                               "&pi; coding",
+                               "&pi; transcript")
+dt %<>% mutate_if(is.numeric, round, 6)
+dt$symbol %<>% as.ordered()
+dt$symbol %<>% fct_relevel("TIR1")
+dt %<>% arrange(symbol)
+dt %<>% select(symbol, everything())
+names(dt) <- paste0("**", names(dt), "**")
+library(kableExtra)
+kable(dt) 
+# library(pander)
+# panderOptions('table.split.table', Inf)
+# panderOptions('table.alignment.default', function(df)
+#     ifelse(sapply(df, is.numeric), 'right', 'left'))
+# panderOptions('header.style', "atx")
+# panderOptions('keep.line.breaks', TRUE)
+# panderOptions('table.split.cells', Inf)
+#pander(dt)
+
+```
+
+
+
+```{r}
+# library(flextable)
+# #flextable
+# pi_format <- function(x){
+#   sprintf("%.6f", x)
+# }
+# 
+# ft <- regulartable(div_stats)
+# #names(div_stats)
+# ft <- set_header_labels(ft, transcript_ID = "transcript",
+#                                tair_symbol = "symbol",
+#                                Pi_non_syn = "&pi;<sub>N</sub>",
+#                                Pi_syn = "&pi;<sub>S</sub>",
+#                                Pi_NS_Ratio = "&pi;<sub>N</sub>/&pi;<sub>S</sub>",
+#                                Pi_coding = "&pi; coding",
+#                                Pi_transcript = "&pi; transcript")
+# ft
+#flextable doesn't work with symbols well 
+#perhaps huxtable will? then huxtable can be converted to flextable
+# library(huxtable)
+# ht <- as_hux(x = div_stats)
+# names(ht) <-  c("transcript",
+#                                "symbol",
+#                                "&pi;<sub>N</sub>",
+#                                "&pi;<sub>S</sub>",
+#                                "&pi;<sub>N</sub>/&pi;<sub>S</sub>",
+#                                "&pi; coding",
+#                                "&pi; transcript")
+# ht <- add_colnames(ht, rowname = NULL)
+# escape_contents(ht)[1,] <- FALSE
+# print_notebook(ht)
+# ft <- as_flextable(ht, colnames_to_header = TRUE)
+# ft
+
+## perhaps pander is the way to go
+# library(pander)
+# pt <- div_stats
+# names(pt) <- c("transcript",
+#                                "symbol",
+#                                "&pi;<sub>N</sub>",
+#                                "&pi;<sub>S</sub>",
+#                                "&pi;<sub>N</sub>/&pi;<sub>S</sub>",
+#                                "&pi; coding",
+#                                "&pi; transcript")
+# pandoc.table(pt, round = c(0,0,rep(6, 5)))
+```

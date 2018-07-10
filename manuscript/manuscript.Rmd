@@ -5,6 +5,8 @@ author:
   affiliation: University of Washington
   name: R. Clay Wright
 date: "`r Sys.Date()`"
+params: 
+  output: word_document
 output:
   word_document:
     toc: yes
@@ -43,6 +45,7 @@ library(scales)
 library(viridis)
 library(ips)
 library(knitr)
+
 #use_python(python = "/usr/local/bin/python")
 ```
 <!--This is a CSS (Cascading Style Sheet).
@@ -183,7 +186,16 @@ collapsed_aln_df <-
 VCF <- readRDS(system.file("shiny-app", "gene_family_data",
                       "AFBs_VCF.rds", package = "r1001genomes"))
 div_stats <- ldply(VCF, diversityStats, geneInfo=gene_info, .id="transcript_ID")
-formatRound(datatable(div_stats,
+div_stats$tair_symbol %<>% fct_reorder(.x =  div_stats$tair_symbol, 
+                                       .fun = function(x) 
+                                         {as.integer(str_remove(x, 
+                                              pattern = "AFB|TIR"))})
+div_stats$tair_symbol %<>% fct_relevel("TIR1")
+div_stats %<>% arrange(tair_symbol)
+div_stats %<>% select(tair_symbol, everything())
+
+if (params$output == "html_document") {
+  formatRound(datatable(div_stats,
                   colnames = c("transcript",
                                "symbol",
                                "&pi;<sub>N</sub>",
@@ -194,6 +206,20 @@ formatRound(datatable(div_stats,
                   rownames = FALSE, escape = FALSE,
                   options = list(paging=FALSE, searching=FALSE)),
                 columns = 2:7, digits = 6)
+  } else 
+{
+  dt <- div_stats
+  names(dt) <- c("transcript",
+                                 "symbol",
+                                 "&pi;~N~",
+                                 "&pi;~S~",
+                                 "&pi;~N~/&pi;~S~",
+                                 "&pi; coding",
+                                 "&pi; transcript")
+  dt %<>% mutate_if(is.numeric, round, 6)
+  names(dt) <- paste0("**", names(dt), "**")
+  kable(dt) 
+}
 ```
 
 
@@ -429,7 +455,11 @@ div_stats$tair_symbol %<>% fct_reorder(.x = , div_stats$tair_symbol,
                                        .fun = function(x) 
                                          {as.integer(str_remove(x, 
                                               pattern = "IAA"))})
-div_stats <- formatRound(datatable(div_stats[order(div_stats$tair_symbol),],
+div_stats %<>% arrange(tair_symbol)
+div_stats %<>% select(tair_symbol, everything())
+
+if (params$output == "html_document") {
+  formatRound(datatable(div_stats,
                   colnames = c("transcript",
                                "symbol",
                                "&pi;<sub>N</sub>",
@@ -440,10 +470,20 @@ div_stats <- formatRound(datatable(div_stats[order(div_stats$tair_symbol),],
                   rownames = FALSE, escape = FALSE,
                   options = list(paging=FALSE, searching=FALSE)),
                 columns = 2:7, digits = 6)
-
-kable(div_stats$x$data)
-#saveWidget(div_stats, file = "IAA_div_stats.html", )
-
+  } else 
+{
+  dt <- div_stats
+  names(dt) <- c("transcript",
+                                 "symbol",
+                                 "&pi;~N~",
+                                 "&pi;~S~",
+                                 "&pi;~N~/&pi;~S~",
+                                 "&pi; coding",
+                                 "&pi; transcript")
+  dt %<>% mutate_if(is.numeric, round, 6)
+  names(dt) <- paste0("**", names(dt), "**")
+  kable(dt) 
+}
 ```
 
 Within the available natural sequence variation, we found several missense polymorphisms affecting the EAR domain or degron of several canonical IAAs. However, no missense polymorphisms were present in the KR motif or residues critical for PB1-PB1 domain interactions (Supp. Fig. Alignment of canonical IAAs). The majority of missense mutations observed were in the variable regions between the conserved domains. 
@@ -603,8 +643,13 @@ div_stats <- ldply(VCF, diversityStats, geneInfo=gene_info, .id="transcript_ID")
 div_stats$tair_symbol %<>% fct_reorder(.x = , div_stats$tair_symbol, 
                                        .fun = function(x) 
                                          {as.integer(str_remove(x, 
-                                              pattern = "IAA"))})
-div_stats <- formatRound(datatable(div_stats[order(div_stats$tair_symbol),],
+                                              pattern = "TPR"))})
+div_stats$tair_symbol %<>% fct_relevel("TPL")
+div_stats %<>% arrange(tair_symbol)
+div_stats %<>% select(tair_symbol, everything())
+
+if (params$output == "html_document") {
+  formatRound(datatable(div_stats,
                   colnames = c("transcript",
                                "symbol",
                                "&pi;<sub>N</sub>",
@@ -615,8 +660,20 @@ div_stats <- formatRound(datatable(div_stats[order(div_stats$tair_symbol),],
                   rownames = FALSE, escape = FALSE,
                   options = list(paging=FALSE, searching=FALSE)),
                 columns = 2:7, digits = 6)
-
-kable(div_stats$x$data)
+  } else 
+{
+  dt <- div_stats
+  names(dt) <- c("transcript",
+                                 "symbol",
+                                 "&pi;~N~",
+                                 "&pi;~S~",
+                                 "&pi;~N~/&pi;~S~",
+                                 "&pi; coding",
+                                 "&pi; transcript")
+  dt %<>% mutate_if(is.numeric, round, 6)
+  names(dt) <- paste0("**", names(dt), "**")
+  kable(dt) 
+}
 ```
 
   
@@ -659,7 +716,11 @@ div_stats$tair_symbol %<>% fct_reorder(.x =  div_stats$tair_symbol,
                                        .fun = function(x) 
                                          {as.integer(str_remove(x, 
                                               pattern = "ARF"))})
-div_stats <- formatRound(datatable(div_stats[order(div_stats$tair_symbol),],
+div_stats %<>% arrange(tair_symbol)
+div_stats %<>% select(tair_symbol, everything())
+
+if (params$output == "html_document") {
+  formatRound(datatable(div_stats,
                   colnames = c("transcript",
                                "symbol",
                                "&pi;<sub>N</sub>",
@@ -668,12 +729,22 @@ div_stats <- formatRound(datatable(div_stats[order(div_stats$tair_symbol),],
                                "&pi; coding",
                                "&pi; transcript"),
                   rownames = FALSE, escape = FALSE,
-                  options = list(paging=TRUE, searching=FALSE)),
+                  options = list(paging=FALSE, searching=FALSE)),
                 columns = 2:7, digits = 6)
-
-kable(div_stats$x$data)
-#saveWidget(div_stats, file = "IAA_div_stats.html", )
-
+  } else 
+{
+  dt <- div_stats
+  names(dt) <- c("transcript",
+                                 "symbol",
+                                 "&pi;~N~",
+                                 "&pi;~S~",
+                                 "&pi;~N~/&pi;~S~",
+                                 "&pi; coding",
+                                 "&pi; transcript")
+  dt %<>% mutate_if(is.numeric, round, 6)
+  names(dt) <- paste0("**", names(dt), "**")
+  kable(dt) 
+}
 ```
 
 ```{r ARF alignment}
@@ -840,3 +911,10 @@ Several members of class B (ARF2, 3 and 4) and C ARFs (ARF10, 16 and 17) are dis
 
 #Discussion
 
+Analyzing natural diversity within the gene families constituting the auxin nuclear signaling pathway has confirmed existing knowledge, supported existing hypothses and generated new hypotheses. This analysis in particular has confirmed the importance of auxin-induced degradation of the Aux/IAA proteins as evidenced by the strong conservation of the *AFB* genes and the canonical degron region of the *Aux/IAA* genes. Despite this relative conservation, this analysis has also identified many accessions containing new alleles of interest in the *AFB* and *Aux/IAA* families. This analysis has also  
+
+Importance of 
+-AFB
+-IAA degron
+-TPL
+-ARF DBD and PB1
