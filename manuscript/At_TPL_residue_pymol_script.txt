@@ -1,3 +1,0 @@
-select LisH, (chain A and resi 1-33)
-select CTLH, (chain A and resi 34-91)
-select CRA, (chain A and resi 92-184)

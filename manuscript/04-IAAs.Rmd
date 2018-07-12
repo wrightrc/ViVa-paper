@@ -1,0 +1,185 @@
+# *Aux/IAA* genes {#IAAs} 
+
+The Aux/IAA proteins (IAAs) mediate both auxin perception and transcriptional co-repression of auxin responsive genes. Auxin perception is carried out along with TIR1/AFB proteins, which together with IAAs act as co-receptors to bind and perceive nuclear auxin. Interaction of IAAs with auxin and TIR1/AFBs is conferred by the highly conserved 13 amino acid degron motif [@tan_mechanism_2007]. Formation of this auxin co-receptor complex triggers ubiquitination and subsequent degradation of IAAs. This degradation in turn relieves their repression upon ARF transcription factors. Stabilizing mutations within the degron can lead to dominant phenotypes [@berleth_auxin_2004; @yang_iaa1_2004]. The *Arabidopsis thaliana* Aux/IAA family has 29 members, most of which possess a canonical auxin degron. Notable exceptions are the auxin-insensitive IAA20 and IAA30 that lack a degron sequence entirely, while the closely related IAA31 retains a semi-functional degron sequence with a very slow degradation rate [@dreher_arabidopsis_2006; @havens_synthetic_2012]. Additionally, IAA degradation rate is influenced by rate motifs found outside the degron, such as the KR motif [@dreher_arabidopsis_2006; @moss_rate_2015]. IAA-mediated repression of ARFs depends upon both an EAR domain, N-terminal of the degron, that recruits co-repressors of the TOPLESS (TPL) family, and a Phox and Bem1 (PB1) domain that enables interaction via hetero-oligomerization with ARF PB1 domains [@nanao_structural_2014; @kagale_ear_2011]. 
+
+```{r IAA diversity stats, fig.height=11}
+gene_info <- geneInfoFromFile(
+  fname = system.file("shiny-app", "gene_family_data",
+                      "IAA_gene_ids.csv", package = "r1001genomes"))
+#annotation <- readAnnotationFile(filename = system.file("shiny-app", "gene_family_data",
+#                      "IAA_annotations.csv", package = "r1001genomes"), gene_info = gene_info)
+
+VCF <- readRDS(system.file("shiny-app", "gene_family_data",
+                      "IAAs_VCF.rds", package = "r1001genomes"))
+div_stats <- ldply(VCF, diversityStats, geneInfo=gene_info, .id="transcript_ID")
+div_stats$tair_symbol %<>% fct_reorder(.x = , div_stats$tair_symbol, 
+                                       .fun = function(x) 
+                                         {as.integer(str_remove(x, 
+                                              pattern = "IAA"))})
+div_stats %<>% arrange(tair_symbol)
+div_stats %<>% select(tair_symbol, everything())
+
+if (params$output == "html_document") {
+  formatRound(datatable(div_stats,
+                  colnames = c("transcript",
+                               "symbol",
+                               "&pi;<sub>N</sub>",
+                               "&pi;<sub>S</sub>",
+                               "&pi;<sub>N</sub>/&pi;<sub>S</sub>",
+                               "&pi; coding",
+                               "&pi; transcript"),
+                  rownames = FALSE, escape = FALSE,
+                  options = list(paging=FALSE, searching=FALSE)),
+                columns = 2:7, digits = 6)
+  } else 
+{
+  dt <- div_stats
+  names(dt) <- c("transcript",
+                                 "symbol",
+                                 "&pi;~N~",
+                                 "&pi;~S~",
+                                 "&pi;~N~/&pi;~S~",
+                                 "&pi; coding",
+                                 "&pi; transcript")
+  dt %<>% mutate_if(is.numeric, round, 6)
+  names(dt) <- paste0("**", names(dt), "**")
+  kable(dt) 
+}
+```
+
+Within the available natural sequence variation, we found several missense polymorphisms affecting the EAR domain or degron of several canonical IAAs. However, no missense polymorphisms were present in the KR motif or residues critical for PB1-PB1 domain interactions (Supp. Fig. Alignment of canonical IAAs). The majority of missense mutations observed were in the variable regions between the conserved domains. 
+
+###Sister Pair Diversification
+
+Previous research has found evidence of both broad genetic redundancy and specificity within closely related pairs or groups of IAA proteins [@overvoorde_functional_2005]. For example, the *iaa8-1 iaa9-1* double mutant and the *iaa5-1 iaa6-1 iaa19-1* triple mutant have wild-type phenotypes [@overvoorde_functional_2005], yet the *IAA6/19* sister pair has significant differences in expression patterns, protein abundances and functions suggesting they have undergone functional specialization since their divergence [@winkler_variation_2017]. 
+
+In our analysis of the *IAA* gene family, we frequently observed that one member of most *IAA* sister pairs had high nonsynonymous diversity while the other sister was more conserved (Figure IAA phylogeny heat map). In an interspecific comparison between *A. thaliana* and *A. lyrata*, *IAA19* is more conserved, while *IAA6* has regions of increased sequence divergence upstream of the degron and in the N-terminal half of the PB1 domain [@winkler_variation_2017]. Consistent with these results, our analysis of intraspecific natural variation revealed higher conservation for *IAA19* (${\pi_N/\pi_S}$ = 0.55) compared to *IAA6* (${\pi_N/\pi_S}$ = 2.3) (Figure IAA phylogeny heat map), and also detected high diversity within the same regions of *IAA6* as seen in Winkler et al. (Supp Fig IAA6 diversity plot). 
+```{r IAA alignment}
+alignment <- alignCDS(gene_info$transcript_ID)
+# make an alignment data frame
+aln_df <- makeAlnDF(alignment[[2]])
+
+# make a collapsed alignment for translating positions
+collapsed_aln_df <- 
+  aln_df %>% dplyr::select(aln_pos, seq_pos, seq_name) %>%
+  tidyr::spread(key = seq_name, value = seq_pos)
+```
+
+```{r Mask_IAA_alignment, eval=FALSE}
+aliscore(as.AAbin(alignment[[2]]), path = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/")
+id <- scan(file = "input.fas_List_random.txt", sep = " ", quiet = TRUE)
+AAAlign_no_gaps <- as.matrix(alignment[[2]])[, id]
+write.nexus.data(AAAlign_no_gaps, file = "manuscript/IAAs.nex", format = "protein")
+```
+```{bash IAA_phylogeny_construction, eval=FALSE}
+~/Desktop/natural-variation-webtool/manuscript
+
+/Applications/MrBayes/mb
+
+execute IAAs.nex
+# set IAA33 as the outgroup
+outgroup AT5G57420.1
+
+lset nucmodel=protein Rates=invgamma
+# or include Nst=6  ngammacat=4 omegavar=M3 
+prset aamodelpr=fixed(jones) statefreqpr=fixed(empirical) 
+# initial run with aamodelpr=mixed yielded posterior prob of 1 for jones model
+propset ExtTBR$prob=0
+
+mcmcp ngen=250000 nchains=4 printfreq=1000 samplefreq=100 burnin=200
+
+mcmc
+sump
+sumt
+
+```
+
+```{r Load IAA phylogeny and data}
+tree <- treeio::read.beast(file = "IAAs.nex.con.tre")
+
+
+IAA_data <- read.csv("IAAs_table.csv")
+#tip_labels need to be in the first column
+IAA_data %<>% select(name, everything())
+IAA_data$name %<>% as.character()
+IAA_data$AGI %<>% as.character()
+
+IAA_data <- IAA_data[match(gsub(x = tree@phylo$tip.label, pattern = "\\.1",replacement = ""), IAA_data$AGI), ] 
+tree@phylo$tip.label <- IAA_data$name
+```
+*I think IAA20, 30, and 15 should also be in class C. So there are really two large clades A and B and then there are truncations/loss of function/dominant variants scattered throughout, Class C.*
+
+```{r IAA_tree, fig.height=5, fig.width=5, fig.cap="(ref:IAA tree)"}
+p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% IAA_data + theme_tree() + scale_x_continuous(expand = c(0, 1.2)) + 
+  geom_tippoint(mapping = aes(size = 4*PiN_PiS, fill = PiN_PiS), shape = 21, color = "white", show.legend = TRUE) + 
+  scale_fill_viridis(values = rescale(c(min(IAA_data$PiN_PiS), 1,
+                                        max(IAA_data$PiN_PiS)), 
+                                      to = c(0,1)), guide = "colourbar") + scale_size(guide = "none") + 
+  theme(legend.position = c(.9,.7)) + 
+  geom_nodelab(mapping = aes(label = round(prob,digits = 2)), nudge_x = -.3, nudge_y = .5, size = 3) + 
+  geom_tiplab(mapping = aes(color = Class), hjust = -0.25) + 
+  scale_color_viridis(discrete = TRUE)
+p
+```
+
+(ref:IAA tree) IAA protein sequence tree mapped with ${\pi_N/\pi_S}$ 
+
+Within the Group B *IAA* genes, there are four sister pairs---*IAA10*/*IAA11*, *IAA12*/*IAA13*, *IAA18*/*IAA26*, and *IAA20*/*IAA30* \@ref(IAA tree) [@remington_contrasting_2004]. Interestingly, among these sister pairs only *IAA12* and *IAA13* have a noticeable difference in nonsynonymous diversity. The *Arabidopsis thaliana* EFP browser shows that **IAA10** and *IAA11* have almost identical expression patterns, with the exception of *IAA10* being more highly expressed in the developing seed, and *IAA11* being more highly expressed in root tissue during lateral root development **need to cite original data source here**. In our analysis, *IAA10* and *IAA11* both showed functional conservation (${\pi_N/\pi_S}$ of 0.80 and 0.67 respectively) in support of *IAA10* and *IAA11* playing redundant roles. Accessions and associated variants identified here provide a potentially expedited route to elucidating the extent of redundancy between family members such as *IAA10* and *IAA11*.
+
+
+### New Loss-of-Function/Gain-of-Function alleles
+Accessions with functional variants can be potentially used to investigate the extent of redundancy/specialization within sister pairs. For example, three accessions have a missense variant affecting the EAR domain of IAA10 (HR-5, UKSE06-118 and UKSW06-240, all from southern UK). This variant (L49S) is in the second leucine of the LxLxL motif and likely reduces the ability of IAA10 to recruit the TOPLESS co-repressor [@lee_biological_2016]. The nonsense variant (IAA10-Y219\*) resulting in truncated PB1 domain may be more indicative of *IAA10* null phenotype, as it likely prevents IAA10 from interacting with an ARF. This variant is only found in one accession from northeastern Spain (IP-Svi-0). These accessions and potential loss-of-function alleles may facilitate exploration of the function of *IAA10*.
+
+Several examples of possible gain-of-function missense variants were found in the degron of *IAA2*, *IAA3*, *IAA6*, *IAA7*, *IAA8*, *IAA13*, *IAA15*, *IAA18*, *IAA19*, *IAA27*, *IAA28* and *IAA29*. Most degron variants were very minor alleles in the population, only represented in one or two accessions. Interestingly, degron missense variants occured more frequently in *IAA* genes that have a closely related sister, which may indicate redundant function within the sister-pairs. *I think this is an interesting finding, but I'm not sure about this hypothesis of redundant function. If pairs are acting redundantly and we assume the degron variants are dominant, we would expect the auxin signal they transmit (their function) to be lower, in sum, as a pair. So I would actually hypothesize that there has been some divergence in function as a pair. * 
+```{r Correlation between Distance to MRCA and prevalence of degron variants}
+
+```
+
+```{r Correlation between Pi_N/Pi_S and k_5}
+
+```
+
+
+*IAA6* has two potentially dominant missense mutations found within the degron (Supp Fig. alignment), one previously believed to lead to the *shy1-1* phenotype [@kim_two_1996]. Interestingly, this variant is widely represented in 31 accessions across Europe (Supplemental Map Fig). This finding supports the proposition that iaa6-C78R may not be the mutation causing the *shy1-1D* phenotype but rather represents natural variation in the degron sequence ([note from Mike Prigge in TAIR](https://www.arabidopsis.org/servlets/TairObject?type=notepad&id=11247)). These accessions could be used to confirm whether *iaa6-C78R* is responsible for the *shy1-1D* phenotype. Additionally, an accession was identified with the IAA6-V77M variant, also in the degron, that may be useful to further explore *iaa6* gain-of-function phenotypes.
+
+### Identifying novel functional sequences in IAAs
+An exciting possible use for the Natural Variation Webtool is to search for conserved, low-diversity sites that may represent possible sites of functional import, such as post-translational modification or protein-protein interaction. For example, recent detailed biochemical analysis identified putative lysine ubiquitination sites in members of the *IAA6/19* sister pairs [@winkler_variation_2017]; Supp Fig IAA6/19 alignment). These sites are conserved across natural sequence variation, while several other lysine residues vary (Supp Figs alignment and map). In IAA6, there are 17 lysines of which ~6 are putative ubiquitination sites~ *I think this should be 5, K3, K32, K33, K91, and K97. Missense variants occured in K34Q, K140N *. One is proximal to the KR motif, while two others show natural variation. In IAA19, there are 15 total lysines, 8 of which are putative ubiquitination sites (K3, K25, K68, L87, K93, K100, K111, and K141). Two of these ubiquitination sites are proximal to the KR motif and degron. **This sentence is not clear. Only 1 of the ubiquitination sites varies? or one lysine, I think you mean this only 1 lysine that varies, but it is not ubiquitinated. Ubiquitylated Missense K129T** Natural sequence diversity may be used to narrow down a subset of lysines to assess for functional ubiquitination.
+
+```{r}
+
+```
+
+
+```{r IAA variants mapped to IAA17, eval=FALSE}
+coding_vcf <- ldply(.data = VCF, .fun = subset, 
+             !is.na(Transcript_ID) & gt_GT != "0|0")
+aln_df <- addSNPsToAlnDF(aln_df, coding_vcf, seq_name = Transcript_ID, 
+               seq_pos = Codon_Number)
+
+selections <- select_variants(gene_info, aln_df, structure_ref = "IAA17")
+selections$V2 <- paste0("chain X and resi ", selections$V2)
+write.table(selections, file = "IAA_variant_selections", row.names = FALSE, 
+          col.names = FALSE, sep = ",", quote = FALSE)
+```
+
+
+The members of the *IAA8/9/27* clade have a unique N-terminal extension with a highly conserved region common to orthologs in several other species [@dreher_arabidopsis_2006]. *IAA8* and *IAA9* play redundant roles in leaf serration [@koenig_auxin_2009], while *IAA8* also plays an important role in lateral root development [@arase_iaa8_2012]. IAA8 has been reported to uniquely localize in the cytosol [@arase_iaa8_2012] where it may interact with LSD1 protein [@coll_programmed_2011]. The N-terminal extension has low natural sequence diversity in *IAA8* and *IAA9* (Supp Fig IAA8/9 alignment) that may represent a site of novel functionality, possibly mediating interaction with LSD1. The few accessions with missense alleles in this region in both *IAA8* and *IAA9* may be valuable in probing the functionality of this region (Supplemental Fig IAA8/9 map).
+
+```{r IAA8_9_27 alignment}
+
+```
+
+```{r IAA8_9 map}
+
+```
+
+
+Members of the *IAA17/7/14/16* clade have a second EAR motif (LxLxL) with no observed missense variants in *IAA7*, *IAA16*, or *IAA17* (Supp Fig IAA7/14/16/17 alignment). This observation supports the experimental evidence for IAA7 that the second EAR motif is functional, *i.e.* it can interact with TPR1 co-repressor and has a minor repressive role in auxin-related developmental phenotypes [lee_biological_2016]. For *IAA14*, there were two missense variants that may be of interest to probe functionality of this second EAR motif. One variant, L41F, in the central lysine is represented in only one accession, and the other in the second “x” (K40N) is found in twelve accessions around Copenhagen (Supp Fig. IAA14 map). 
+
+```{r IAA7_14_16_17 alignment}
+
+```
+
+```{r IAA14 map}
+
+```

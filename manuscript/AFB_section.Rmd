@@ -1,0 +1,367 @@
+---
+title: A comprehensive analysis of natural sequence variation within the <i>Arabidopsis
+  thaliana</i> nuclear auxin signaling pathway using an accessible web application
+author:
+  affiliation: University of Washington
+  name: R. Clay Wright
+date: "`r Sys.Date()`"
+params: 
+  output: word_document
+output:
+  word_document:
+    toc: yes
+    fig_caption: yes
+    reference_docx: "template.docx"
+  html_document:
+    fig_caption: yes
+    toc: yes
+always_allow_html: yes
+fontfamily: Helvetica
+fontsize: 11pt
+keywords: r markdown
+link-citations: yes
+csl: apa.csl
+bibliography:
+- natural_variation.bib
+- TIR1_AFB.bib
+- ARF_C.bib
+- AuxIAA_citations.bib
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE, collapse = TRUE, comment = "#>", tidy = TRUE, cache = TRUE, cache.lazy = FALSE, out.width = "90%", fig.height=4, fig.width=7, out.extra='style="margin: auto; display: block; padding-top: 15px;"')
+
+#devtools::install_github("wrightrc/r1001genomes", ref = "auxin-natural-variation")
+library(ape)
+library(r1001genomes)
+library(DT)
+library(tidyverse)
+library(magrittr)
+library(RColorBrewer)
+library(ggpmisc)
+library(ggthemes)
+library(ggseqlogo)
+library(ggtree)
+library(reticulate)
+library(scales)
+library(viridis)
+library(ips)
+library(knitr)
+
+#use_python(python = "/usr/local/bin/python")
+```
+<!--This is a CSS (Cascading Style Sheet).
+ It controls how panels and images are formatted.></!-->
+<style>
+  img {
+    display: block;
+    margin: auto;
+    width: 90%;
+    height: auto;
+  }
+</style>
+
+# List of working titles  
+* A comprehensive analysis of natural sequence variation within the <i>Arabidopsis thaliana</i> nuclear auxin signaling pathway  
+* **Add your suggestions** 
+
+# Abstract  
+
+* Motivating, high level statement  
+* Statement defining the cutting edge of your research area  
+* A statement of the form: "However, it remains unclear ..." that defines what problem you are  
+addressing.  
+* A statement of the form:"Here, we ..."  that concisely states your contribution.  
+* A series of 3?5 statement about your results.  
+* A concluding statement.  
+
+# Intro  
+
+The first genome sequence of *Arabidopsis thaliana* facilitated rapid advancement of plant biology through molecular genetics. Since this initial genome, massive scaling of sequencing technology has allowed a pioneering group to survey the global genomic variation in natural *Arabidopsis thaliana* populations. This valuable population genetics resource has led to several associations of genetic loci with phenotypic traits and provided insights into how selective pressure has and is influencing the evolution of plant genomes. Outside of genome-wide studies however, this valuable dataset has seen little use. Natural genomic variation also provides a set of feasible functional variation at the gene, gene family and gene network level that may provide insight into the function and evolution of genes, families and networks. Here, we present a web application and R-package through which plant molecular biologists with little-to-no bioinformatics experience can make use of this rich dataset of genetic variation to formulate hypotheses as to the sequence/function/phenotype relationships determined by the gene, family, or network of their interest. We demonstrate the utility of this tool through comprehensive analysis and identification of potential functional variation in the nuclear auxin signaling pathway.
+
+This application allows easy access to 
+1. lists of missense polymorphisms to facilitate biochemical assays of variant effects [@starita_variant_2017],
+2. family-wise alignments of variants to facilitate de novo functional domain identification [@melamed_combining_2015], 
+3. lists of accessions containing missense (or any type of) polymorphisms to facilitate segregation analysis and measurment of the distribution of variant effects on phenotype [@park_distributions_2017], 
+4. as well as the study of gene and network evolution [@delker_natural_2010; @kliebenstein_role_2008]. 
+
+Here, we have utilized this tool to analyze the genetic variation in the nuclear auxin signaling pathway and formulate hypotheses regarding the functional implications of this variation and the evolution of the genes and gene families in this pathway. Our analysis also provided further confirmation of much of the existing knowledge of these genes demonstrating the validity of this approach. 
+
+# Results  
+## *TIR1/AFB* genes  
+
+Auxin acts by binding to receptors that in turn target co-repressors for degradation. Auxin receptors (six in the model plant *Arabidopsis thaliana*) evolved through gene duplication and diversification early in the history of vascular plants [@Parry_Complex_2009]. The rate of co-repressor degradation is determined by the identity of both the receptor and co-repressor [@Havens_Synthetic_2012], and this rate sets the pace of lateral root development [@Guseman_Auxin-induced_2015]. 
+
+Although it is unclear what unique roles each receptor plays in growth and development, a number of studies have pointed out differences in the ways the six different receptors in A. thaliana differ in biochemical function and expression domain[@dharmasiri_plant_2005; @parry_complex_2009; @prigge_arabidopsis_2016]. Although TIR1/AFBs are expressed ubiquitously in A. thaliana tissues, TIR1, AFB2, and AFB3 have been shown to accumulate in the shoot and root meristems and leaf tissues, with slightly different expression patterns for TIR1 [@Parry_Complex_2009]. Additionally, the expression of AFB5 is stronly circadian-regulated [@Covington_Circadian_2007] and AFB3 is more highly expressed in the roots in the presence of nitrate, allowing increased lateral root formation [@Vidal_Nitrate_2010], suggesting more broad environmental regulation of this gene family may exist. 
+  Functionally, all members of this family have been shown to bind auxin and Aux/IAA proteins. However, AFB1 has drastically reduced ability to assemble into an SCF complex, due to the substitution E8K in its F-box domain, preventing it from inducing degradation of Aux/IAAs[@Yu_Untethering_2015]. This lack of complexation may allow observed high ubiquitous AFB1 accumulation [@Parry_Complex_2009]. Higher order mutants in the family containing *afb1* mutants suggest that *AFB1* has a moderate positive effect on auxin signaling. Additionally, AFB4 and AFB5 have been shown to preferentially and functionally bind the synthetic auxin picloram, while other family members preferentially bind indole-3-acetic acid [@Prigge_Arabidopsis_2016]. Interestingly, the strength and rate with which TIR1/AFBs are able to bind and mark Aux/IAAs for degradation are variable [@calderonvillalobos_combinatorial_2012; @Havens_Synthetic_2012]. AFB2 induced the degradation of certain Aux/IAA proteins at a faster rate than TIR1, suggesting some functional specificity has arisen since the initial duplication between the *TIR1/AFB1* and *AFB2/AFB3* clades.
+
+(ref:TIR1_AFB_div_stats) 
+
+```{r TIR1_AFB_div_stats}
+gene_info <- geneInfoFromFile(
+  fname = system.file("shiny-app", "gene_family_data",
+                      "AFB_gene_ids.csv", package = "r1001genomes"))
+
+VCF <- readRDS(system.file("shiny-app", "gene_family_data",
+                      "AFBs_VCF.rds", package = "r1001genomes"))
+div_stats <- ldply(VCF, diversityStats, geneInfo=gene_info, .id="transcript_ID")
+div_stats$tair_symbol %<>% fct_reorder(.x =  div_stats$tair_symbol, 
+                                       .fun = function(x) 
+                                         {as.integer(str_remove(x, 
+                                              pattern = "AFB|TIR"))})
+div_stats$tair_symbol %<>% fct_relevel("TIR1")
+div_stats %<>% arrange(tair_symbol)
+div_stats %<>% select(tair_symbol, everything())
+
+if (params$output == "html_document") {
+  formatRound(datatable(div_stats,
+                  colnames = c("transcript",
+                               "symbol",
+                               "&pi;<sub>N</sub>",
+                               "&pi;<sub>S</sub>",
+                               "&pi;<sub>N</sub>/&pi;<sub>S</sub>",
+                               "&pi; coding",
+                               "&pi; transcript"),
+                  rownames = FALSE, escape = FALSE,
+                  options = list(paging=FALSE, searching=FALSE)),
+                columns = 2:7, digits = 6)
+  } else 
+{
+  dt <- div_stats
+  names(dt) <- c("transcript",
+                                 "symbol",
+                                 "&pi;~N~",
+                                 "&pi;~S~",
+                                 "&pi;~N~/&pi;~S~",
+                                 "&pi; coding",
+                                 "&pi; transcript")
+  dt %<>% mutate_if(is.numeric, round, 6)
+  names(dt) <- paste0("**", names(dt), "**")
+  kable(dt) 
+}
+```
+
+
+Examining the natural sequence variation across the *AFB* family revealed that *TIR1* and *AFB1* both had very low nonsynonymous diversity, hinting at their likely functional importance and bringing in to question the inconclusive role of *AFB1* in auxin signaling. *AFB3* and *AFB4* had higher nonsynonymous diversity, while their sister genes, *AFB2* and *AFB5* were more conserved. This matches our current understanding of *AFB3* as playing a minor role in the auxin signaling pathway and *AFB4* perhaps undergoing pseudogenization. 
+
+Although most known functional regions are highly conserved in *AFB1*, there is a nonsynonymous polymorphism  in the oligomerization domain, only found in the Can-0 accession. Mutations in this domain of *TIR1* frequently have a semidominant effect on root phenotypes [@dezfulian_oligomerization_2016; @wright_insights_2017a]. Characterization of this accession may identify potential *AFB1* phenotypes and may also test the hypothesis that AFB1 functions through oligomerization with other TIR1/AFBs.
+
+```{r AFB variants for PyMOL}
+alignment <- alignCDS(gene_info$transcript_ID)
+# make an alignment data frame
+aln_df <- makeAlnDF(alignment[[2]])
+
+# make a collapsed alignment for translating positions
+collapsed_aln_df <- 
+  aln_df %>% dplyr::select(aln_pos, seq_pos, seq_name) %>%
+  tidyr::spread(key = seq_name, value = seq_pos)
+coding_vcf <- ldply(.data = VCF, .fun = subset, 
+             !is.na(Transcript_ID) & gt_GT != "0|0")
+aln_df <- addSNPsToAlnDF(aln_df, coding_vcf, seq_name = Transcript_ID, 
+               seq_pos = Codon_Number)
+collapsed_aln_df %<>% left_join(y = subset(aln_df, seq_name == gene_info[gene_info$tair_symbol == "TIR1", "transcript_ID"]))
+
+#' Select variants for importing into PyMOL
+#'
+#' @param gene_info a gene info data frame
+#' @param aln_df an alignment data frame with attached SNPs
+#' @param structure_ref string, which tair_symbol or transcript_ID (depending on 
+#' \code{name_by_symbols}) corresponds to the protein structure to which 
+#' selections should be mapped
+#' @param effect_type string of the effect type to select from the alignment 
+#' data frame
+#' @param name_by_symbols logical, if true (default) tair_symbols will be used 
+#' to name the selections, otherwise transcript_IDs will be used
+#'
+#' @return
+#' @export
+#'
+#' @examples
+select_variants <- function(gene_info, aln_df, structure_ref, 
+                            effect_type = "missense", name_by_symbols = TRUE){
+  collapsed_aln_df <- aln_df %>% dplyr::select(aln_pos, seq_pos, seq_name) %>%
+    tidyr::spread(key = seq_name, value = seq_pos)
+  if(name_by_symbols)
+    column <- "tair_symbol"
+    else 
+      column <- "transcript_ID"
+  
+  selections <- ldply(.data = gene_info[,column], .fun = function(gene){
+    collapsed_aln_df %<>% dplyr::left_join(y = subset(aln_df, seq_name ==  
+                      gene_info[gene_info[, column] == gene, "transcript_ID"]))
+    variants <- collapsed_aln_df[
+      grepl(effect_type, collapsed_aln_df$effects), 
+      gene_info[gene_info[, column] == structure_ref, "transcript_ID"]]
+    c(gene, paste0(na.omit(as.numeric(variants[[1]])), collapse = "+"))
+  })
+  return(selections)
+}
+
+selections <- select_variants(gene_info, aln_df, structure_ref = "TIR1")
+selections$V2 <- paste0("chain B and resi ", selections$V2)
+write.table(selections, file = "AFB_variant_selections", row.names = FALSE, 
+          col.names = FALSE, sep = ",", quote = FALSE)
+```
+
+```{python readSelection, eval=FALSE}
+#
+# -- readSelection.py
+#
+from pymol import cmd, stored
+
+def readSelection (fileName):
+	'''
+	DESCRIPTION
+
+	reads a csv file containing a column of selection names and a column of
+	selection strings and creates selection objects for each
+	'''
+	#read in the selection file
+	with open(fileName) as f:
+		lines = f.readlines()
+		for line in lines:
+			sel = line.split(",")
+			cmd.select(sel[0], sel[1])
+
+	f.close()
+
+cmd.extend('readSelection',readSelection);
+```
+
+```{PyMol, AFB_structure, eval=FALSE}
+#from within pymol
+cmd.load("Dropbox/180705_NIH_renewal/Aim1-figures/2P1Q.pdb")
+hide everything
+
+run ~/Desktop/natural-variation-webtool/manuscript/readSelection.py
+
+readSelection ~/Desktop/natural-variation-webtool/manuscript/AFB_variant_selections
+
+# Define selections
+# select TIR1variants, (chain B and resi 154+239+546)
+select fbox, (chain B and resi 1-50)
+select LRR, (chain B and resi 50-576)
+select TIR1, (chain B and resi 1-576)
+# select AFB2variants, (chain B and resi 38+174+181+184+209+259+401+496)
+select tir1_1, (chain B and resi 147)
+select TIR1dm, (chain B and resi 170+473)
+select insPcontacts, (chain B and resi 74+78+113+114+344+401+403+436+460+484+485+509)
+select dimerNULL, (chain B and resi 142+143+151+117+147)
+select auxin, resn IAC
+select AUXcontacts, (chain B and resi 78+79+82+378+380+403+404+405+438+439+462+463+464+489)
+select insP, resn IHP
+select IAA7, chain C
+select IAA7contacts, (chain B and resi 81+82+84+139+347+349+350+351+352+380+405+406+407+409+464+465+489)
+select IAA7_N, chain C and resi 1
+select IAA7_C, chain C and resi 13
+select ASK1, chain A
+select Y, chain C and resi 11
+select Ycontacts, chain B and resi 165+166+195
+
+#Define color palette
+#set_color name, [ red-float, green-float, blue-float ]
+set_color blue1, [0.00000000, 0.20392157, 0.6980392]
+set_color blue2, [0.09803922, 0.36078431, 1.0000000]
+set_color blue3, [0.00000000, 0.29019608, 1.0000000]
+set_color teal,  [0.09803922, 1.00000000, 0.6980392]
+set_color LRR,   [1.00000000, 0.71764706, 0.0000000]
+set_color Fbox,  [0.69803922, 0.49411765, 0.0000000]
+set_color TIR1l, [0.67058824, 0.07843137, 0.8000000]
+set_color TIR1f, [0.63529412, 0.34117647, 0.6980392]
+set_color AFB2l, [0.37647059, 0.70196078, 1.0000000]
+set_color AFB2f, [0.07843137, 0.64313725, 0.8000000]
+
+show cartoon, 2P1Q
+
+color lrr, LRR
+
+color TIR1l, TIR1
+show sticks, TIR1
+color TIR1f, AFB1
+show sticks, AFB1
+color AFB2l, AFB2
+show sticks, AFB2
+color AFB2f, AFB3
+show sticks, AFB3
+
+set ray_trace_mode, 3
+
+# used get_view() to return the current view (position) of the molecule 
+# copy the code to be able to set the identical viewpoint later
+# to return the current view from Pymol
+# get_view
+
+set_view (\
+     0.044671144,    0.083668359,   -0.995409012,\
+     0.774909019,    0.625905454,    0.087390237,\
+     0.630409002,   -0.775298953,   -0.036878210,\
+    -0.001916260,    0.005584979, -202.498916626,\
+    -5.538011074,   -8.507736206,   39.046234131,\
+  -219.237945557,  624.123413086,  -20.000000000 )
+  
+#to render a high definition image use ray
+ray
+
+```
+
+
+
+```{r AFB1 diversity plot}
+coding_variants <- getCodingDiv(VCF[[gene_info[gene_info$tair_symbol == "AFB1", "transcript_ID"]]])
+p <- plotCodingDiv(uniqueCodingVars = coding_variants)
+annotation <- readAnnotationFile(filename = system.file("shiny-app", "gene_family_data",
+                      "AFB_annotations.csv", package = "r1001genomes"), gene_info = gene_info)
+annotation <- addAlnPosToAnno(anno_df = annotation, aln_df)
+
+# translate positions from TIR1 to AFB1
+AFB1_positions <- annotation$positions
+AFB1_positions %<>% left_join(y = select(collapsed_aln_df, aln_pos, gene_info[gene_info$tair_symbol == "AFB1", "transcript_ID"]), by = "aln_pos") 
+AFB1_positions$position <- AFB1_positions$AT4G03190.1
+
+p <- append_layers(p,list(
+        geom_rect(data = AFB1_positions,
+                   mapping = aes(xmin = as.integer(position)-1,
+                                 xmax = as.integer(position)+2,
+                                 fill = annotation),
+                  ymin = -Inf, ymax = Inf, inherit.aes = FALSE, alpha = 0.8)),
+      position = "bottom")
+p
+```
+
+
+The AFB4 and AFB5 receptors have an N-terminal extension prior to the F-box domains. This extension had very high nonsynonymous diversity(Fig. 4), suggesting that this extension does not play an important functional role in these proteins. Additionally, two frameshift variants and one stop-gained variant were observed in *AFB4* supporting its pseudogenization. 
+
+
+(ref:AFB_F-box_align) Alignment of A. thaliana TIR1/AFB F-box domains showing variants. Cyan marks the F-box binding domain. Yellow, green, and magenta, mark missense and synonymous, synonymous only, and missense only variant locations respectively. Yellow squared E’s show Cul1-interacting residues, differing in AFB1.
+
+```{r AFB_F-box_align, fig.cap='(ref:AFB_F-box_align)'}
+aln_df <- makeAlnDF(alignment[[2]])
+aln_df <- left_join(aln_df, dplyr::select(gene_info, "tair_locus",
+                                       "tair_symbol", "transcript_ID"),
+                        by = c("transcript_ID" = "transcript_ID"))
+aln_df$tair_symbol <- fct_rev(fct_relevel(aln_df$tair_symbol, "TIR1"))
+aln_df <- chunkAlnDF(aln_df = aln_df, chunk_width = 55)
+VCF <- ldply(.data = VCF, .fun = subset, gt_GT != "0|0")
+VCF <- getCodingDiv(VCF)
+aln_df <- addSNPsToAlnDF(aln_df, VCF)
+F_box <- subset(aln_df, aln_pos <= 96)
+F_box <- chunkAlnDF(aln_df = F_box, chunk_width = 80)
+p <-ggplot(F_box, aes(x = aln_pos, y = tair_symbol,
+                             group = seq_pos, text = variants))
+p <- p +
+  geom_tile(data = na.omit(F_box), mapping = aes(fill = effects),
+            width = 1, height = 1, alpha = 0.8) +
+  geom_text(aes(label=letter), alpha= 1, family = "Courier") +
+  scale_fill_brewer(type = "qual", palette = 1, direction = -1) +
+  scale_x_continuous(breaks=seq(1,max(F_box$aln_pos), by = 10)) +
+  scale_y_discrete() +
+  # expand increases distance from axis
+  labs(x = "", y = "", fill = "variant") +
+  theme_logo(base_family = "Helvetica") +
+  theme(panel.grid = element_blank(), panel.grid.minor = element_blank()) +
+  facet_wrap(facets = ~chunk, ncol = 1, scales = "free") +
+  theme(strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        legend.box = "vertical")
+p
+```

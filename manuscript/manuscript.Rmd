@@ -172,16 +172,6 @@ Although it is unclear what unique roles each receptor plays in growth and devel
 gene_info <- geneInfoFromFile(
   fname = system.file("shiny-app", "gene_family_data",
                       "AFB_gene_ids.csv", package = "r1001genomes"))
-annotation <- readAnnotationFile(filename = system.file("shiny-app", "gene_family_data",
-                      "AFB_annotations.csv", package = "r1001genomes"), gene_info = gene_info)
-alignment <- alignCDS(gene_info$transcript_ID)
-# make an alignment data frame
-aln_df <- makeAlnDF(alignment[[2]])
-
-# make a collapsed alignment for translating positions
-collapsed_aln_df <- 
-  aln_df %>% dplyr::select(aln_pos, seq_pos, seq_name) %>%
-  tidyr::spread(key = seq_name, value = seq_pos)
 
 VCF <- readRDS(system.file("shiny-app", "gene_family_data",
                       "AFBs_VCF.rds", package = "r1001genomes"))
@@ -228,6 +218,14 @@ Examining the natural sequence variation across the *AFB* family revealed that *
 Although most known functional regions are highly conserved in *AFB1*, there is a nonsynonymous polymorphism  in the oligomerization domain, only found in the Can-0 accession. Mutations in this domain of *TIR1* frequently have a semidominant effect on root phenotypes [@dezfulian_oligomerization_2016; @wright_insights_2017a]. Characterization of this accession may identify potential *AFB1* phenotypes and may also test the hypothesis that AFB1 functions through oligomerization with other TIR1/AFBs.
 
 ```{r AFB variants for PyMOL}
+alignment <- alignCDS(gene_info$transcript_ID)
+# make an alignment data frame
+aln_df <- makeAlnDF(alignment[[2]])
+
+# make a collapsed alignment for translating positions
+collapsed_aln_df <- 
+  aln_df %>% dplyr::select(aln_pos, seq_pos, seq_name) %>%
+  tidyr::spread(key = seq_name, value = seq_pos)
 coding_vcf <- ldply(.data = VCF, .fun = subset, 
              !is.na(Transcript_ID) & gt_GT != "0|0")
 aln_df <- addSNPsToAlnDF(aln_df, coding_vcf, seq_name = Transcript_ID, 
@@ -382,8 +380,9 @@ ray
 ```{r AFB1 diversity plot}
 coding_variants <- getCodingDiv(VCF[[gene_info[gene_info$tair_symbol == "AFB1", "transcript_ID"]]])
 p <- plotCodingDiv(uniqueCodingVars = coding_variants)
+annotation <- readAnnotationFile(filename = system.file("shiny-app", "gene_family_data",
+                      "AFB_annotations.csv", package = "r1001genomes"), gene_info = gene_info)
 annotation <- addAlnPosToAnno(anno_df = annotation, aln_df)
-
 
 # translate positions from TIR1 to AFB1
 AFB1_positions <- annotation$positions
@@ -689,7 +688,7 @@ Compared to the TPL domain, both the proline rich and WD-40 domains exhibited a 
 Despite the presence of five *TPL/TPR* genes in the genome, which are considered to be redundant (pmid 16763149), very few observed SNPs are predicted to result in loss of function for any *TPL/TPR* gene. Only one frameshift variant was observed, *TPR4-665delG*, in a single accession (Aiell-4 from Italy). This deletion occurs in codon 222, just after the TPL N-terminal domain, and generates an early stop eleven codons downstream from the deletion. It is unclear whether this N-terminal fragment would be expressed at any appreciable level, as it is possible that the generation of an early stop codon would trigger nonsense-mediated decay. However, if expressed, it would be fascinating to examine whether this naturally occurring N-terminal truncation retains activity as a co-repressor. Given the observation that the TPL N-terminal domain is sufficient to bind histones (28630893), and repress transcription via synthetic assays in yeast (24979769), it is possible that this represents a semi-functional TPL variant. There has been no evidence for prioritization of individual *TPL/TPR* family members in the auxin response pathway, but experiments modulating the gene copy number of *TPR1* revealed the importance of maintaining the proper dosage of *TPL/TPR* in order to accurately trigger the salicylic acid innate immune response (20647385). These results, taken together with the absence of *TPL/TPR* loss-of-function alleles in the *Arabidopsis thaliana* accessions suggest that perhaps the entire family is being conserved at the nucleotide level in the population to meet a gene dosage requirement, with little opportunity for neo- or sub-functionalization.
 
 
-## ARF genes  
+## *ARF* genes  
 
 Auxin response is ultimately mediated by the auxin responsive transcription factors (ARFs). There are 23 ARFs in *Arabidopsis thaliana* that are divided into three phylogenetic classes. Class A ARFs (ARF5, ARF6, ARF7, ARF8 and ARF19) activate transcription. These ARFs have a glutamine-rich region in the middle of the protein that may mediate activation (Guilefoyle, 2007). It has recently been shown that the middle region of ARF5 interacts with the SWI/SNF chromatin remodeling ATPases BRAMA and SPLAYED, possibly to reduce nucleosome occupancy and allow for the recruitment of transcription machinery (Wu, 2016). Additionally, ARF7 interacts with Mediator subunits, directly tethering transcriptional activation machinery to its binding sites in the chromosome (Ito, 2016). Class B and C ARFs are historically categorized as repressor ARFs, though the mechanism through which they confer repression has not been identified. Their middle regions tend to be proline- and serine-rich (citation, Ulmasov?). 
 
@@ -791,7 +790,7 @@ tree <- treeio::read.beast(file = "ARFs.nex.con.tre")
 
 ARF_data <- read.csv(system.file("shiny-app", "gene_family_data",
                       "ARF_gene_ids.csv", package = "r1001genomes"))
-ARF_data %<>% left_join(y = div_stats$x$data, by = c("name" = "tair_symbol"))
+ARF_data %<>% left_join(y = div_stats, by = c("name" = "tair_symbol"))
 #tip_labels need to be in the first column
 ARF_data %<>% select(name, everything())
 ARF_data$tair_locus %<>% as.character()
@@ -814,6 +813,7 @@ p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% ARF_data + theme_
   geom_tiplab(mapping = aes(color = class), hjust = -0.25) + 
   scale_color_viridis(discrete = TRUE)
 p
+#ggsave("ARF_tree.pdf", width = 6, height = 6)
 ```
 
 ### Class A ARFs 
@@ -848,7 +848,7 @@ p <- p +
   scale_fill_viridis(option = "A", discrete = TRUE) +
   scale_y_discrete() +
   # expand increases distance from axis
-  labs(x = "", y = "", fill = "variant") +
+  labs(x = "", y = "", fill = "") +
   theme_logo(base_family = "Helvetica") +
   theme(panel.grid = element_blank(), panel.grid.minor = element_blank()) +
   theme(strip.background = element_blank(),
@@ -861,12 +861,12 @@ p
 
 Class A ARFs all contain the canonical B3 DNA-binding domain, PB1 interaction domain and glutamine-rich middle region (Guilefoyle, 2007). In the analyzed natural variation, ARF7 had several expansions of polyglutamine sequences in the middle region. Polyglutamine regions are known to readily expand and contract throughout evolutionary time due to replication error, and variation in polyglutamine length can be acted on by natural selection and have phenotypic consequences (Press, 2014). 
 
-A few missense variants in ARF5 highlighted potential functional variation in the class A ARFs. A high frequency allele (*What are the variants?*), resulting in substitutions of small amino acids on the positive face of the PB1 domain for bulky phenylalanines, may disrupt interactions with other ARF or Aux/IAA PB1 domains. Interestingly, these variants were always found together in accessions Tu-B2-3, Ru-2, Haes-1, Rd-0, 627ME-13Y1, Le-0, Bu-0 and Bsch-0 *Where are these?*. Another highly represented polymorphism in ARF5 results in change in the 17th amino acid from a leucine to a methionine. This position is in the N-terminal extension of ARF5 which is of unknown function. It is possible that this methionine acts as an alternative start site in the accessions. 
+A few missense variants in *ARF5* highlighted potential functional variation in the class A ARFs. A high frequency allele (*What are the variants?*), resulting in substitutions of small amino acids on the positive face of the PB1 domain for bulky phenylalanines, may disrupt interactions with other ARF or Aux/IAA PB1 domains. Interestingly, these variants were always found together in accessions Tu-B2-3, Ru-2, Haes-1, Rd-0, 627ME-13Y1, Le-0, Bu-0 and Bsch-0 *Where are these?*. Another highly represented polymorphism in ARF5 results in change in the 17th amino acid from a leucine to a methionine. This position is in the N-terminal extension of ARF5 which is of unknown function. It is possible that this methionine acts as an alternative start site in the accessions. 
 
 
 ### Class B ARFs
 
-*ARF23*, which has a truncated DNA-binding domain, has a high ${\pi_N/\pi_S}$ value of 4.1, and has many high-diversity nonsense variants, as may be expected of a gene that is pseudogenizing. 
+*ARF23* has a truncated DNA-binding domain and had a high ${\pi_N/\pi_S}$ value of 4.1 and several high-frequency nonsense variants, as may be expected of a gene that is pseudogenizing. 
 
 ARF3, ARF13 and ARF17 all lack a C-terminal PB1 domain, which suggests they may be unable to interact with Aux/IAA repressors, possibly acting as auxin-insensitive competitive inhibitors of ARF-mediated transcription (Fig ARF3_13_17 alignment). These ARFs span the range of ${\pi_N/\pi_S}$ ratios relative to the other ARFs, ranging from 0.85 to 4.1. ARF17 is more conserved than the activator ARF, ARF19. ARF13 has many nonsense variants of high diversity and may be pseudogenizing. 
 
@@ -875,14 +875,14 @@ ARF3, ARF13 and ARF17 all lack a C-terminal PB1 domain, which suggests they may 
 ```
 
 
-ARF14, ARF15, ARF16, ARF20, and ARF21 all do not have one or multiple of the conserved acidic residues in the PB1 domain, and themselves form a subclade of the B ARFs. Interestingly, no non-synonymous variation is seen in these amino acid residues of these ARFs, suggesting that the amino acids that are in the regions may still be important for the function of these proteins. 
+ARF14, ARF15, **ARF16 I don't think this is correct ARF 16 is class C**, ARF20, and ARF21 all do not have one or multiple of the conserved acidic residues in the PB1 domain, and themselves form a subclade of the B ARFs. Interestingly, no non-synonymous variation is seen in these amino acid residues of these ARFs, suggesting that the amino acids that are in the regions may still be important for the function of these proteins. 
 
 ### Class C ARFs
 
 Class C ARFs show low nucleotide diversity scores, all ${\pi_N/\pi_S}$ values substantially lower than 1.
 ARF16 was the most conserved, whereas its clade members (ARF10, ARF17) had scores at least four times higher [@remington_contrasting_2004].
 
-Structurally, all three members of Class C ARFs contain a canonical B3 DNA-binding domain, but only ARF10 and ARF16 contain a PB1 domain. The DNA binding domains exhibit overall low diversity and presence of largely synonymous changes for all the ARFs. Only the ARF10 DNA binding domain contains missense variants (S147T and A157S) (Fig. ARF10_DBD Variants distribution). **Any insights into whether these may affect function? They are quite conservative.** Of the PB1 domain containing class C ARFs, ARF16 exhibits several missense variants which are sporadically distributed, in contrast to the conserved PB1 domain of ARF10 (Fig.  Arf16_PB_variants distribution).
+Structurally, all three members of Class C ARFs contain a canonical B3 DNA-binding domain, but only ARF10 and ARF16 contain a PB1 domain. The DNA binding domains exhibit overall low diversity. Only the ARF10 DNA binding domain contains missense variants (S147T and A157S) (Fig. ARF10_DBD Variants distribution). **Any insights into whether these may affect function? They are quite conservative.** Of the PB1 domain containing class C ARFs, ARF16 exhibits several missense variants which are sporadically distributed, in contrast to the conserved PB1 domain of ARF10 (Fig. Arf16_PB_variants distribution). **Interesting that the PB1 domain of ARF10 is conserved and the DBD of ARF16 is conserved. It this suggestive of subfunctionalization in this family, where one retains DNA and/or dimerization specificity and the other retains specificity for IAAs?**
 
 ```{r ARF10_DBD Variants distribution}
 
@@ -894,7 +894,7 @@ Structurally, all three members of Class C ARFs contain a canonical B3 DNA-bindi
 ```
 
 
-Several members of class B (ARF2, 3 and 4) and C ARFs (ARF10, 16 and 17) are distinguished from other ARFs on the basis of their post transcriptional regulation by trans-acting small interfering RNAs (tasiRNAs) and microRNAs (miRNAs) [@rhoades_prediction_2002; @allen_micrornadirected_2005]. **(@AMY Arf 6 and 8 targeted by miRNA 167 - check for conservation).** The miRNA target of class C ARFs showed a high degree of conservation (Fig. ARF10_16_17_Alignment). This is consistent with perturbation studies that have shown drastic developmental phenotype for class C ARFs [@wang_control_2005; @mallory_micrornadirected_2005; @liu_repression_2007]. For the class B ARFs (2, 3 and 4) the tasiRNA binding motif is also highly conserved suggesting strong regulatory constraints on these genes (Fig ARF2_3_4_Alignment). The DNA binding domain of ARF4 exhibits non-synonymous variation in 4 accession and would be interesting to carry out phenotypic characterization of these accessions for developmental growth defects (Fig ARF4_DBD Variants map).
+Several members of class B (ARF2, 3 and 4) and C ARFs (ARF10, 16 and 17) are distinguished from other ARFs on the basis of their post transcriptional regulation by trans-acting small interfering RNAs (tasiRNAs) and microRNAs (miRNAs) [@rhoades_prediction_2002; @allen_micrornadirected_2005]. **(@AMY Arf 6 and 8 targeted by miRNA 167 - check for conservation).** The miRNA target of class C ARFs showed a high degree of conservation (Fig. ARF10_16_17_Alignment). This is consistent with perturbation **what exactly does perturbation mean** studies that have shown drastic developmental phenotype for class C ARFs [@wang_control_2005; @mallory_micrornadirected_2005; @liu_repression_2007]. For the class B ARFs (2, 3 and 4) the tasiRNA binding motif is also highly conserved suggesting strong regulatory constraints on these genes (Fig ARF2_3_4_Alignment). The DNA binding domain of ARF4 exhibits non-synonymous variation in 4 accession and would be interesting to carry out phenotypic characterization of these accessions for developmental growth defects (Fig ARF4_DBD Variants map).
 
 ```{r ARF10_16_17_Alignment}
 

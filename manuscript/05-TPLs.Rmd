@@ -1,0 +1,65 @@
+# *TPL/TPR* genes {#TPLs}
+
+The Auxin signaling pathway utilizes the TOPLESS (TPL) and TOPLESS-related (TPR) family of Gro/TLE/TUP1 type co-repressor proteins to maintain auxin responsive genes in a transcriptionally-repressed state in the absence of auxin [@szemenyei_topless_2008]. In *Arabidopsis thaliana* the five member *TPL/TPR* family includes *TPL* and *TPR1-4*. The resulting proteins are comprised of three structural domains: an N-terminal TPL domain and two WD-40 domains [@long_topless_2006]. TPL/TPR proteins are recruited to the AUX/IAA proteins through interaction with the conserved Ethylene-responsive element binding factor-associated amphiphilic repression (EAR) domain [@szemenyei_topless_2008]. Canonical EAR domains have the amino acid sequence LxLxL, as found in most AUX/IAAs (figure xA) [@overvoorde_functional_2005]. TPL/TPR co-repressors bind EAR domains via their C-terminal to LisH (CTLH) domains found near their N-termini (citations of pre-structure founding papers/reviews). Recent structural analyses of the TPL N-terminal domain have highlighted the precise interaction interface between TPL and AUX/IAA EAR domains, as well as the TPL-TPL dimerization and tetramerization motifs [@martin-arevalillo_structure_2017; @ke_structural_2015a]. The residues required for higher-order multimers of TPL tetramers have also been identified [@ma_d53_2017]. Additional interactions with transcriptional regulation and chromatin modifying machinery are likely mediated by two tandem beta propeller domains of TPL/TPRs. These domain have not yet been crystallized, however numerous high resolution crystal structures of beta propeller domains allow for structural prediction of the TPL C-terminal beta propeller domains and the locations of likely interaction faces (Figure, X). 
+  
+The TOPLESS co-repressor family generally exhibits a high level of sequence conservation at the amino acid sequence level across resequenced *Arabidopsis thaliana* accessions, with all ${\pi_N/\pi_S}$ values below 1 (Table X). The closely related *TPL* and *TPR1* have the highest ${\pi_N/\pi_S}$ values (TPL-0.425, TPR1-0.739), suggesting that these these two related genes tolerate a higher degree of sequence and potentially functional diversity compared to *TPR2/3/4*. The N-terminal TPL domain of the TPL/TPR family is particularly conserved (Figure X). All nonsynonymous polymorphisms observed in this region are either in the coils between helices or are highly conservative mutations within helices (i.e. Valine to Isoleucine), which would be predicted to exhibit little effect on folding and function. 
+
+```{r TPL SNP stats, fig.height=11}
+gene_info <- geneInfoFromFile(
+  fname = system.file("shiny-app", "gene_family_data",
+                      "TPL_gene_ids.csv", package = "r1001genomes"))
+#annotation <- readAnnotationFile(filename = system.file("shiny-app", "gene_family_data",
+#                      "IAA_annotations.csv", package = "r1001genomes"), gene_info = gene_info)
+
+VCF <- readRDS(system.file("shiny-app", "gene_family_data",
+                      "TPL_VCF.rds", package = "r1001genomes"))
+div_stats <- ldply(VCF, diversityStats, geneInfo=gene_info, .id="transcript_ID")
+div_stats$tair_symbol %<>% fct_reorder(.x = , div_stats$tair_symbol, 
+                                       .fun = function(x) 
+                                         {as.integer(str_remove(x, 
+                                              pattern = "TPR"))})
+div_stats$tair_symbol %<>% fct_relevel("TPL")
+div_stats %<>% arrange(tair_symbol)
+div_stats %<>% select(tair_symbol, everything())
+
+if (params$output == "html_document") {
+  formatRound(datatable(div_stats,
+                  colnames = c("transcript",
+                               "symbol",
+                               "&pi;<sub>N</sub>",
+                               "&pi;<sub>S</sub>",
+                               "&pi;<sub>N</sub>/&pi;<sub>S</sub>",
+                               "&pi; coding",
+                               "&pi; transcript"),
+                  rownames = FALSE, escape = FALSE,
+                  options = list(paging=FALSE, searching=FALSE)),
+                columns = 2:7, digits = 6)
+  } else 
+{
+  dt <- div_stats
+  names(dt) <- c("transcript",
+                                 "symbol",
+                                 "&pi;~N~",
+                                 "&pi;~S~",
+                                 "&pi;~N~/&pi;~S~",
+                                 "&pi; coding",
+                                 "&pi; transcript")
+  dt %<>% mutate_if(is.numeric, round, 6)
+  names(dt) <- paste0("**", names(dt), "**")
+  kable(dt) 
+}
+```
+
+  
+The high degree of conservation in the entire N-terminal domain underscores its importance in TPL/TPR function. For example, the initial *tpl-1* mutation (N176H) in the ninth helix is a dominant gain-of-function allele [@long_topless_2006], which is capable of binding wild-type TPL protein and inducing protein aggregation [@ma_d53_2017]. It is therefore understandable that this helix had very low diversity as nonsynonymous variants in this domain could act in a dominant negative fashion. Addtionally, the crystal structure of TPL has revealed that the The LisH domain and CRA domain coordinate TPL dimerization and tetramerization respectively (26601214, 28698367), the CTLH domain is critical for interaction with DNA-binding transcription factors (26601214), and helix nine within the CRA domain may be critical for the formation of higher-order TPL complexes (multimers of TPL tetramers, 28630893). 
+  
+Compared to the TPL domain, both the proline rich and WD-40 domains exhibited a higher frequency of missense variants. We utilized Phyre2.0 modeling software to predict the structure of the TPL/TPR WD-40 repeats in order to map non-synonymous mutations to protein structure (Figure X). Here we can see both faces of each predicted beta-propeller structure of the WD-40 domains, which are connected by a short peptide linker. This model reveals amino acid conservation in the core and central residues of the WD-40 domains. ~~These observations could be used as the basis for forward mutagenesis strategies to test whether this region of TPL functions similarly to its homolog TLE, which binds its target genes EH1 and the C-terminal WRPW/Y motif (Hairy/Hes/Runx) in the center of the WD-40 domain (pmid 16762837).~~ **Can we say something more general here? There is not enough background to support this. What is TLE from? What is EH1? Is TLE really binding to EH1 DNA?**  
+  
+```{r TPL_TPR alignment}
+
+```
+  
+  
+Despite the presence of five *TPL/TPR* genes in the genome, which are considered to be redundant (pmid 16763149), very few observed SNPs are predicted to result in loss of function for any *TPL/TPR* gene. Only one frameshift variant was observed, *TPR4-665delG*, in a single accession (Aiell-4 from Italy). This deletion occurs in codon 222, just after the TPL N-terminal domain, and generates an early stop eleven codons downstream from the deletion. It is unclear whether this N-terminal fragment would be expressed at any appreciable level, as it is possible that the generation of an early stop codon would trigger nonsense-mediated decay. However, if expressed, it would be fascinating to examine whether this naturally occurring N-terminal truncation retains activity as a co-repressor. Given the observation that the TPL N-terminal domain is sufficient to bind histones (28630893), and repress transcription via synthetic assays in yeast (24979769), it is possible that this represents a semi-functional TPL variant. There has been no evidence for prioritization of individual *TPL/TPR* family members in the auxin response pathway, but experiments modulating the gene copy number of *TPR1* revealed the importance of maintaining the proper dosage of *TPL/TPR* in order to accurately trigger the salicylic acid innate immune response (20647385). These results, taken together with the absence of *TPL/TPR* loss-of-function alleles in the *Arabidopsis thaliana* accessions suggest that perhaps the entire family is being conserved at the nucleotide level in the population to meet a gene dosage requirement, with little opportunity for neo- or sub-functionalization.
+
+

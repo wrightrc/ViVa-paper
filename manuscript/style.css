@@ -1,0 +1,25 @@
+<!--This is a CSS (Cascading Style Sheet).
+ It controls how panels and images are formatted.></!-->
+<style>
+  img {
+    display: block;
+    margin: auto;
+    width: 90%;
+    height: auto;
+  }
+</style>
+
+p.caption {
+  color: #777;
+  margin-top: 10px;
+}
+p code {
+  white-space: inherit;
+}
+pre {
+  word-break: normal;
+  word-wrap: normal;
+}
+pre code {
+  white-space: inherit;
+}

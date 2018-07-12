@@ -1,0 +1,74 @@
+# Methods {#methods}
+
+## Nucleotide Diversity Calculation
+Nei  defined the nucleotide diversity statistic in his original paper as:
+“…the average number of nucleotide differences per site between two randomly chosen DNA sequences.” (Nei, 1979)
+And provided the equation:
+
+$\displaystyle \pi = \sum_{ij}x_{i}x_{j}\pi_{ij}$
+
+Where Where $x_{i}$ is the frequency of the ith sequence in the population and $\pi_{ij}$ is the number of sites that are different between the ith and jth sequence divided by sequence length.
+
+a more general form, that treats each sequence in the population as unique can be written as:
+
+$\displaystyle \pi = \frac{1}{L*n^2} \sum_{i=1}^n \sum_{j=1}^n \sum_{k=1}^L{\pi_{ijk}}
+\qquad
+\displaystyle \pi_{ijk} = \left\{\begin{array}{l}
+1 \quad \textrm{if} \quad N_{ik} \neq N_{jk} \\
+0 \quad \textrm{if} \quad N_{ik} = N_{jk}
+\end{array}\right.$
+
+where $N_{ik}$ is the nucleotide (A, T, C or G) at position k on the ith sequence of the population.
+$L$ is the length of the sequence (the same for all sequences in the population, 
+assumes only SNPs exist, no indels). n is the total number of sequences in the population.
+
+from this form we can re-arrange summations to the form below:
+
+$\displaystyle \pi = \frac{1}{L} \sum_{k=1}^L{\pi_{k}}
+\qquad
+\pi_{k} = \frac{1}{n^2} \sum_{i=1}^n \sum_{j=1}^n {\pi_{ijk}}$
+
+here $\pi_k$ can be thought of as the site-wise nucleotide diversity at position k, and is equal to 
+the nucleotide diversity of a sequence of length 1 at location k. we can calculate $\pi_k$ for each
+site, then average those over the sequence length to calculate $\pi$, the nucleotide diversity 
+of the sequence.
+
+The function `Nucleotide_diversity` in the r1001genomes package calculates $\pi_k$ for each position in the gene or region that contains a variant. note, $\pi_k$ is equal to 0 at all locations without variants.
+This is also what is displayed in the Diversity Plot tab of the web app.
+
+## Detailed $\pi_k$ calculaiton simplification.
+
+The formula for $\pi_k$ above requires comparing every sequence to every other sequence at location k,
+however, we know there are only a few variant forms at each individual location.
+
+so we can revert back to using Nei's original formula, modifying it slightly,
+replacing $x_i$ with $\frac{n_i}{n}$, $n_i$ being the number of sequences in the population of the form $N_i$ at location k: subscripts i and k are summed only over unique forms [need to clarify this]
+
+$\displaystyle \pi_k = \sum_{ij} \frac{n_i}{n}\frac{n_j}{n} \pi_{ij} = 
+\frac{1}{n^2}\sum_{ij} n_i n_j \pi_{ij}$
+
+$\pi_{ij(k)} = \left\{\begin{array}{l}
+1 \quad \textrm{if} \quad i \neq j \\
+0 \quad \textrm{if} \quad i = j
+\end{array}\right.$
+
+we will define $n_{!i} = n - n_i$ as the number of sequences different from i at k.
+
+we can see the summed term will be zero if $i=j$, and $n_i n_j$ if $i\neq j$ so:
+
+$\displaystyle \pi_k = \frac{1}{n^2} \sum_{i} n_i n_{!i}$
+
+next we substitute our definition of $n_{!i}$
+
+$\displaystyle \pi_k = \frac{1}{n^2} \sum_{i} n_i (n - n_{i})$
+
+then distribute and split summation:
+
+$\displaystyle \pi_k = \frac{1}{n^2} (n \sum_{i} n_i - \sum_{i} n_{i}^2)$
+
+finally, summing $\displaystyle \sum_{i}n_i$ is equal to n:
+
+$\displaystyle \pi_k = \frac{1}{n^2} (n^2 - \sum_{i} n_{i}^2)$
+
+this simplified form for $\pi_k$ is used by the app, because the counts of unique 
+variants at a single nucleotide location can easily be summarized in R.

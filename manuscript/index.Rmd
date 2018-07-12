@@ -1,0 +1,56 @@
+--- 
+title: "A Minimal Book Example"
+author: "Yihui Xie"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: book
+bibliography: [book.bib, packages.bib]
+biblio-style: apalike
+link-citations: yes
+description: "This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook."
+---
+
+
+```{r setup, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE, collapse = TRUE, comment = "#>", tidy = TRUE, cache = TRUE, cache.lazy = FALSE, out.width = "90%", fig.height=4, fig.width=7, out.extra='style="margin: auto; display: block; padding-top: 15px;"')
+
+#devtools::install_github("wrightrc/r1001genomes", ref = "auxin-natural-variation")
+library(ape)
+library(r1001genomes)
+library(DT)
+library(tidyverse)
+library(magrittr)
+library(RColorBrewer)
+library(ggpmisc)
+library(ggthemes)
+library(ggseqlogo)
+library(ggtree)
+library(reticulate)
+library(scales)
+library(viridis)
+library(ips)
+library(knitr)
+
+#use_python(python = "/usr/local/bin/python")
+```
+
+## List of working titles  
+* A comprehensive analysis of natural sequence variation within the <i>Arabidopsis thaliana</i> nuclear auxin signaling pathway  
+* **Add your suggestions** 
+
+# Abstract 
+
+* Motivating, high level statement  
+* Statement defining the cutting edge of your research area  
+* A statement of the form: "However, it remains unclear ..." that defines what problem you are  
+addressing.  
+* A statement of the form:"Here, we ..."  that concisely states your contribution.  
+* A series of 3?5 statement about your results.  
+* A concluding statement.  
+
+```{r include=FALSE}
+# automatically create a bib database for R packages
+knitr::write_bib(c(
+  .packages(), 'bookdown', 'knitr', 'rmarkdown'
+), 'packages.bib')
+```

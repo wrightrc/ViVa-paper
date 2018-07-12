@@ -1,0 +1,35 @@
+# Introduction {#intro}
+
+The first genome sequence of *Arabidopsis thaliana* facilitated rapid advancement of plant biology through molecular genetics. Since this initial genome, massive scaling of sequencing technology has allowed a pioneering group to survey the genomic variation in natural *Arabidopsis thaliana* populations. This valuable population genetics resource has led to several associations of genetic loci with phenotypic traits and provided insights into how selective pressure has influenced the evolution of plant genomes. Outside of genome-wide studies however, this valuable resequencing dataset has seen little use. 
+
+Natural genomic variation also provides a set of feasible functional variation at the gene, gene family and gene network level. Characterizing this variation can provide insights into the function and evolution of genes, families and networks [@delker_natural_2010, @wright_insights_2017] . Here, we present a web application and R-package for gene, gene family and gene network analysis of this dataset. This application allows plant molecular biologists without bioinformatics experience to use genomic variation to formulate hypotheses as to the sequence/function/phenotype relationships within their gene, family, or network of their interest. 
+
+This application allows easy access to 
+1. lists of missense polymorphisms to facilitate biochemical assays of variant effects [@starita_variant_2017],
+2. family-wise alignments of variants to facilitate de novo functional domain identification [@melamed_combining_2015], 
+3. lists of accessions containing missense (or any type of) polymorphisms to facilitate segregation analysis and measurment of the distribution of variant effects on phenotype [@park_distributions_2017], 
+4. as well as the study of gene and network evolution [@delker_natural_2010; @kliebenstein_role_2008]. 
+
+Here, we demonstrate the utility of this tool through comprehensive analysis of genomic variation in the nuclear auxin signaling pathway. We identify potential functional variation within the coding sequence of the genes within this network and formulate hypotheses regarding the functional implications of this variation and the evolution of these gene families. Our analysis provides further confirmation of much of the existing knowledge of these genes demonstrating the validity of this approach. We also identify natural alleles of several genes and accessions bearing these alleles to facilitate future characterization structure/function, genotype/phenotype, and epistatic relationships. 
+
+
+## bookdown example
+You can label chapter and section titles using `{#label}` after them, e.g., we can reference Chapter \@ref(intro). If you do not manually label them, there will be automatic labels anyway, e.g., Chapter \@ref(methods).
+
+Figures and tables with captions will be placed in `figure` and `table` environments, respectively.
+
+```{r nice-fig, fig.cap='Here is a nice figure!', out.width='80%', fig.asp=.75, fig.align='center'}
+par(mar = c(4, 4, .1, .1))
+plot(pressure, type = 'b', pch = 19)
+```
+
+Reference a figure by its code chunk label with the `fig:` prefix, e.g., see Figure \@ref(fig:nice-fig). Similarly, you can reference tables generated from `knitr::kable()`, e.g., see Table \@ref(tab:nice-tab).
+
+```{r nice-tab, tidy=FALSE}
+knitr::kable(
+  head(iris, 20), caption = 'Here is a nice table!',
+  booktabs = TRUE
+)
+```
+
+You can write citations, too. For example, we are using the **bookdown** package [@R-bookdown] in this sample book, which was built on top of R Markdown and **knitr** [@xie2015].

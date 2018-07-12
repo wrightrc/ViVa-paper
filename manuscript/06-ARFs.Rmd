@@ -1,0 +1,219 @@
+# *ARF* genes {#ARFs} 
+
+Auxin response is ultimately mediated by the auxin responsive transcription factors (ARFs). There are 23 ARFs in *Arabidopsis thaliana* that are divided into three phylogenetic classes. Class A ARFs (ARF5, ARF6, ARF7, ARF8 and ARF19) activate transcription. These ARFs have a glutamine-rich region in the middle of the protein that may mediate activation (Guilefoyle, 2007). It has recently been shown that the middle region of ARF5 interacts with the SWI/SNF chromatin remodeling ATPases BRAMA and SPLAYED, possibly to reduce nucleosome occupancy and allow for the recruitment of transcription machinery (Wu, 2016). Additionally, ARF7 interacts with Mediator subunits, directly tethering transcriptional activation machinery to its binding sites in the chromosome (Ito, 2016). Class B and C ARFs are historically categorized as repressor ARFs, though the mechanism through which they confer repression has not been identified. Their middle regions tend to be proline- and serine-rich (citation, Ulmasov?). 
+
+Canonical ARFs are comprised of three major domains. Recent crystallization of these domains have informed structure-function analysis of the ARFs (Boer, 2014; Nanao, 2014; Korasick, 2014). These domains are conserved throughout land plants (Dolf's new paper). ARFs share an N-terminal B3 DNA binding domain. Flanking this DNA-binding domain is a dimerization domain, which folds up into a single “taco-shaped” domain to allow for dimerization between ARFs. There is an auxiliary domain that immediately follows and interacts with the dimerization domain. The middle region is the most variable between ARFs, as mentioned above, but is characterized by repetitive units of glutamine (class A), serine, or proline residues (classes B and C).
+
+The C-terminal domain of the ARF is a protein-protein interaction domain mediating interactions among ARFs, between ARFs and other transcription factors, and between ARFs and the Aux/IAA repressors. This interaction domain was recently characterized as a Phox and Bem1 (PB1) domain, which is comprised of a positive and negative face with conserved basic and acidic residues, respectively (Nanao, 2014; Korasick, 2014). The dipolar nature of the PB1 domain may mediate multimerization by the pairwise interaction of these faces on different proteins as the ARF7 PB1 domain was crystallized as a multimer [@korasick_]. However, it is unclear whether ARF multimerization occurs or plays a developmental significant role in vivo. Interfering with ARF dimerization in either the DNA-binding proximal dimerization domain or the PB1 domain decreases the ability of class A ARFs to activate transcription in a heterologous yeast system (Pierre-Jerome, 2016). 
+
+While domain architecture is broadly conserved among the ARFs, there are exceptional cases. Three ARFs do not contain a PB1 domain at all, ARF3, ARF13, and ARF17, and several more have lost the conserved acidic or basic residues in the PB1 domain, suggesting they may be reduced to a single interaction domain. Several ARFs additionally have an expanded conserved region within the DNA-binding domain, of unknown function. The majority of domain variation among ARFs occurs in the large B-class subfamily. The liverwort *Marchantia polymorpha* has a single representative ARF of each class (Flores-Sandoval, 2015). The expansion of these classes in flowering plants is the result of both whole genome and tandem duplication events (Remington, 2004). The growth of the ARF family may have allowed for the expansion of the quantity and complexity of loci regulated by the ARFs and subsequent expansion in their regulation of developmental processes.  
+
+Class A ARFs are the most well-studied ARF subfamily---the five family members all act as transcriptional activators and have well-characterized, distinct developmental targets. Overall the diversity of class A ARFs was generally low, especially compared to the class B and C ARFs, suggesting that class A ARFs are central to auxin signal transduction and plant development. Analysis of class A ARF nonsynonymous diversity suggests that the majority of these ARFs are highly functionally conserved, with ${\pi_N/\pi_S}$ values much lower than 1 with the exception of ARF19, with ${\pi_N/\pi_S}$ value of 1.8. Comparing diversity within sister pairs, there is a similar trade-off as seen in most *IAA* sister pairs, with one sister being highly conserved and the other more divergent. ARF19 and ARF8 are the more divergent class A ARFs, with ${\pi_N/\pi_S}$ values at least three time those of their sisters, ARF7 and ARF6 respectively. This may suggest that ARF6 and ARF7 serve more essential purposes in plant development. 
+
+```{r ARF diversity stats}
+gene_info <- geneInfoFromFile(
+  fname = system.file("shiny-app", "gene_family_data",
+                      "ARF_gene_ids.csv", package = "r1001genomes"))
+#annotation <- readAnnotationFile(filename = system.file("shiny-app", 
+  #"gene_family_data", "ARF_annotations.csv", 
+  #package = "r1001genomes"), gene_info = gene_info)
+
+VCF <- readRDS(system.file("shiny-app", "gene_family_data",
+                      "ARF_VCF.rds", package = "r1001genomes"))
+div_stats <- ldply(VCF, diversityStats, geneInfo=gene_info, .id="transcript_ID")
+div_stats$tair_symbol %<>% fct_reorder(.x =  div_stats$tair_symbol, 
+                                       .fun = function(x) 
+                                         {as.integer(str_remove(x, 
+                                              pattern = "ARF"))})
+div_stats %<>% arrange(tair_symbol)
+div_stats %<>% select(tair_symbol, everything())
+
+if (params$output == "html_document") {
+  formatRound(datatable(div_stats,
+                  colnames = c("transcript",
+                               "symbol",
+                               "&pi;<sub>N</sub>",
+                               "&pi;<sub>S</sub>",
+                               "&pi;<sub>N</sub>/&pi;<sub>S</sub>",
+                               "&pi; coding",
+                               "&pi; transcript"),
+                  rownames = FALSE, escape = FALSE,
+                  options = list(paging=FALSE, searching=FALSE)),
+                columns = 2:7, digits = 6)
+  } else 
+{
+  dt <- div_stats
+  names(dt) <- c("transcript",
+                                 "symbol",
+                                 "&pi;~N~",
+                                 "&pi;~S~",
+                                 "&pi;~N~/&pi;~S~",
+                                 "&pi; coding",
+                                 "&pi; transcript")
+  dt %<>% mutate_if(is.numeric, round, 6)
+  names(dt) <- paste0("**", names(dt), "**")
+  kable(dt) 
+}
+```
+
+```{r ARF alignment}
+alignment <- alignCDS(gene_info$transcript_ID)
+# make an alignment data frame
+aln_df <- makeAlnDF(alignment[[2]])
+
+# make a collapsed alignment for translating positions
+collapsed_aln_df <- 
+  aln_df %>% dplyr::select(aln_pos, seq_pos, seq_name) %>%
+  tidyr::spread(key = seq_name, value = seq_pos)
+```
+
+```{r Mask_ARF_alignment, eval=FALSE}
+aliscore(as.AAbin(alignment[[2]]), path = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/")
+id <- scan(file = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/input.fas_List_random.txt", sep = " ", quiet = TRUE)
+AAAlign_no_gaps <- as.matrix(alignment[[2]])[, id]
+write.nexus.data(AAAlign_no_gaps, file = "ARFs.nex", format = "protein")
+```
+```{bash ARF_phylogeny_construction, eval=FALSE}
+/Applications/MrBayes/mb
+
+execute ARFs.nex
+# set ARF17 as the outgroup
+outgroup AT1G77850.1
+
+lset nucmodel=protein Rates=invgamma
+# or include Nst=6  ngammacat=4 omegavar=M3 
+prset aamodelpr=fixed(jones) statefreqpr=fixed(empirical) 
+# initial run with aamodelpr=mixed yielded posterior prob of 1 for jones model
+propset ExtTBR$prob=0
+
+mcmcp ngen=250000 nchains=4 printfreq=1000 samplefreq=100 burnin=200
+
+mcmc
+sump
+sumt
+
+```
+
+```{r Load ARF phylogeny and data}
+tree <- treeio::read.beast(file = "ARFs.nex.con.tre")
+
+
+ARF_data <- read.csv(system.file("shiny-app", "gene_family_data",
+                      "ARF_gene_ids.csv", package = "r1001genomes"))
+ARF_data %<>% left_join(y = div_stats, by = c("name" = "tair_symbol"))
+#tip_labels need to be in the first column
+ARF_data %<>% select(name, everything())
+ARF_data$tair_locus %<>% as.character()
+
+ARF_data <- ARF_data[match(gsub(x = tree@phylo$tip.label, pattern = "\\.1",replacement = ""), ARF_data$tair_locus), ] 
+
+tree@phylo$tip.label <- ARF_data$name
+
+```
+
+```{r Visualize ARF tree, fig.height=5, fig.width=5}
+p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% ARF_data + theme_tree() + scale_x_continuous(expand = c(0, 1.2)) + geom_tiplab(hjust = -0.25) + 
+  geom_tippoint(mapping = aes(size = 4*Pi_NS_Ratio, fill = Pi_NS_Ratio), 
+                shape = 21, color = "white", show.legend = TRUE) + 
+  scale_fill_viridis(values = rescale(c(min(ARF_data$Pi_NS_Ratio), 1,
+                                        max(ARF_data$Pi_NS_Ratio)), 
+                                      to = c(0,1)), guide = "colourbar") + scale_size(guide = "none") + 
+  theme(legend.position = c(.1,.7)) + 
+  geom_nodelab(mapping = aes(label = round(prob,digits = 2)), nudge_x = -.3, nudge_y = .5, size = 3) +
+  geom_tiplab(mapping = aes(color = class), hjust = -0.25) + 
+  scale_color_viridis(discrete = TRUE)
+p
+#ggsave("ARF_tree.pdf", width = 6, height = 6)
+```
+
+### Class A ARFs 
+For all class A ARFs, the middle region of the protein was the predominant high diversity region. The DNA-binding domain had very few, low-diversity missense mutations, as did the PB1 domain. Considering the necessity of their conserved functions, the low level of variation in these key DNA and protein-protein interaction domains is expected. 
+
+```{r A ARF Alignment}
+gene_info <- subset(gene_info, tair_symbol %in% c("ARF5", "ARF6", "ARF7", "ARF8", "ARF19"))
+alignment <- alignCDS(gene_info$transcript_ID)
+# make an alignment data frame
+aln_df <- makeAlnDF(alignment[[2]])
+#BrowseSeqs(alignment[[2]])
+aln_df <- makeAlnDF(alignment[[2]])
+aln_df <- left_join(aln_df, dplyr::select(gene_info, "tair_locus",
+                                       "tair_symbol", "transcript_ID"),
+                        by = c("transcript_ID" = "transcript_ID"))
+aln_df$tair_symbol %<>% as.factor()
+aln_df$tair_symbol %<>% fct_reorder(
+    {as.integer(str_remove(aln_df$tair_symbol, 
+                           pattern = "ARF"))}, 
+  .desc = TRUE)
+
+                              
+aln_df <- chunkAlnDF(aln_df = aln_df, chunk_width = 100)
+VCF <- ldply(.data = VCF, .fun = subset, gt_GT != "0|0")
+VCF <- getCodingDiv(VCF)
+aln_df <- addSNPsToAlnDF(aln_df, VCF)
+A_ARFs <- subset(aln_df, tair_symbol %in% c("ARF5", "ARF6", "ARF7", "ARF8", "ARF19"))
+p <-ggplot(A_ARFs, aes(x = aln_pos, y = tair_symbol,
+                             group = seq_pos, text = variants))
+p <- p +
+  geom_raster(data = na.omit(A_ARFs), mapping = aes(fill = effects)) +
+  scale_fill_viridis(option = "A", discrete = TRUE) +
+  scale_y_discrete() +
+  # expand increases distance from axis
+  labs(x = "", y = "", fill = "") +
+  theme_logo(base_family = "Helvetica") +
+  theme(panel.grid = element_blank(), panel.grid.minor = element_blank()) +
+  theme(strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        legend.box = "vertical")
+p
+#ggsave(p,filename = "A_ARFs_alignment_variants.pdf", width = 12, height = 4)
+```
+
+
+Class A ARFs all contain the canonical B3 DNA-binding domain, PB1 interaction domain and glutamine-rich middle region (Guilefoyle, 2007). In the analyzed natural variation, ARF7 had several expansions of polyglutamine sequences in the middle region. Polyglutamine regions are known to readily expand and contract throughout evolutionary time due to replication error, and variation in polyglutamine length can be acted on by natural selection and have phenotypic consequences (Press, 2014). 
+
+A few missense variants in *ARF5* highlighted potential functional variation in the class A ARFs. A high frequency allele (*What are the variants?*), resulting in substitutions of small amino acids on the positive face of the PB1 domain for bulky phenylalanines, may disrupt interactions with other ARF or Aux/IAA PB1 domains. Interestingly, these variants were always found together in accessions Tu-B2-3, Ru-2, Haes-1, Rd-0, 627ME-13Y1, Le-0, Bu-0 and Bsch-0 *Where are these?*. Another highly represented polymorphism in ARF5 results in change in the 17th amino acid from a leucine to a methionine. This position is in the N-terminal extension of ARF5 which is of unknown function. It is possible that this methionine acts as an alternative start site in the accessions. 
+
+
+### Class B ARFs
+
+*ARF23* has a truncated DNA-binding domain and had a high ${\pi_N/\pi_S}$ value of 4.1 and several high-frequency nonsense variants, as may be expected of a gene that is pseudogenizing. 
+
+ARF3, ARF13 and ARF17 all lack a C-terminal PB1 domain, which suggests they may be unable to interact with Aux/IAA repressors, possibly acting as auxin-insensitive competitive inhibitors of ARF-mediated transcription (Fig ARF3_13_17 alignment). These ARFs span the range of ${\pi_N/\pi_S}$ ratios relative to the other ARFs, ranging from 0.85 to 4.1. ARF17 is more conserved than the activator ARF, ARF19. ARF13 has many nonsense variants of high diversity and may be pseudogenizing. 
+
+```{r ARF3_13_17 alignment}
+
+```
+
+
+ARF14, ARF15, **ARF16 I don't think this is correct ARF 16 is class C**, ARF20, and ARF21 all do not have one or multiple of the conserved acidic residues in the PB1 domain, and themselves form a subclade of the B ARFs. Interestingly, no non-synonymous variation is seen in these amino acid residues of these ARFs, suggesting that the amino acids that are in the regions may still be important for the function of these proteins. 
+
+### Class C ARFs
+
+Class C ARFs show low nucleotide diversity scores, all ${\pi_N/\pi_S}$ values substantially lower than 1.
+ARF16 was the most conserved, whereas its clade members (ARF10, ARF17) had scores at least four times higher [@remington_contrasting_2004].
+
+Structurally, all three members of Class C ARFs contain a canonical B3 DNA-binding domain, but only ARF10 and ARF16 contain a PB1 domain. The DNA binding domains exhibit overall low diversity. Only the ARF10 DNA binding domain contains missense variants (S147T and A157S) (Fig. ARF10_DBD Variants distribution). **Any insights into whether these may affect function? They are quite conservative.** Of the PB1 domain containing class C ARFs, ARF16 exhibits several missense variants which are sporadically distributed, in contrast to the conserved PB1 domain of ARF10 (Fig. Arf16_PB_variants distribution). **Interesting that the PB1 domain of ARF10 is conserved and the DBD of ARF16 is conserved. It this suggestive of subfunctionalization in this family, where one retains DNA and/or dimerization specificity and the other retains specificity for IAAs?**
+
+```{r ARF10_DBD Variants distribution}
+
+```
+
+
+```{r Arf16_PB_variants distribution}
+
+```
+
+
+Several members of class B (ARF2, 3 and 4) and C ARFs (ARF10, 16 and 17) are distinguished from other ARFs on the basis of their post transcriptional regulation by trans-acting small interfering RNAs (tasiRNAs) and microRNAs (miRNAs) [@rhoades_prediction_2002; @allen_micrornadirected_2005]. **(@AMY Arf 6 and 8 targeted by miRNA 167 - check for conservation).** The miRNA target of class C ARFs showed a high degree of conservation (Fig. ARF10_16_17_Alignment). This is consistent with perturbation **what exactly does perturbation mean** studies that have shown drastic developmental phenotype for class C ARFs [@wang_control_2005; @mallory_micrornadirected_2005; @liu_repression_2007]. For the class B ARFs (2, 3 and 4) the tasiRNA binding motif is also highly conserved suggesting strong regulatory constraints on these genes (Fig ARF2_3_4_Alignment). The DNA binding domain of ARF4 exhibits non-synonymous variation in 4 accession and would be interesting to carry out phenotypic characterization of these accessions for developmental growth defects (Fig ARF4_DBD Variants map).
+
+```{r ARF10_16_17_Alignment}
+
+```
+
+```{r ARF2_3_4_Alignment}
+
+```
+
+```{r ARF4_DBD Variants map}
+
+```
