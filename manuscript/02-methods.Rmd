@@ -1,5 +1,7 @@
 # Methods {#methods}
 
+## Data Sources
+
 ## Nucleotide Diversity Calculation
 Nei  defined the nucleotide diversity statistic in his original paper as:
 “…the average number of nucleotide differences per site between two randomly chosen DNA sequences.” (Nei, 1979)
@@ -72,3 +74,7 @@ $\displaystyle \pi_k = \frac{1}{n^2} (n^2 - \sum_{i} n_{i}^2)$
 
 this simplified form for $\pi_k$ is used by the app, because the counts of unique 
 variants at a single nucleotide location can easily be summarized in R.
+
+## Software 
+
+

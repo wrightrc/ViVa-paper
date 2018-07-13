@@ -6,3 +6,5 @@
 *.vcf.gz
 *.vcf
 *cache*
+*cache
+original

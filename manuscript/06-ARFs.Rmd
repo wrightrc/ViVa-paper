@@ -28,7 +28,7 @@ div_stats$tair_symbol %<>% fct_reorder(.x =  div_stats$tair_symbol,
 div_stats %<>% arrange(tair_symbol)
 div_stats %<>% select(tair_symbol, everything())
 
-if (params$output == "html_document") {
+if (knitr::is_html_output()) {
   formatRound(datatable(div_stats,
                   colnames = c("transcript",
                                "symbol",

@@ -1,15 +1,34 @@
---- 
-title: "A Minimal Book Example"
-author: "Yihui Xie"
+---
+title: A comprehensive analysis of natural sequence variation within the <i>Arabidopsis
+  thaliana</i> nuclear auxin signaling pathway using an accessible web application
+author:
+  affiliation: University of Washington
+  name: R. Clay Wright
 date: "`r Sys.Date()`"
-site: bookdown::bookdown_site
-documentclass: book
-bibliography: [book.bib, packages.bib]
+
+abstract: "This will be the abstract"
+
+keywords: natural variation, Arabidopsis thaliana, genome diversity, structure, function, genotype, phenotype, bioconductor, bookdown, r markdown
+
+output:
+  word_document:
+    toc: yes
+  html_document:
+    fig_caption: yes
+    toc: yes
+always_allow_html: yes
+fontfamily: Helvetica
+fontsize: 11pt
+
+bibliography:
+- natural_variation.bib
+- TIR1_AFB.bib
+- ARF_C.bib
+- AuxIAA_citations.bib
 biblio-style: apalike
 link-citations: yes
-description: "This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook."
----
 
+---
 
 ```{r setup, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE, collapse = TRUE, comment = "#>", tidy = TRUE, cache = TRUE, cache.lazy = FALSE, out.width = "90%", fig.height=4, fig.width=7, out.extra='style="margin: auto; display: block; padding-top: 15px;"')

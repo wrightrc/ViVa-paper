@@ -19,7 +19,7 @@ div_stats$tair_symbol %<>% fct_reorder(.x = , div_stats$tair_symbol,
 div_stats %<>% arrange(tair_symbol)
 div_stats %<>% select(tair_symbol, everything())
 
-if (params$output == "html_document") {
+if (knitr::is_html_output()) {
   formatRound(datatable(div_stats,
                   colnames = c("transcript",
                                "symbol",
@@ -109,6 +109,8 @@ tree@phylo$tip.label <- IAA_data$name
 ```
 *I think IAA20, 30, and 15 should also be in class C. So there are really two large clades A and B and then there are truncations/loss of function/dominant variants scattered throughout, Class C.*
 
+(ref:IAA tree) IAA protein sequence tree mapped with ${\pi_N/\pi_S}$ 
+
 ```{r IAA_tree, fig.height=5, fig.width=5, fig.cap="(ref:IAA tree)"}
 p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% IAA_data + theme_tree() + scale_x_continuous(expand = c(0, 1.2)) + 
   geom_tippoint(mapping = aes(size = 4*PiN_PiS, fill = PiN_PiS), shape = 21, color = "white", show.legend = TRUE) + 
@@ -122,7 +124,6 @@ p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% IAA_data + theme_
 p
 ```
 
-(ref:IAA tree) IAA protein sequence tree mapped with ${\pi_N/\pi_S}$ 
 
 Within the Group B *IAA* genes, there are four sister pairs---*IAA10*/*IAA11*, *IAA12*/*IAA13*, *IAA18*/*IAA26*, and *IAA20*/*IAA30* \@ref(IAA tree) [@remington_contrasting_2004]. Interestingly, among these sister pairs only *IAA12* and *IAA13* have a noticeable difference in nonsynonymous diversity. The *Arabidopsis thaliana* EFP browser shows that **IAA10** and *IAA11* have almost identical expression patterns, with the exception of *IAA10* being more highly expressed in the developing seed, and *IAA11* being more highly expressed in root tissue during lateral root development **need to cite original data source here**. In our analysis, *IAA10* and *IAA11* both showed functional conservation (${\pi_N/\pi_S}$ of 0.80 and 0.67 respectively) in support of *IAA10* and *IAA11* playing redundant roles. Accessions and associated variants identified here provide a potentially expedited route to elucidating the extent of redundancy between family members such as *IAA10* and *IAA11*.
 
@@ -139,10 +140,11 @@ Several examples of possible gain-of-function missense variants were found in th
 
 ```
 
-
 *IAA6* has two potentially dominant missense mutations found within the degron (Supp Fig. alignment), one previously believed to lead to the *shy1-1* phenotype [@kim_two_1996]. Interestingly, this variant is widely represented in 31 accessions across Europe (Supplemental Map Fig). This finding supports the proposition that iaa6-C78R may not be the mutation causing the *shy1-1D* phenotype but rather represents natural variation in the degron sequence ([note from Mike Prigge in TAIR](https://www.arabidopsis.org/servlets/TairObject?type=notepad&id=11247)). These accessions could be used to confirm whether *iaa6-C78R* is responsible for the *shy1-1D* phenotype. Additionally, an accession was identified with the IAA6-V77M variant, also in the degron, that may be useful to further explore *iaa6* gain-of-function phenotypes.
 
+
 ### Identifying novel functional sequences in IAAs
+
 An exciting possible use for the Natural Variation Webtool is to search for conserved, low-diversity sites that may represent possible sites of functional import, such as post-translational modification or protein-protein interaction. For example, recent detailed biochemical analysis identified putative lysine ubiquitination sites in members of the *IAA6/19* sister pairs [@winkler_variation_2017]; Supp Fig IAA6/19 alignment). These sites are conserved across natural sequence variation, while several other lysine residues vary (Supp Figs alignment and map). In IAA6, there are 17 lysines of which ~6 are putative ubiquitination sites~ *I think this should be 5, K3, K32, K33, K91, and K97. Missense variants occured in K34Q, K140N *. One is proximal to the KR motif, while two others show natural variation. In IAA19, there are 15 total lysines, 8 of which are putative ubiquitination sites (K3, K25, K68, L87, K93, K100, K111, and K141). Two of these ubiquitination sites are proximal to the KR motif and degron. **This sentence is not clear. Only 1 of the ubiquitination sites varies? or one lysine, I think you mean this only 1 lysine that varies, but it is not ubiquitinated. Ubiquitylated Missense K129T** Natural sequence diversity may be used to narrow down a subset of lysines to assess for functional ubiquitination.
 
 ```{r}
