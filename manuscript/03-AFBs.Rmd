@@ -217,7 +217,7 @@ ray
 
 (fig:AFB_structure_vars) A TIR1 structure (2P1Q) in gold, with residues 
 ```{r AFB_structure_vars, fig.cap='(fig:AFB_structure_vars)'}
-knitr::include_graphics()
+#knitr::include_graphics()
 ```
 
 

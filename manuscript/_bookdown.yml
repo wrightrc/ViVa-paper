@@ -1,5 +1,6 @@
 book_filename: "manuscript"
 delete_merged_file: true
+output_dir: book_output
 language:
   ui:
-    chapter_name: "Chapter "
+    chapter_name: ""
