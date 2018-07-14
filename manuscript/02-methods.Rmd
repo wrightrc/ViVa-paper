@@ -2,23 +2,39 @@
 
 ## Data Sources
 
+### Variant Data
+Variant data was queried from the 1001 genomes project website (http://1001genomes.org) via URL requests to an (undocumented) API service that provides subset files of the whole-genome VCF. The whole-genome VCF file can be found on the project’s website at http://1001genomes.org/data/GMI-MPI/releases/v3.1/ 
+
+### Accession Information
+Details on each of the 1135 accessions including CS stock numbers, and geographic location where the samples were collected were taken from the 1001 genomes website at http://1001genomes.org/accessions.html, via the download link at the bottom of the page. This data file has been embedded in the R package.
+
+### Gene and transcript information
+Information on the genes and transcripts including chromosomal coordinates, start and end location, and transcript length were taken from either the TAIR10 or Araport11 databases. The TAIR10 database, found at http://arabidopsis.org, was accessed via the biomart protocol, using the R package biomaRt. The araport11 database, which can also be found on the arabidopsis.org website (https://www.arabidopsis.org/download/index-auto.jsp?dir=%2Fdownload_files%2FGenes%2FAraport11_genome_release), has been embedded in the R package.
+
+ 
 ## Nucleotide Diversity Calculation
 Nei  defined the nucleotide diversity statistic in his original paper as:
 “…the average number of nucleotide differences per site between two randomly chosen DNA sequences.” (Nei, 1979)
-And provided the equation:
+And provided the equation: 
 
-$\displaystyle \pi = \sum_{ij}x_{i}x_{j}\pi_{ij}$
+\begin{equation}
+\displaystyle \pi = \sum_{ij}x_{i}x_{j}\pi_{ij}
+(\#eq:nei)
+\end{equation}
 
 Where Where $x_{i}$ is the frequency of the ith sequence in the population and $\pi_{ij}$ is the number of sites that are different between the ith and jth sequence divided by sequence length.
 
 a more general form, that treats each sequence in the population as unique can be written as:
 
-$\displaystyle \pi = \frac{1}{L*n^2} \sum_{i=1}^n \sum_{j=1}^n \sum_{k=1}^L{\pi_{ijk}}
+\begin{equation}
+\displaystyle \pi = \frac{1}{L*n^2} \sum_{i=1}^n \sum_{j=1}^n \sum_{k=1}^L{\pi_{ijk}}
 \qquad
 \displaystyle \pi_{ijk} = \left\{\begin{array}{l}
 1 \quad \textrm{if} \quad N_{ik} \neq N_{jk} \\
 0 \quad \textrm{if} \quad N_{ik} = N_{jk}
-\end{array}\right.$
+\end{array}\right.
+(\#eq:nei-gen)
+\end{equation}
 
 where $N_{ik}$ is the nucleotide (A, T, C or G) at position k on the ith sequence of the population.
 $L$ is the length of the sequence (the same for all sequences in the population, 
@@ -26,9 +42,12 @@ assumes only SNPs exist, no indels). n is the total number of sequences in the p
 
 from this form we can re-arrange summations to the form below:
 
-$\displaystyle \pi = \frac{1}{L} \sum_{k=1}^L{\pi_{k}}
+\begin{equation}
+\displaystyle \pi = \frac{1}{L} \sum_{k=1}^L{\pi_{k}}
 \qquad
-\pi_{k} = \frac{1}{n^2} \sum_{i=1}^n \sum_{j=1}^n {\pi_{ijk}}$
+\pi_{k} = \frac{1}{n^2} \sum_{i=1}^n \sum_{j=1}^n {\pi_{ijk}}
+(\#eq:nei-rearrange)
+\end{equation}
 
 here $\pi_k$ can be thought of as the site-wise nucleotide diversity at position k, and is equal to 
 the nucleotide diversity of a sequence of length 1 at location k. we can calculate $\pi_k$ for each
@@ -43,38 +62,67 @@ This is also what is displayed in the Diversity Plot tab of the web app.
 The formula for $\pi_k$ above requires comparing every sequence to every other sequence at location k,
 however, we know there are only a few variant forms at each individual location.
 
-so we can revert back to using Nei's original formula, modifying it slightly,
+so we can revert back to using Nei's original formula \@ref(eq:nei), modifying it slightly,
 replacing $x_i$ with $\frac{n_i}{n}$, $n_i$ being the number of sequences in the population of the form $N_i$ at location k: subscripts i and k are summed only over unique forms [need to clarify this]
 
-$\displaystyle \pi_k = \sum_{ij} \frac{n_i}{n}\frac{n_j}{n} \pi_{ij} = 
-\frac{1}{n^2}\sum_{ij} n_i n_j \pi_{ij}$
-
-$\pi_{ij(k)} = \left\{\begin{array}{l}
+\begin{equation}
+\displaystyle \pi_k = \sum_{ij} \frac{n_i}{n}\frac{n_j}{n} \pi_{ij} = 
+\frac{1}{n^2}\sum_{ij} n_i n_j \pi_{ij}\\
+\pi_{ij(k)} = \left\{\begin{array}{l}
 1 \quad \textrm{if} \quad i \neq j \\
 0 \quad \textrm{if} \quad i = j
-\end{array}\right.$
+\end{array}\right.
+(\#eq:nei-simp1)
+\end{equation}
 
 we will define $n_{!i} = n - n_i$ as the number of sequences different from i at k.
 
 we can see the summed term will be zero if $i=j$, and $n_i n_j$ if $i\neq j$ so:
 
-$\displaystyle \pi_k = \frac{1}{n^2} \sum_{i} n_i n_{!i}$
+\begin{equation}
+\displaystyle \pi_k = \frac{1}{n^2} \sum_{i} n_i n_{!i}
+(\#eq:nei-simp2)
+\end{equation}
 
 next we substitute our definition of $n_{!i}$
 
-$\displaystyle \pi_k = \frac{1}{n^2} \sum_{i} n_i (n - n_{i})$
+\begin{equation}
+\displaystyle \pi_k = \frac{1}{n^2} \sum_{i} n_i (n - n_{i})
+(\#eq:nei-simp3)
+\end{equation}
 
 then distribute and split summation:
 
-$\displaystyle \pi_k = \frac{1}{n^2} (n \sum_{i} n_i - \sum_{i} n_{i}^2)$
+\begin{equation}
+\displaystyle \pi_k = \frac{1}{n^2} (n \sum_{i} n_i - \sum_{i} n_{i}^2)
+(\#eq:nei-simp4)
+\end{equation}
 
 finally, summing $\displaystyle \sum_{i}n_i$ is equal to n:
 
-$\displaystyle \pi_k = \frac{1}{n^2} (n^2 - \sum_{i} n_{i}^2)$
+\begin{equation}
+\displaystyle \pi_k = \frac{1}{n^2} (n^2 - \sum_{i} n_{i}^2)
+(\#eq:nei-simp5)
+\end{equation}
 
 this simplified form for $\pi_k$ is used by the app, because the counts of unique 
 variants at a single nucleotide location can easily be summarized in R.
 
 ## Software 
+
+The r1001genomes package has many software dependencies on other R packages, a few of the key bioinformatics packages used are listed below.
+
+**biomaRt:** The biomaRt package was used for accessing the TAIR10 database on arabidopsis.org
+
+**vcfR:** vcfR was used to read in the VCF files in a flat “tidy” format for easy manipulaiton
+
+**BSgenome:** The BSgenome package BSgenome.Athaliana.TAIR.TAIR9 was used as the source for the complete DNA string of the reference genome (Col-0).
+
+**DECIPHER:** DECIPHER was used to align nucleotide and amino acid sequences of homologous genes 
+
+**GenomicFeatures:** The GenomicFeatures package was used for handling sequence annotations.
+
+**Biostrings:** Biostrings provides the underlying framework for the sequence manipulations used for generating and aligning sequences with BSgenome, Decipher, and GenomicFeatures
+
 
 
