@@ -1,15 +1,17 @@
 # *TIR1/AFB* genes {#AFBs} 
 
-Auxin acts by binding to receptors (Auxin-signaling F-Boxes, or AFBs) that in turn target co-repressors (Aux/IAAs) for degradation. The six auxin receptor genes in the model plant *Arabidopsis thaliana* , *TIR1* and *AFB1-5*, evolved through gene duplication and diversification early in the history of vascular plants [@Parry_Complex_2009]. The rate of co-repressor degradation is determined by the identity of both the receptor and co-repressor [@Havens_Synthetic_2012], and this rate sets the pace of lateral root development [@Guseman_Auxin-induced_2015]. 
+Auxin acts by binding to receptors (Auxin-signaling F-Boxes, or AFBs) that in turn target co-repressors (Aux/IAAs) for degradation. The six auxin receptor genes in the model plant *Arabidopsis thaliana* , *TIR1* and *AFB1-5*, evolved through gene duplication and diversification early in the history of vascular plants [@parry_complex_2009]. The rate of co-repressor degradation is determined by the identity of both the receptor and co-repressor [@havens_synthetic_2012], and this rate sets the pace of lateral root development [@guseman_auxininduced_2015]. 
 
-All members of this family have been shown to bind auxin and Aux/IAA proteins. However, AFB1 has drastically reduced ability to assemble into an SCF complex, due to the substitution E8K in its F-box domain, preventing it from inducing degradation of Aux/IAAs[@Yu_Untethering_2015]. This lack of complexation may allow observed high ubiquitous AFB1 accumulation [@Parry_Complex_2009]. Higher order mutants in the family containing *afb1* mutants suggest that *AFB1* has a moderate positive effect on auxin signaling. Additionally, AFB4 and AFB5 have been shown to preferentially and functionally bind the synthetic auxin picloram, while other family members preferentially bind indole-3-acetic acid [@Prigge_Arabidopsis_2016]. Interestingly, the strength and rate with which TIR1/AFBs are able to bind and mark Aux/IAAs for degradation are variable [@calderonvillalobos_combinatorial_2012; @Havens_Synthetic_2012]. AFB2 induced the degradation of certain Aux/IAA proteins at a faster rate than TIR1, suggesting some functional specificity has arisen since the initial duplication between the *TIR1/AFB1* and *AFB2/AFB3* clades.
+All members of this family have been shown to bind auxin and Aux/IAA proteins. However, AFB1 has drastically reduced ability to assemble into an SCF complex, due to the substitution E8K in its F-box domain, preventing it from inducing degradation of Aux/IAAs[@yu_untethering_2015]. This lack of complexation may allow observed high ubiquitous AFB1 accumulation [@parry_complex_2009]. Higher order mutants in the family containing *afb1* mutants suggest that *AFB1* has a moderate positive effect on auxin signaling. Additionally, AFB4 and AFB5 have been shown to preferentially and functionally bind the synthetic auxin picloram, while other family members preferentially bind indole-3-acetic acid [@prigge_arabidopsis_2016]. Interestingly, the strength and rate with which TIR1/AFBs are able to bind and mark Aux/IAAs for degradation are variable [@calderonvillalobos_combinatorial_2012; @havens_synthetic_2012]. AFB2 induced the degradation of certain Aux/IAA proteins at a faster rate than TIR1, suggesting some functional specificity has arisen since the initial duplication between the *TIR1/AFB1* and *AFB2/AFB3* clades.
 
-Although it is unclear what unique roles each receptor plays in growth and development, a number of studies have pointed out differences in the ways the six different receptors in A. thaliana differ in biochemical function and expression domain[@dharmasiri_plant_2005; @parry_complex_2009; @prigge_arabidopsis_2016]. *TIR1/AFB* genes are expressed ubiquitously in A. thaliana tissues, TIR1, AFB2, and AFB3 have been shown to accumulate in the shoot and root meristems and leaf tissues, with slightly different expression patterns for TIR1 [@Parry_Complex_2009]. Additionally, the expression of AFB5 is strongly circadian-regulated [@Covington_Circadian_2007] and AFB3 is more highly expressed in the roots in the presence of nitrate, facilitating increased lateral root formation [@Vidal_Nitrate_2010], suggesting more broad environmental regulation of this gene family may exist. 
+Although it is unclear what unique roles each receptor plays in growth and development, a number of studies have pointed out differences in the ways the six different receptors in A. thaliana differ in biochemical function and expression domain[@dharmasiri_plant_2005; @parry_complex_2009; @prigge_arabidopsis_2016]. *TIR1/AFB* genes are expressed ubiquitously in A. thaliana tissues, TIR1, AFB2, and AFB3 have been shown to accumulate in the shoot and root meristems and leaf tissues, with slightly different expression patterns for TIR1 [@parry_complex_2009]. Additionally, the expression of AFB5 is strongly circadian-regulated [@covington_circadian_2007] and AFB3 is more highly expressed in the roots in the presence of nitrate, facilitating increased lateral root formation [@vidal_nitrate_2014], suggesting more broad environmental regulation of this gene family may exist. 
 
-All members of this family have been shown to bind auxin and Aux/IAA proteins. However, AFB1 has drastically reduced ability to assemble into an SCF complex, due to the substitution E8K in its F-box domain, preventing it from inducing degradation of Aux/IAAs[@Yu_Untethering_2015]. This lack of complexation may be the cause of high, ubiquitous AFB1 accumulation [@Parry_Complex_2009]. Higher order mutants in the family containing *afb1* mutants suggest that *AFB1* has a moderate positive effect on auxin signaling. Additionally, AFB4 and AFB5 have been shown to preferentially bind the synthetic auxin picloram, while other family members preferentially bind indole-3-acetic acid [@Prigge_Arabidopsis_2016]. Interestingly, the strength and rate with which each TIR1/AFB is able to bind and mark an Aux/IAAs for degradation is variable [@calderonvillalobos_combinatorial_2012; @Havens_Synthetic_2012]. 
+All members of this family have been shown to bind auxin and Aux/IAA proteins. However, AFB1 has drastically reduced ability to assemble into an SCF complex, due to the substitution E8K in its F-box domain, preventing it from inducing degradation of Aux/IAAs[@yu_untethering_2015]. This lack of complexation may be the cause of high, ubiquitous AFB1 accumulation [@parry_complex_2009]. Higher order mutants in the family containing *afb1* mutants suggest that *AFB1* has a moderate positive effect on auxin signaling. Additionally, AFB4 and AFB5 have been shown to preferentially bind the synthetic auxin picloram, while other family members preferentially bind indole-3-acetic acid [@prigge_arabidopsis_2016]. Interestingly, the strength and rate with which each TIR1/AFB is able to bind and mark an Aux/IAAs for degradation is variable [@calderonvillalobos_combinatorial_2012; @havens_synthetic_2012]. 
 
-(tab:TIR1_AFB_div_stats) **_TIR1/AFB_ nucleotide diversity.** The nucleotide diversity as Nei and Li's $\pi$ (the average number of nucleotide differences per site between all possible pairs of sequences at synonymous ($\pi_S$) and nonsynonymous ($\pi_N$) sites, as well as all sites in the coding sequence and full transcript of the *TIR1/AFB* family. 
-```{r TIR1_AFB_div_stats, fig.cap = '(tab:TIR1_AFB_div_stats)'}
+
+(ref:TIR1AFBdivstats) **_TIR1/AFB_ nucleotide diversity.** The nucleotide diversity as Nei and Li's $\pi$ (the average number of nucleotide differences per site between all possible pairs of sequences at synonymous ($\pi_S$) and nonsynonymous ($\pi_N$) sites, as well as all sites in the coding sequence and full transcript of the *TIR1/AFB* family.
+
+```{r TIR1AFBdivstats, fig.cap="(ref:TIR1AFBdivstats)"}
 gene_info <- geneInfoFromFile(
   fname = system.file("shiny-app", "gene_family_data",
                       "AFB_gene_ids.csv", package = "r1001genomes"))
@@ -49,15 +51,15 @@ if (knitr::is_html_output()) {
                                  "&pi; transcript")
   dt %<>% mutate_if(is.numeric, round, 6)
   names(dt) <- paste0("**", names(dt), "**")
-  kable(dt) 
+  kable(dt, caption = "(\\#tab:TIR1AFBdivstats)") 
 }
 ```
 
-Examining the natural sequence variation across the *AFB* family \@ref(tab:TIR1_AFB_div_stats) revealed that *TIR1* and *AFB1* both had very low nonsynonymous diversity, hinting at their likely functional importance and bringing in to question the inconclusive role of *AFB1* in auxin signaling. *AFB3* and *AFB4* had higher nonsynonymous diversity, while their sister genes, *AFB2* and *AFB5* were more conserved. This matches our current understanding of *AFB3* as playing a minor role in the auxin signaling pathway and *AFB4* perhaps undergoing pseudogenization. 
+Examining the natural sequence variation across the *AFB* family \@ref(fig:TIR1AFBdivstats) revealed that *TIR1* and *AFB1* both had very low nonsynonymous diversity, hinting at their likely functional importance and bringing in to question the inconclusive role of *AFB1* in auxin signaling. *AFB3* and *AFB4* had higher nonsynonymous diversity, while their sister genes, *AFB2* and *AFB5* were more conserved. This matches our current understanding of *AFB3* as playing a minor role in the auxin signaling pathway and *AFB4* perhaps undergoing pseudogenization. 
 
-Although most known functional regions are highly conserved in *AFB1*, there is a nonsynonymous polymorphism  in the oligomerization domain, only found in the Can-0 accession. Mutations in this domain of *TIR1* frequently have a semidominant effect on root phenotypes [@dezfulian_oligomerization_2016; @wright_insights_2017a]. Characterization of this allele and accession may help determine the role of *AFB1* in this pathway.
+Although most known functional regions are highly conserved in *AFB1*, there is a nonsynonymous polymorphism  in the oligomerization domain, only found in the Can-0 accession. Mutations in this domain of *TIR1* frequently have a semidominant effect on root phenotypes [@dezfulian_oligomerization_2016; @wright_insights_2017]. Characterization of this allele and accession may help determine the role of *AFB1* in this pathway.
 
-```{r AFB variants for PyMOLx}
+```{r AFB variants for PyMOL}
 alignment <- alignCDS(gene_info$transcript_ID)
 # make an alignment data frame
 aln_df <- makeAlnDF(alignment[[2]])
@@ -215,8 +217,9 @@ set_view (\
 ray
 ```
 
-(fig:AFB_structure_vars) A TIR1 structure (2P1Q) in gold, with residues 
-```{r AFB_structure_vars, fig.cap='(fig:AFB_structure_vars)'}
+(ref:AFB_structure_vars) A TIR1 structure (2P1Q) in gold, with residues 
+
+```{r AFB_structure_vars, fig.cap='(ref:AFB_structure_vars)'}
 #knitr::include_graphics()
 ```
 
@@ -244,11 +247,12 @@ p
 ```
 
 
-The AFB4 and AFB5 receptors have an N-terminal extension prior to the F-box domains. This extension had very high nonsynonymous diversity(Fig. 4), suggesting that this extension does not play an important functional role in these proteins. Additionally, two frameshift variants and one stop-gained variant were observed in *AFB4* supporting its pseudogenization. 
+The AFB4 and AFB5 receptors have an N-terminal extension prior to the F-box domains. This extension had very high nonsynonymous diversity \@ref(fig:FBoxAlignment), suggesting that this extension does not play an important functional role in these proteins. Additionally, two frameshift variants and one stop-gained variant were observed in *AFB4* supporting its pseudogenization. 
 
 
-Figure 4: Alignment of A. thaliana TIR1/AFB F-box domains showing variants. Cyan marks the F-box binding domain. Yellow, green, and magenta, mark missense and synonymous, synonymous only, and missense only variant locations respectively. Yellow squared E’s show Cul1-interacting residues, differing in AFB1.
-```{r TIR1/AFB F-box Alignment}
+(ref:FBoxAlignment) **Alignment of A. thaliana TIR1/AFB F-box domains showing variants.** Cyan marks the F-box binding domain. Yellow, green, and magenta, mark missense and synonymous, synonymous only, and missense only variant locations respectively. Yellow squared E’s show Cul1-interacting residues, differing in AFB1.
+
+```{r FBoxAlignment, fig.cap = "(ref:FBoxAlignment)"}
 aln_df <- makeAlnDF(alignment[[2]])
 aln_df <- left_join(aln_df, dplyr::select(gene_info, "tair_locus",
                                        "tair_symbol", "transcript_ID"),

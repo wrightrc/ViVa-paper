@@ -2,7 +2,9 @@
 
 The Aux/IAA proteins (IAAs) mediate both auxin perception and transcriptional co-repression of auxin responsive genes. Auxin perception is carried out along with TIR1/AFB proteins, which together with IAAs act as co-receptors to bind and perceive nuclear auxin. Interaction of IAAs with auxin and TIR1/AFBs is conferred by the highly conserved 13 amino acid degron motif [@tan_mechanism_2007]. Formation of this auxin co-receptor complex triggers ubiquitination and subsequent degradation of IAAs. This degradation in turn relieves their repression upon ARF transcription factors. Stabilizing mutations within the degron can lead to dominant phenotypes [@berleth_auxin_2004; @yang_iaa1_2004]. The *Arabidopsis thaliana* Aux/IAA family has 29 members, most of which possess a canonical auxin degron. Notable exceptions are the auxin-insensitive IAA20 and IAA30 that lack a degron sequence entirely, while the closely related IAA31 retains a semi-functional degron sequence with a very slow degradation rate [@dreher_arabidopsis_2006; @havens_synthetic_2012]. Additionally, IAA degradation rate is influenced by rate motifs found outside the degron, such as the KR motif [@dreher_arabidopsis_2006; @moss_rate_2015]. IAA-mediated repression of ARFs depends upon both an EAR domain, N-terminal of the degron, that recruits co-repressors of the TOPLESS (TPL) family, and a Phox and Bem1 (PB1) domain that enables interaction via hetero-oligomerization with ARF PB1 domains [@nanao_structural_2014; @kagale_ear_2011]. 
 
-```{r IAA diversity stats, fig.height=11}
+(ref:IAAdivstats) **_Aux/IAA_ family nucleotide diversity.** The nucleotide diversity as Nei and Li's $\pi$ (the average number of nucleotide differences per site between all possible pairs of sequences at synonymous ($\pi_S$) and nonsynonymous ($\pi_N$) sites, as well as all sites in the coding sequence and full transcript of the *Aux/IAA* family.
+
+```{r IAAdivstats, fig.height=11}
 gene_info <- geneInfoFromFile(
   fname = system.file("shiny-app", "gene_family_data",
                       "IAA_gene_ids.csv", package = "r1001genomes"))
@@ -53,7 +55,7 @@ Within the available natural sequence variation, we found several missense polym
 
 Previous research has found evidence of both broad genetic redundancy and specificity within closely related pairs or groups of IAA proteins [@overvoorde_functional_2005]. For example, the *iaa8-1 iaa9-1* double mutant and the *iaa5-1 iaa6-1 iaa19-1* triple mutant have wild-type phenotypes [@overvoorde_functional_2005], yet the *IAA6/19* sister pair has significant differences in expression patterns, protein abundances and functions suggesting they have undergone functional specialization since their divergence [@winkler_variation_2017]. 
 
-In our analysis of the *IAA* gene family, we frequently observed that one member of most *IAA* sister pairs had high nonsynonymous diversity while the other sister was more conserved (Figure IAA phylogeny heat map). In an interspecific comparison between *A. thaliana* and *A. lyrata*, *IAA19* is more conserved, while *IAA6* has regions of increased sequence divergence upstream of the degron and in the N-terminal half of the PB1 domain [@winkler_variation_2017]. Consistent with these results, our analysis of intraspecific natural variation revealed higher conservation for *IAA19* (${\pi_N/\pi_S}$ = 0.55) compared to *IAA6* (${\pi_N/\pi_S}$ = 2.3) (Figure IAA phylogeny heat map), and also detected high diversity within the same regions of *IAA6* as seen in Winkler et al. (Supp Fig IAA6 diversity plot). 
+In our analysis of the *IAA* gene family, we frequently observed that one member of most *IAA* sister pairs had high nonsynonymous diversity while the other sister was more conserved \@ref(fig:IAAtree). In an interspecific comparison between *A. thaliana* and *A. lyrata*, *IAA19* is more conserved, while *IAA6* has regions of increased sequence divergence upstream of the degron and in the N-terminal half of the PB1 domain [@winkler_variation_2017]. Consistent with these results, our analysis of intraspecific natural variation revealed higher conservation for *IAA19* (${\pi_N/\pi_S}$ = 0.55) compared to *IAA6* (${\pi_N/\pi_S}$ = 2.3) \@ref(fig:IAAtree), and also detected high diversity within the same regions of *IAA6* as seen in Winkler et al. (Supp Fig IAA6 diversity plot). 
 ```{r IAA alignment}
 alignment <- alignCDS(gene_info$transcript_ID)
 # make an alignment data frame
@@ -109,9 +111,9 @@ tree@phylo$tip.label <- IAA_data$name
 ```
 *I think IAA20, 30, and 15 should also be in class C. So there are really two large clades A and B and then there are truncations/loss of function/dominant variants scattered throughout, Class C.*
 
-(ref:IAA tree) IAA protein sequence tree mapped with ${\pi_N/\pi_S}$ 
+(ref:IAAtree) **IAA protein sequence tree mapped with ${\pi_N/\pi_S}$.** Protein sequences were aligned [@wright_decipher_2015] and low information content regions were masked [@kuck_parametric_2010] prior to infering a phylogeny [@ronquist_mrbayes_2003]. Tips of the tree are mapped with circles of diameter proportional to ${\pi_N/\pi_S}$ and also are colored according to ${\pi_N/\pi_S}$. Nodes are labeled with the poster probability of monophyly.
 
-```{r IAA_tree, fig.height=5, fig.width=5, fig.cap="(ref:IAA tree)"}
+```{r IAAtree, fig.height=5, fig.width=5, fig.cap="(ref:IAAtree)"}
 p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% IAA_data + theme_tree() + scale_x_continuous(expand = c(0, 1.2)) + 
   geom_tippoint(mapping = aes(size = 4*PiN_PiS, fill = PiN_PiS), shape = 21, color = "white", show.legend = TRUE) + 
   scale_fill_viridis(values = rescale(c(min(IAA_data$PiN_PiS), 1,

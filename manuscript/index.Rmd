@@ -11,10 +11,10 @@ abstract: "This will be the abstract"
 keywords: natural variation, Arabidopsis thaliana, genome diversity, structure, function, genotype, phenotype, bioconductor, bookdown, r markdown
 
 bibliography:
-- natural_variation.bib
+- natural-variation.bib
 - TIR1_AFB.bib
-- ARF_C.bib
-- AuxIAA_citations.bib
+- ARF.bib
+- Aux_IAA.bib
 biblio-style: apalike
 link-citations: yes
 
@@ -40,6 +40,8 @@ library(viridis)
 library(ips)
 library(knitr)
 library(dplyr)
+library(bookdown)
+library(htmltools)
 
 #use_python(python = "/usr/local/bin/python")
 ```
