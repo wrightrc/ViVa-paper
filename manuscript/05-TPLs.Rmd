@@ -53,7 +53,7 @@ if (knitr::is_html_output()) {
   
 The high degree of conservation in the entire N-terminal domain underscores its importance in TPL/TPR function. For example, the initial *tpl-1* mutation (N176H) in the ninth helix is a dominant gain-of-function allele [@long_topless_2006], which is capable of binding wild-type TPL protein and inducing protein aggregation [@ma_d53_2017]. It is therefore understandable that this helix had very low diversity as nonsynonymous variants in this domain could act in a dominant negative fashion. Addtionally, the crystal structure of TPL has revealed that the The LisH domain and CRA domain coordinate TPL dimerization and tetramerization respectively (26601214, 28698367), the CTLH domain is critical for interaction with DNA-binding transcription factors (26601214), and helix nine within the CRA domain may be critical for the formation of higher-order TPL complexes (multimers of TPL tetramers, 28630893). 
   
-Compared to the TPL domain, both the proline rich and WD-40 domains exhibited a higher frequency of missense variants. We utilized Phyre2.0 modeling software to predict the structure of the TPL/TPR WD-40 repeats in order to map non-synonymous mutations to protein structure (Figure X). Here we can see both faces of each predicted beta-propeller structure of the WD-40 domains, which are connected by a short peptide linker. This model reveals amino acid conservation in the core and central residues of the WD-40 domains. ~~These observations could be used as the basis for forward mutagenesis strategies to test whether this region of TPL functions similarly to its homolog TLE, which binds its target genes EH1 and the C-terminal WRPW/Y motif (Hairy/Hes/Runx) in the center of the WD-40 domain (pmid 16762837).~~ **Can we say something more general here? There is not enough background to support this. What is TLE from? What is EH1? Is TLE really binding to EH1 DNA?**  
+Compared to the TPL domain, both the proline rich and WD-40 domains exhibited a higher frequency of missense variants. We utilized Phyre2.0 modeling software to predict the structure of the TPL/TPR WD-40 repeats in order to map non-synonymous mutations to protein structure (Figure X). Here we can see both faces of each predicted beta-propeller structure of the WD-40 domains, which are connected by a short peptide linker. This model reveals amino acid conservation in the core and central residues of the WD-40 domains. ~~These observations could be used as the basis for forward mutagenesis strategies to test whether this region of TPL functions similarly to its homolog TLE, which binds its target genes EH1 and the C-terminal WRPW/Y motif (Hairy/Hes/Runx) in the center of the WD-40 domain (pmid 16762837).~~ **Can we say something more general here? There is not enough background to support this. What is TLE from? What is EH1? Is 
   
 ```{r TPL-alignment-coding-vars}
 alignment <- alignCDS(gene_info$transcript_ID)
@@ -72,7 +72,46 @@ collapsed_aln_df <-
   tidyr::spread(key = seq_name, value = seq_pos)
 ```
 
-```{r Mask_ARF_alignment, eval=FALSE}
+
+(ref:TPLsAlignment) **Alignment of A. thaliana TPL/TPR genes showing variants.** This alignment should probably be paired down to a key region rather than the eniter AA sequence.
+
+```{r TPLsAlignment, fig.height = 20, fig.cap = "(ref:TPLsAlignment)"}
+
+alignment <- alignCDS(gene_info$transcript_ID)
+
+
+aln_df <- makeAlnDF(alignment[[2]])
+aln_df <- left_join(aln_df, dplyr::select(gene_info, "tair_locus",
+                                       "tair_symbol", "transcript_ID"),
+                        by = c("transcript_ID" = "transcript_ID"))
+aln_df$tair_symbol <- fct_rev(aln_df$tair_symbol)
+aln_df <- chunkAlnDF(aln_df = aln_df, chunk_width = 55)
+VCF <- ldply(.data = VCF, .fun = subset, gt_GT != "0|0")
+VCF <- getCodingDiv(VCF)
+aln_df <- addSNPsToAlnDF(aln_df, VCF)
+
+# aln_df_chunk <- chunkAlnDF(aln_df = aln_df, chunk_width = 55)
+p <-ggplot(aln_df_chunk, aes(x = aln_pos, y = tair_symbol,
+                             group = seq_pos, text = variants))
+p <- p +
+  geom_tile(data = na.omit(aln_df_chunk), mapping = aes(fill = effects),
+            width = 1, height = 1, alpha = 0.8) +
+  geom_text(aes(label=letter), alpha= 1, family = "Courier") +
+  scale_fill_brewer(type = "qual", palette = 1, direction = -1) +
+  scale_x_continuous(breaks=seq(1,max(aln_df_chunk$aln_pos), by = 10)) +
+  scale_y_discrete() +
+  # expand increases distance from axis
+  labs(x = "", y = "", fill = "variant") +
+  theme_logo(base_family = "Helvetica") +
+  theme(panel.grid = element_blank(), panel.grid.minor = element_blank()) +
+  facet_wrap(facets = ~chunk, ncol = 1, scales = "free") +
+  theme(strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        legend.box = "vertical")
+p
+```
+
+```{r Mask_TPL_alignment, eval=FALSE}
 aliscore(as.AAbin(alignment[[2]]), path = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/")
 id <- scan(file = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/input.fas_List_random.txt", sep = " ", quiet = TRUE)
 AAAlign_no_gaps <- as.matrix(alignment[[2]])[, id]

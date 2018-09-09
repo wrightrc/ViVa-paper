@@ -63,7 +63,7 @@ The formula for $\pi_k$ above requires comparing every sequence to every other s
 however, we know there are only a few variant forms at each individual location.
 
 so we can revert back to using Nei's original formula \@ref(eq:nei), modifying it slightly,
-replacing $x_i$ with $\frac{n_i}{n}$, $n_i$ being the number of sequences in the population of the form $N_i$ at location k: subscripts i and k are summed only over unique forms [need to clarify this]
+replacing $x_i$ with $\frac{n_i}{n}$, $n_i$ being the number of sequences in the population of the form $N_i$ at location k.
 
 \begin{equation}
 \displaystyle \pi_k = \sum_{ij} \frac{n_i}{n}\frac{n_j}{n} \pi_{ij} = 
@@ -74,6 +74,8 @@ replacing $x_i$ with $\frac{n_i}{n}$, $n_i$ being the number of sequences in the
 \end{array}\right.
 (\#eq:nei-simp1)
 \end{equation}
+
+Note that in equation \@ref(eq:nei) subscripts i and j are summed over all sequences in the population, however in equation \@ref(eq:nei-simp1) i and j are only summed over unique variants at a particular location k.
 
 we will define $n_{!i} = n - n_i$ as the number of sequences different from i at k.
 
