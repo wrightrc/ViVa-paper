@@ -534,6 +534,22 @@ Arabidopsis thaliana serves as a model organism for the study of fundamental phy
   pmcid = {PMC413122}
 }
 
+@article{wright_decipher_2015,
+  title = {{{DECIPHER}}: Harnessing Local Sequence Context to Improve Protein Multiple Sequence Alignment},
+  volume = {16},
+  issn = {1471-2105},
+  shorttitle = {{{DECIPHER}}},
+  doi = {10.1186/s12859-015-0749-z},
+  abstract = {Alignment of large and diverse sequence sets is a common task in biological investigations, yet there remains considerable room for improvement in alignment quality. Multiple sequence alignment programs tend to reach maximal accuracy when aligning only a few sequences, and then diminish steadily as more sequences are added. This drop in accuracy can be partly attributed to a build-up of error and ambiguity as more sequences are aligned. Most high-throughput sequence alignment algorithms do not use contextual information under the assumption that sites are independent. This study examines the extent to which local sequence context can be exploited to improve the quality of large multiple sequence alignments.},
+  journal = {BMC Bioinformatics},
+  author = {Wright, Erik S.},
+  month = oct,
+  year = {2015},
+  keywords = {Benchmark datasets,Large scale alignment,Modeling gap penalties,Multiple sequence alignment,Secondary structure predictions},
+  pages = {322},
+  file = {/Users/clayw/Google Drive/References/PDF_library/Wright_2015_DECIPHER.pdf;/Users/clayw/Zotero/storage/GMZS4SLH/s12859-015-0749-z.html}
+}
+
 @article{kliebenstein_role_2008,
   title = {A {{Role}} for {{Gene Duplication}} and {{Natural Variation}} of {{Gene Expression}} in the {{Evolution}} of {{Metabolism}}},
   volume = {3},
@@ -546,7 +562,7 @@ Arabidopsis thaliana serves as a model organism for the study of fundamental phy
   author = {Kliebenstein, Daniel J.},
   month = mar,
   year = {2008},
-  keywords = {Arabidopsis thaliana,Duplicated genes,Gene duplication,Gene expression,Genetic polymorphism,Metabolic pathways,Microarrays,Plant genomics},
+  keywords = {Arabidopsis thaliana,Plant genomics,Gene expression,Genetic polymorphism,Duplicated genes,Gene duplication,Metabolic pathways,Microarrays},
   pages = {e1838},
   file = {/Users/clayw/Google Drive/References/PDF_library/Kliebenstein_2008_A Role for Gene Duplication and Natural Variation of Gene Expression in the.pdf;/Users/clayw/Zotero/storage/4B7CMY9J/article.html}
 }
@@ -627,6 +643,40 @@ Arabidopsis thaliana serves as a model organism for the study of fundamental phy
   pages = {653-657},
   file = {/Users/clayw/Google Drive/References/PDF_library/Alonso et al_2003_Genome-Wide Insertional Mutagenesis of Arabidopsis thaliana.pdf;/Users/clayw/Google Drive/References/PDF_library/Alonso et al_2003_Genome-Wide Insertional Mutagenesis of Arabidopsis thaliana2.pdf;/Users/clayw/Zotero/storage/2G7MCGZ6/653.html;/Users/clayw/Zotero/storage/7PTA5I9V/653.html},
   pmid = {12893945}
+}
+
+@article{kuck_parametric_2010,
+  title = {Parametric and Non-Parametric Masking of Randomness in Sequence Alignments Can Be Improved and Leads to Better Resolved Trees},
+  volume = {7},
+  issn = {1742-9994},
+  doi = {10.1186/1742-9994-7-10},
+  abstract = {BACKGROUND: Methods of alignment masking, which refers to the technique of excluding alignment blocks prior to tree reconstructions, have been successful in improving the signal-to-noise ratio in sequence alignments. However, the lack of formally well defined methods to identify randomness in sequence alignments has prevented a routine application of alignment masking. In this study, we compared the effects on tree reconstructions of the most commonly used profiling method (GBLOCKS) which uses a predefined set of rules in combination with alignment masking, with a new profiling approach (ALISCORE) based on Monte Carlo resampling within a sliding window, using different data sets and alignment methods. While the GBLOCKS approach excludes variable sections above a certain threshold which choice is left arbitrary, the ALISCORE algorithm is free of a priori rating of parameter space and therefore more objective.
+RESULTS: ALISCORE was successfully extended to amino acids using a proportional model and empirical substitution matrices to score randomness in multiple sequence alignments. A complex bootstrap resampling leads to an even distribution of scores of randomly similar sequences to assess randomness of the observed sequence similarity. Testing performance on real data, both masking methods, GBLOCKS and ALISCORE, helped to improve tree resolution. The sliding window approach was less sensitive to different alignments of identical data sets and performed equally well on all data sets. Concurrently, ALISCORE is capable of dealing with different substitution patterns and heterogeneous base composition. ALISCORE and the most relaxed GBLOCKS gap parameter setting performed best on all data sets. Correspondingly, Neighbor-Net analyses showed the most decrease in conflict.
+CONCLUSIONS: Alignment masking improves signal-to-noise ratio in multiple sequence alignments prior to phylogenetic reconstruction. Given the robust performance of alignment profiling, alignment masking should routinely be used to improve tree reconstructions. Parametric methods of alignment profiling can be easily extended to more complex likelihood based models of sequence evolution which opens the possibility of further improvements.},
+  language = {eng},
+  journal = {Frontiers in Zoology},
+  author = {K\"uck, Patrick and Meusemann, Karen and Dambach, Johannes and Thormann, Birthe and {von Reumont}, Bj\"orn M. and W\"agele, Johann W. and Misof, Bernhard},
+  month = mar,
+  year = {2010},
+  pages = {10},
+  pmid = {20356385},
+  pmcid = {PMC2867768}
+}
+
+@article{ronquist_mrbayes_2003,
+  title = {{{MrBayes}} 3: {{Bayesian}} Phylogenetic Inference under Mixed Models},
+  volume = {19},
+  issn = {1367-4803, 1460-2059},
+  shorttitle = {{{MrBayes}} 3},
+  doi = {10.1093/bioinformatics/btg180},
+  abstract = {Summary: MrBayes 3 performs Bayesian phylogenetic analysis combining information from different data partitions or subsets evolving under different stochastic evolutionary models. This allows the user to analyze heterogeneous data sets consisting of different data types\textemdash{}e.g. morphological, nucleotide, and protein\textemdash{}and to explore a wide variety of structured models mixing partition-unique and shared parameters. The program employs MPI to parallelize Metropolis coupling on Macintosh or UNIX clusters.},
+  language = {en},
+  number = {12},
+  journal = {Bioinformatics},
+  author = {Ronquist, F. and Huelsenbeck, J. P.},
+  month = aug,
+  year = {2003},
+  pages = {1572-1574}
 }
 
 

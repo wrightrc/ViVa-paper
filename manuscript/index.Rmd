@@ -1,29 +1,35 @@
 ---
-title: A comprehensive analysis of natural sequence variation within the <i>Arabidopsis
-  thaliana</i> nuclear auxin signaling pathway using an accessible web application
-author:
-  affiliation: University of Washington
-  name: R. Clay Wright
+title: Predicting structure--function relationships using natural genetic variation 
+author:  |
+  | R. Clay Wright^[Corresponding author: wrightrc@vt.edu] $^1$, 
+  | Morgan O. Hamm $^2$, 
+  | Jennifer Nemhauser $^2$
+  | $^1$Biological Systems Engineering, Virginia Tech, Blacksburg, VA 24061, 
+  | $^2$Deparment of Biology, University of Washington, Seattle, WA 98195
+
 date: "`r Sys.Date()`"
 
-abstract: "This will be the abstract"
+abstract: |
+  The way genes and genomes have evolved can provide information about which genes are critical to an organisms fitness, which genes faciliate adaptation, and how robust genes and gene networks are to perturbation. Thousands of genomes have now been sequenced representing a large swath of plant species and genetic variation within many species which has only begun to be explored in the last few years. However, much of this data remains inaccessible to researchers without significant bioinformatics experience. Here, we have developed a webtool ViVa (Visualization of Variation) to facilitate analysis, by any researcher, of The 1001 *Arabidopsis* Genomes Project dataset on a gene, gene family, or gene network level. We We have demonstrated the utility and accessibility of this tool by analyzing the natural variation in the well-studied nuclear auxin signaling pathway as a group of researchers from an array of experience levels. Our analysis has provided further confirmation of existing knowledge of this well studied pathway and has also helped generate new hypotheses. These results suggest there is much to be learned about less studied gene families and networks from similar analysis, especially when paired with biochemical and genetic characterization. This application provides access for every researcher allowing the community to extract maximum value from this large and expensive-to-generate dataset. ViVa is also extensible to any other database of genetic variation such as The 3,000 Rice Genomes Project. 
 
 keywords: natural variation, Arabidopsis thaliana, genome diversity, structure, function, genotype, phenotype, bioconductor, bookdown, r markdown
 
 bibliography:
 - natural-variation.bib
 - TIR1_AFB.bib
-- ARF.bib
 - Aux_IAA.bib
+- ARF.bib
+- TPL.bib
 biblio-style: apalike
 link-citations: yes
 
 ---
 
-```{r setup, message=FALSE, warning=FALSE}
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
 knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE, collapse = TRUE, comment = "#>", tidy = TRUE, cache = TRUE, cache.lazy = FALSE, out.width = "90%", fig.height=4, fig.width=7, out.extra='style="margin: auto; display: block; padding-top: 15px;"')
 
 #devtools::install_github("wrightrc/r1001genomes", ref = "auxin-natural-variation")
+library(bookdown)
 library(ape)
 library(r1001genomes)
 library(DT)
@@ -40,25 +46,15 @@ library(viridis)
 library(ips)
 library(knitr)
 library(dplyr)
-library(bookdown)
-library(htmltools)
 
 #use_python(python = "/usr/local/bin/python")
 ```
 
 ## List of working titles  
-* A comprehensive analysis of natural sequence variation within the <i>Arabidopsis thaliana</i> nuclear auxin signaling pathway  
+* Predicting structure--function relationships using natural genetic variation 
+* Accelerating structure--function mapping using natural genetic variation 
+* A comprehensive analysis of natural sequence variation within the <i>Arabidopsis thaliana</i> nuclear auxin signaling pathway 
 * **Add your suggestions** 
-
-# Abstract 
-
-* Motivating, high level statement  
-* Statement defining the cutting edge of your research area  
-* A statement of the form: "However, it remains unclear ..." that defines what problem you are  
-addressing.  
-* A statement of the form:"Here, we ..."  that concisely states your contribution.  
-* A series of 3?5 statement about your results.  
-* A concluding statement.  
 
 ```{r include=FALSE}
 # automatically create a bib database for R packages

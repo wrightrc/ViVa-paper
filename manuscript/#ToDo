@@ -1,8 +1,13 @@
 To Do
-- Silence alignCDS, getGeneInfo
+x set up factor for full variant effect list
+x order alignments according to trees
+x flip ARFtree to get rid of node label overlaps
+- fix trees
+x Silence alignCDS, getGeneInfo
 - Finish figures
-- Outline discussion
-- Write abstract
+x Outline discussion
+- write discussion
+x Write abstract
 - Cut down results
 - think about a couple correlation or covariation calculations
 - get ARF annotations working

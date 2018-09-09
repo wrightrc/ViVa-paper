@@ -1,0 +1,5 @@
+[ID: 0357843004]
+run	arithmetic_mean	harmonic_mean	values_discarded
+1	-8.898649e+02	-8.957994e+02	no
+2	-8.898287e+02	-8.968955e+02	no
+all	-8.898467e+02	-8.964907e+02	no

@@ -1,6 +1,6 @@
 # *TPL/TPR* genes {#TPLs}
 
-The Auxin signaling pathway utilizes the TOPLESS (TPL) and TOPLESS-related (TPR) family of Gro/TLE/TUP1 type co-repressor proteins to maintain auxin responsive genes in a transcriptionally-repressed state in the absence of auxin [@szemenyei_topless_2008]. In *Arabidopsis thaliana* the five member *TPL/TPR* family includes *TPL* and *TPR1-4*. The resulting proteins are comprised of three structural domains: an N-terminal TPL domain and two WD-40 domains [@long_topless_2006]. TPL/TPR proteins are recruited to the AUX/IAA proteins through interaction with the conserved Ethylene-responsive element binding factor-associated amphiphilic repression (EAR) domain [@szemenyei_topless_2008]. Canonical EAR domains have the amino acid sequence LxLxL, as found in most AUX/IAAs (figure xA) [@overvoorde_functional_2005]. TPL/TPR co-repressors bind EAR domains via their C-terminal to LisH (CTLH) domains found near their N-termini (citations of pre-structure founding papers/reviews). Recent structural analyses of the TPL N-terminal domain have highlighted the precise interaction interface between TPL and AUX/IAA EAR domains, as well as the TPL-TPL dimerization and tetramerization motifs [@martin-arevalillo_structure_2017; @ke_structural_2015a]. The residues required for higher-order multimers of TPL tetramers have also been identified [@ma_d53_2017]. Additional interactions with transcriptional regulation and chromatin modifying machinery are likely mediated by two tandem beta propeller domains of TPL/TPRs. These domain have not yet been crystallized, however numerous high resolution crystal structures of beta propeller domains allow for structural prediction of the TPL C-terminal beta propeller domains and the locations of likely interaction faces (Figure, X). 
+The Auxin signaling pathway utilizes the TOPLESS (TPL) and TOPLESS-related (TPR) family of Gro/TLE/TUP1 type co-repressor proteins to maintain auxin responsive genes in a transcriptionally-repressed state in the absence of auxin [@szemenyei_topless_2008]. In *Arabidopsis thaliana* the five member *TPL/TPR* family includes *TPL* and *TPR1-4*. The resulting proteins are comprised of three structural domains: an N-terminal TPL domain and two WD-40 domains [@long_topless_2006]. TPL/TPR proteins are recruited to the AUX/IAA proteins through interaction with the conserved Ethylene-responsive element binding factor-associated amphiphilic repression (EAR) domain [@szemenyei_topless_2008]. Canonical EAR domains have the amino acid sequence LxLxL, as found in most AUX/IAAs (figure xA) [@overvoorde_functional_2005]. TPL/TPR co-repressors bind EAR domains via their C-terminal to LisH (CTLH) domains found near their N-termini (citations of pre-structure founding papers/reviews). Recent structural analyses of the TPL N-terminal domain have highlighted the precise interaction interface between TPL and AUX/IAA EAR domains, as well as the TPL-TPL dimerization and tetramerization motifs [@martin-arevalillo_structure_2017; @ke_structural_2015]. The residues required for higher-order multimers of TPL tetramers have also been identified [@ma_d53_2017]. Additional interactions with transcriptional regulation and chromatin modifying machinery are likely mediated by two tandem beta propeller domains of TPL/TPRs. These domain have not yet been crystallized, however numerous high resolution crystal structures of beta propeller domains allow for structural prediction of the TPL C-terminal beta propeller domains and the locations of likely interaction faces (Figure, X). 
   
 The TOPLESS co-repressor family generally exhibits a high level of sequence conservation at the amino acid sequence level across resequenced *Arabidopsis thaliana* accessions, with all ${\pi_N/\pi_S}$ values below 1 (Table X). The closely related *TPL* and *TPR1* have the highest ${\pi_N/\pi_S}$ values (TPL-0.425, TPR1-0.739), suggesting that these these two related genes tolerate a higher degree of sequence and potentially functional diversity compared to *TPR2/3/4*. The N-terminal TPL domain of the TPL/TPR family is particularly conserved (Figure X). All nonsynonymous polymorphisms observed in this region are either in the coils between helices or are highly conservative mutations within helices (i.e. Valine to Isoleucine), which would be predicted to exhibit little effect on folding and function. 
 
@@ -20,7 +20,7 @@ div_stats$tair_symbol %<>% fct_reorder(.x = , div_stats$tair_symbol,
                                               pattern = "TPR"))})
 div_stats$tair_symbol %<>% fct_relevel("TPL")
 div_stats %<>% arrange(tair_symbol)
-div_stats %<>% select(tair_symbol, everything())
+div_stats %<>% dplyr::select(tair_symbol, everything())
 
 if (knitr::is_html_output()) {
   formatRound(datatable(div_stats,
@@ -55,10 +55,139 @@ The high degree of conservation in the entire N-terminal domain underscores its 
   
 Compared to the TPL domain, both the proline rich and WD-40 domains exhibited a higher frequency of missense variants. We utilized Phyre2.0 modeling software to predict the structure of the TPL/TPR WD-40 repeats in order to map non-synonymous mutations to protein structure (Figure X). Here we can see both faces of each predicted beta-propeller structure of the WD-40 domains, which are connected by a short peptide linker. This model reveals amino acid conservation in the core and central residues of the WD-40 domains. ~~These observations could be used as the basis for forward mutagenesis strategies to test whether this region of TPL functions similarly to its homolog TLE, which binds its target genes EH1 and the C-terminal WRPW/Y motif (Hairy/Hes/Runx) in the center of the WD-40 domain (pmid 16762837).~~ **Can we say something more general here? There is not enough background to support this. What is TLE from? What is EH1? Is TLE really binding to EH1 DNA?**  
   
-```{r TPL_TPR alignment}
+```{r TPL-alignment-coding-vars}
+alignment <- alignCDS(gene_info$transcript_ID)
+#possible outgroups  AtLUG, At4g32551; AtLUH, At2g32700
+# make an alignment data frame
+aln_df <- makeAlnDF(alignment[[2]])
+
+#get
+VCF <- ldply(.data = VCF, .fun = subset, gt_GT != "0|0")
+VCF <- getCodingDiv(VCF)
+effect_order <- read.csv("~/Desktop/SNPeff_order.csv")
+
+# make a collapsed alignment for translating positions
+collapsed_aln_df <- 
+  aln_df %>% dplyr::select(aln_pos, seq_pos, seq_name) %>%
+  tidyr::spread(key = seq_name, value = seq_pos)
+```
+
+```{r Mask_ARF_alignment, eval=FALSE}
+aliscore(as.AAbin(alignment[[2]]), path = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/")
+id <- scan(file = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/input.fas_List_random.txt", sep = " ", quiet = TRUE)
+AAAlign_no_gaps <- as.matrix(alignment[[2]])[, id]
+write.nexus.data(AAAlign_no_gaps, file = "TPLs.nex", format = "protein")
+```
+```{bash ARF_phylogeny_construction, eval=FALSE}
+/Applications/MrBayes/mb
+
+execute TPLs.nex
+# set ARF17 as the outgroup
+outgroup AT1G77850.1
+
+lset nucmodel=protein Rates=invgamma
+# or include Nst=6  ngammacat=4 omegavar=M3 
+prset aamodelpr=fixed(jones) statefreqpr=fixed(empirical) 
+# initial run with aamodelpr=mixed yielded posterior prob of 1 for jones model
+propset ExtTBR$prob=0
+
+mcmcp ngen=250000 nchains=4 printfreq=1000 samplefreq=100 burnin=200
+
+mcmc
+sump
+sumt
 
 ```
-  
+```{r Load TPL phylogeny and data}
+tree <- treeio::read.beast(file = "trees/TPLs.nex.con.tre")
+
+
+TPL_data <- read.csv(system.file("shiny-app", "gene_family_data",
+                      "TPL_gene_ids.csv", package = "r1001genomes"))
+TPL_data %<>% left_join(y = div_stats, by = c("name" = "tair_symbol"))
+#tip_labels need to be in the first column
+TPL_data %<>% dplyr::select(name, everything())
+TPL_data$tair_locus %<>% as.character()
+
+TPL_data <- TPL_data[match(gsub(x = tree@phylo$tip.label, pattern = "\\.1",replacement = ""), TPL_data$tair_locus), ] 
+
+tree@phylo$tip.label <- TPL_data$name
+
+```
+
+```{r Visualize TPL tree, fig.height=5, fig.width=5}
+p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% 
+  TPL_data + theme_tree() + scale_x_continuous(expand = c(0, 1.2)) +
+  geom_hilight(node = 28, extend = 1) + 
+  geom_hilight(node = 25, extend = 1) +
+  geom_tippoint(mapping = 
+                  aes(size = 4*Pi_NS_Ratio, fill = Pi_NS_Ratio),
+                shape = 21, color = "white", show.legend = TRUE,
+                position = position_nudge(x = 0.01)) + 
+  geom_rootpoint(color = "grey") + 
+  scale_fill_viridis(values = rescale(
+    c(min(TPL_data$Pi_NS_Ratio),
+      max(TPL_data$Pi_NS_Ratio)), 
+                                    to = c(0,1)), guide = "colourbar") +
+  scale_size(guide = "none") + 
+  theme(legend.position = c(.1,.7)) + 
+  geom_nodelab(mapping = aes(label = node), nudge_x = -.2, size = 3)
+  #geom_nodelab(mapping = aes(label = round(prob,digits = 2)), nudge_x = -.25, size = 3) +
+  #geom_tiplab(mapping = aes(color = class), hjust = -0.3) + 
+p
+```
+
+```{r full-ARFs-alignment}
+ARF_order <- fct_inorder(na.exclude(p$data$label[base::order(p$data$y, decreasing = TRUE)]), ordered = TRUE)
+
+aln_df <- left_join(aln_df, dplyr::select(gene_info, "tair_locus",
+                                       "tair_symbol", "transcript_ID"),
+                        by = c("transcript_ID" = "transcript_ID"))
+aln_df$tair_symbol %<>% factor(levels = ARF_order, 
+                                       ordered = TRUE)
+aln_df$tair_symbol %<>% fct_rev()
+
+aln_df <- addSNPsToAlnDF(aln_df, VCF, effect_order = effect_order)
+aln_df$gap <- aln_df$seq_pos == "-"
+
+p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
+  geom_raster(data = aln_df, 
+             # mapping = aes(fill = effects)) +
+              mapping = aes(fill = strength,
+                            alpha = gap)) +
+  scale_alpha_manual(values = c("TRUE" = 0, "FALSE" = 1), 
+                     labels = c("aligned", "gap"), 
+                     guide = guide_legend(override.aes = 
+                                            list(fill = c("grey85", "white")),
+                       title = "alignment",
+                       direction = "vertical")) + 
+   scale_fill_viridis(breaks = range(effect_order$strength),
+                      limits = range(effect_order$strength),
+                      na.value = "grey85",
+                      direction = -1,
+                      labels = c("neutral", "deleterious"),
+                      option = "A", 
+                      guide = guide_colorbar(ticks = FALSE, 
+                                             title.vjust = .8, 
+                                             title.position = "top", 
+                                             title.hjust = 0.5)) +
+  scale_y_discrete(expand = c(0,0)) +
+  scale_x_continuous(expand = c(0,0)) +  # expand increases distance from axis
+  labs(x = "codon position in alignment", y = "", fill = "variant effect") +
+  theme_logo(base_family = "Helvetica") +
+  theme(panel.grid = element_blank(), 
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        #panel.background = element_rect(fill = "grey85", color = "white"),
+        legend.position = c("bottom"),
+        legend.key = element_rect(linetype = "solid"),
+        legend.spacing = unit(4, "char"), 
+        legend.box.spacing = unit(0.1,"line")) 
+p
+
+```
+
   
 Despite the presence of five *TPL/TPR* genes in the genome, which are considered to be redundant (pmid 16763149), very few observed SNPs are predicted to result in loss of function for any *TPL/TPR* gene. Only one frameshift variant was observed, *TPR4-665delG*, in a single accession (Aiell-4 from Italy). This deletion occurs in codon 222, just after the TPL N-terminal domain, and generates an early stop eleven codons downstream from the deletion. It is unclear whether this N-terminal fragment would be expressed at any appreciable level, as it is possible that the generation of an early stop codon would trigger nonsense-mediated decay. However, if expressed, it would be fascinating to examine whether this naturally occurring N-terminal truncation retains activity as a co-repressor. Given the observation that the TPL N-terminal domain is sufficient to bind histones (28630893), and repress transcription via synthetic assays in yeast (24979769), it is possible that this represents a semi-functional TPL variant. There has been no evidence for prioritization of individual *TPL/TPR* family members in the auxin response pathway, but experiments modulating the gene copy number of *TPR1* revealed the importance of maintaining the proper dosage of *TPL/TPR* in order to accurately trigger the salicylic acid innate immune response (20647385). These results, taken together with the absence of *TPL/TPR* loss-of-function alleles in the *Arabidopsis thaliana* accessions suggest that perhaps the entire family is being conserved at the nucleotide level in the population to meet a gene dosage requirement, with little opportunity for neo- or sub-functionalization.
 

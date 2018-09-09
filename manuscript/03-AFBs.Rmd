@@ -25,7 +25,7 @@ div_stats$tair_symbol %<>% fct_reorder(.x =  div_stats$tair_symbol,
                                               pattern = "AFB|TIR"))})
 div_stats$tair_symbol %<>% fct_relevel("TIR1")
 div_stats %<>% arrange(tair_symbol)
-div_stats %<>% select(tair_symbol, everything())
+div_stats %<>% dplyr::select(tair_symbol, everything())
 
 if (knitr::is_html_output()) {
   formatRound(datatable(div_stats,
@@ -57,9 +57,7 @@ if (knitr::is_html_output()) {
 
 Examining the natural sequence variation across the *AFB* family \@ref(fig:TIR1AFBdivstats) revealed that *TIR1* and *AFB1* both had very low nonsynonymous diversity, hinting at their likely functional importance and bringing in to question the inconclusive role of *AFB1* in auxin signaling. *AFB3* and *AFB4* had higher nonsynonymous diversity, while their sister genes, *AFB2* and *AFB5* were more conserved. This matches our current understanding of *AFB3* as playing a minor role in the auxin signaling pathway and *AFB4* perhaps undergoing pseudogenization. 
 
-Although most known functional regions are highly conserved in *AFB1*, there is a nonsynonymous polymorphism  in the oligomerization domain, only found in the Can-0 accession. Mutations in this domain of *TIR1* frequently have a semidominant effect on root phenotypes [@dezfulian_oligomerization_2016; @wright_insights_2017]. Characterization of this allele and accession may help determine the role of *AFB1* in this pathway.
-
-```{r AFB variants for PyMOL}
+```{r AFB_ alignment}
 alignment <- alignCDS(gene_info$transcript_ID)
 # make an alignment data frame
 aln_df <- makeAlnDF(alignment[[2]])
@@ -68,6 +66,120 @@ aln_df <- makeAlnDF(alignment[[2]])
 collapsed_aln_df <- 
   aln_df %>% dplyr::select(aln_pos, seq_pos, seq_name) %>%
   tidyr::spread(key = seq_name, value = seq_pos)
+```
+
+```{r Mask_AFB_alignment, eval=FALSE}
+aliscore(as.AAbin(alignment[[2]]), path = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/",  o = "AT2G39940")
+id <- scan(file = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/input.fas_List_random.txt", sep = " ", quiet = TRUE)
+AAAlign_no_gaps <- as.matrix(alignment[[2]])[, id]
+write.nexus.data(AAAlign_no_gaps, file = "trees/AFBs.nex", format = "protein")
+```
+```{bash IAA_phylogeny_construction, eval=FALSE}
+cd ~/Desktop/natural-variation-webtool/manuscript/trees
+
+/Applications/MrBayes/mb
+
+execute AFBs.nex
+# set IAA33 as the outgroup
+outgroup AT2G39940.1
+
+lset nucmodel=protein Rates=invgamma
+# or include Nst=6  ngammacat=4 omegavar=M3 
+prset aamodelpr=fixed(jones) statefreqpr=fixed(empirical) 
+# initial run with aamodelpr=mixed yielded posterior prob of 1 for jones model
+propset ExtTBR$prob=0
+
+mcmcp ngen=250000 nchains=4 printfreq=1000 samplefreq=100 burnin=200
+
+mcmc
+sump
+sumt
+
+```
+
+```{r Load AFB phylogeny and data}
+tree <- treeio::read.beast(file = "trees/AFBs.nex.con.tre")
+
+AFB_data <- read.csv(system.file("shiny-app", "gene_family_data",
+                      "AFB_gene_ids.csv", package = "r1001genomes"))
+AFB_data %<>% left_join(y = div_stats, by = c("name" = "tair_symbol"))
+#tip_labels need to be in the first column
+AFB_data %<>% dplyr::select(name, everything())
+AFB_data$tair_locus %<>% as.character()
+
+AFB_data <- AFB_data[match(gsub(x = tree@phylo$tip.label, pattern = "\\.1",replacement = ""), AFB_data$tair_locus), ] 
+
+tree@phylo$tip.label <- AFB_data$name
+```
+
+(ref:AFBtree) **AFB protein sequence tree mapped with ${\pi_N/\pi_S}$.** Protein sequences were aligned [@wright_decipher_2015] and low information content regions were masked [@kuck_parametric_2010] prior to infering a phylogeny [@ronquist_mrbayes_2003]. Tips of the tree are mapped with circles of diameter proportional to ${\pi_N/\pi_S}$ and also are colored according to ${\pi_N/\pi_S}$. Nodes are labeled with the poster probability of monophyly.
+
+```{r AFBtree, fig.height=2, fig.width=3, fig.cap="(ref:AFBtree)"}
+p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% AFB_data + theme_tree() + scale_x_continuous(expand = c(0, 1.2)) + 
+  geom_tippoint(mapping = aes(size = 4*Pi_NS_Ratio, fill = Pi_NS_Ratio), shape = 21, color = "white", show.legend = TRUE) + 
+  scale_fill_viridis(values = rescale(c(min(AFB_data$Pi_NS_Ratio),
+                                        max(AFB_data$Pi_NS_Ratio)), 
+                                      to = c(0,1)), guide = "colourbar") + scale_size(guide = "none") + 
+  theme(legend.position = c(.1,.7)) + 
+  geom_nodelab(mapping = aes(label = round(prob,digits = 2)), nudge_x = -.3, nudge_y = .5, size = 3) + 
+  geom_tiplab(hjust = -0.25) + 
+  scale_color_viridis(discrete = TRUE)
+p
+#ggsave("AFBs_tree.pdf", height = 3, width = 4)
+```
+
+```{r full-AFBs-alignment}
+AFB_order <- fct_inorder(na.exclude(p$data$label[base::order(p$data$y, decreasing = TRUE)]), ordered = TRUE)
+
+aln_df <- left_join(aln_df, dplyr::select(gene_info, "tair_locus",
+                                       "tair_symbol", "transcript_ID"),
+                        by = c("transcript_ID" = "transcript_ID"))
+aln_df$tair_symbol %<>% factor(levels = AFB_order, 
+                                       ordered = TRUE)
+aln_df$tair_symbol %<>% fct_rev()
+
+aln_df <- addSNPsToAlnDF(aln_df, VCF, effect_order = SNPeff_order)
+aln_df$gap <- aln_df$seq_pos == "-"
+
+p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
+  geom_raster(data = aln_df, 
+             # mapping = aes(fill = effects)) +
+              mapping = aes(fill = strength,
+                            alpha = gap)) +
+  scale_alpha_manual(values = c("TRUE" = 0, "FALSE" = 1), 
+                     labels = c("aligned", "gap"), 
+                     guide = guide_legend(override.aes = 
+                                            list(fill = c("grey85", "white")),
+                       title = "alignment",
+                       direction = "vertical")) + 
+   scale_fill_viridis(breaks = range(effect_order$strength),
+                      limits = range(effect_order$strength),
+                      na.value = "grey85",
+                      direction = -1,
+                      labels = c("neutral", "deleterious"),
+                      option = "A", 
+                      guide = guide_colorbar(ticks = FALSE, 
+                                             title.vjust = .8, 
+                                             title.position = "top", 
+                                             title.hjust = 0.5)) +
+  scale_y_discrete(expand = c(0,0)) +
+  scale_x_continuous(expand = c(0,0)) +  # expand increases distance from axis
+  labs(x = "codon position in alignment", y = "", fill = "variant effect") +
+  theme_logo(base_family = "Helvetica") +
+  theme(panel.grid = element_blank(), 
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        #panel.background = element_rect(fill = "grey85", color = "white"),
+        legend.position = c("bottom"),
+        legend.key = element_rect(linetype = "solid"),
+        legend.spacing = unit(4, "char"), 
+        legend.box.spacing = unit(0.1,"line")) 
+p
+
+```
+
+```{r AFB variants for PyMOL}
 coding_vcf <- ldply(.data = VCF, .fun = subset, 
              !is.na(Transcript_ID) & gt_GT != "0|0")
 aln_df <- addSNPsToAlnDF(aln_df, coding_vcf, seq_name = Transcript_ID, 
@@ -217,12 +329,15 @@ set_view (\
 ray
 ```
 
-(ref:AFB_structure_vars) A TIR1 structure (2P1Q) in gold, with residues 
+(ref:AFBstructure) A TIR1 structure (2P1Q) in gold in complex with ASK1 in grey and auxin, inositol phosphate and an Aux/IAA degron in teal. TIR1 residues or analagous residues containing nonsynonymous polymorphisms in TIR1 and AFB1 colored in purple and in AFB2 and AFB3 colored in blue. 
 
-```{r AFB_structure_vars, fig.cap='(ref:AFB_structure_vars)'}
-#knitr::include_graphics()
+```{r AFBstructure, fig.cap='(ref:AFBstructure)'}
+knitr::include_graphics(path = "structures/natural_variation_TIR1AFB1-3.png")
 ```
 
+Although most known functional regions are highly conserved in *AFB1*, there is a nonsynonymous polymorphism  in the oligomerization domain, only found in the Can-0 accession. Mutations in this domain of *TIR1* frequently have a semidominant effect on root phenotypes [@dezfulian_oligomerization_2016; @wright_insights_2017]. Characterization of this allele and accession may help determine the role of *AFB1* in this pathway. 
+
+**not sure this is very informative, and a map doesn't seem very exciting, perhaps a domain scale alignment plot would be better here, or above, and would allow us to comment more on where the functional diversity lies within the family.** 
 
 ```{r AFB1 diversity plot}
 coding_variants <- getCodingDiv(VCF[[gene_info[gene_info$tair_symbol == "AFB1", "transcript_ID"]]])
@@ -233,7 +348,7 @@ annotation <- addAlnPosToAnno(anno_df = annotation, aln_df)
 
 # translate positions from TIR1 to AFB1
 AFB1_positions <- annotation$positions
-AFB1_positions %<>% left_join(y = select(collapsed_aln_df, aln_pos, gene_info[gene_info$tair_symbol == "AFB1", "transcript_ID"]), by = "aln_pos") 
+AFB1_positions %<>% left_join(y = dplyr::select(collapsed_aln_df, aln_pos, gene_info[gene_info$tair_symbol == "AFB1", "transcript_ID"]), by = "aln_pos") 
 AFB1_positions$position <- AFB1_positions$AT4G03190.1
 
 p <- append_layers(p,list(
