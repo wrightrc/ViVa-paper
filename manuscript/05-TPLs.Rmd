@@ -9,7 +9,7 @@ gene_info <- geneInfoFromFile(
   fname = system.file("shiny-app", "gene_family_data",
                       "TPL_gene_ids.csv", package = "r1001genomes"))
 #annotation <- readAnnotationFile(filename = system.file("shiny-app", "gene_family_data",
-#                      "IAA_annotations.csv", package = "r1001genomes"), gene_info = gene_info)
+#                      "TPL_annotations.csv", package = "r1001genomes"), gene_info = gene_info)
 
 VCF <- readRDS(system.file("shiny-app", "gene_family_data",
                       "TPL_VCF.rds", package = "r1001genomes"))
@@ -64,7 +64,6 @@ aln_df <- makeAlnDF(alignment[[2]])
 #get
 VCF <- ldply(.data = VCF, .fun = subset, gt_GT != "0|0")
 VCF <- getCodingDiv(VCF)
-effect_order <- read.csv("~/Desktop/SNPeff_order.csv")
 
 # make a collapsed alignment for translating positions
 collapsed_aln_df <- 
@@ -73,51 +72,13 @@ collapsed_aln_df <-
 ```
 
 
-(ref:TPLsAlignment) **Alignment of A. thaliana TPL/TPR genes showing variants.** This alignment should probably be paired down to a key region rather than the eniter AA sequence.
-
-```{r TPLsAlignment, fig.height = 20, fig.cap = "(ref:TPLsAlignment)"}
-
-alignment <- alignCDS(gene_info$transcript_ID)
-
-
-aln_df <- makeAlnDF(alignment[[2]])
-aln_df <- left_join(aln_df, dplyr::select(gene_info, "tair_locus",
-                                       "tair_symbol", "transcript_ID"),
-                        by = c("transcript_ID" = "transcript_ID"))
-aln_df$tair_symbol <- fct_rev(aln_df$tair_symbol)
-aln_df <- chunkAlnDF(aln_df = aln_df, chunk_width = 55)
-VCF <- ldply(.data = VCF, .fun = subset, gt_GT != "0|0")
-VCF <- getCodingDiv(VCF)
-aln_df <- addSNPsToAlnDF(aln_df, VCF)
-
-# aln_df_chunk <- chunkAlnDF(aln_df = aln_df, chunk_width = 55)
-p <-ggplot(aln_df_chunk, aes(x = aln_pos, y = tair_symbol,
-                             group = seq_pos, text = variants))
-p <- p +
-  geom_tile(data = na.omit(aln_df_chunk), mapping = aes(fill = effects),
-            width = 1, height = 1, alpha = 0.8) +
-  geom_text(aes(label=letter), alpha= 1, family = "Courier") +
-  scale_fill_brewer(type = "qual", palette = 1, direction = -1) +
-  scale_x_continuous(breaks=seq(1,max(aln_df_chunk$aln_pos), by = 10)) +
-  scale_y_discrete() +
-  # expand increases distance from axis
-  labs(x = "", y = "", fill = "variant") +
-  theme_logo(base_family = "Helvetica") +
-  theme(panel.grid = element_blank(), panel.grid.minor = element_blank()) +
-  facet_wrap(facets = ~chunk, ncol = 1, scales = "free") +
-  theme(strip.background = element_blank(),
-        strip.text.x = element_blank(),
-        legend.box = "vertical")
-p
-```
-
 ```{r Mask_TPL_alignment, eval=FALSE}
 aliscore(as.AAbin(alignment[[2]]), path = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/")
 id <- scan(file = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/input.fas_List_random.txt", sep = " ", quiet = TRUE)
 AAAlign_no_gaps <- as.matrix(alignment[[2]])[, id]
 write.nexus.data(AAAlign_no_gaps, file = "TPLs.nex", format = "protein")
 ```
-```{bash ARF_phylogeny_construction, eval=FALSE}
+```{bash TPL_phylogeny_construction, eval=FALSE}
 /Applications/MrBayes/mb
 
 execute TPLs.nex
@@ -143,6 +104,7 @@ tree <- treeio::read.beast(file = "trees/TPLs.nex.con.tre")
 
 TPL_data <- read.csv(system.file("shiny-app", "gene_family_data",
                       "TPL_gene_ids.csv", package = "r1001genomes"))
+TPL_data$name <- as.character(TPL_data$name)
 TPL_data %<>% left_join(y = div_stats, by = c("name" = "tair_symbol"))
 #tip_labels need to be in the first column
 TPL_data %<>% dplyr::select(name, everything())
@@ -154,39 +116,34 @@ tree@phylo$tip.label <- TPL_data$name
 
 ```
 
-```{r Visualize TPL tree, fig.height=5, fig.width=5}
-p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% 
-  TPL_data + theme_tree() + scale_x_continuous(expand = c(0, 1.2)) +
-  geom_hilight(node = 28, extend = 1) + 
-  geom_hilight(node = 25, extend = 1) +
-  geom_tippoint(mapping = 
-                  aes(size = 4*Pi_NS_Ratio, fill = Pi_NS_Ratio),
-                shape = 21, color = "white", show.legend = TRUE,
-                position = position_nudge(x = 0.01)) + 
-  geom_rootpoint(color = "grey") + 
-  scale_fill_viridis(values = rescale(
-    c(min(TPL_data$Pi_NS_Ratio),
-      max(TPL_data$Pi_NS_Ratio)), 
-                                    to = c(0,1)), guide = "colourbar") +
-  scale_size(guide = "none") + 
+```{r Visualize TPL tree, fig.height=2, fig.width=3}
+p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% TPL_data + theme_tree() + scale_x_continuous(expand = c(0, 1.2)) + 
+  geom_tippoint(mapping = aes(size = 4*Pi_NS_Ratio, fill = Pi_NS_Ratio), shape = 21, color = "white", show.legend = TRUE) + 
+  scale_fill_viridis(values = rescale(c(min(TPL_data$Pi_NS_Ratio),
+                                        max(TPL_data$Pi_NS_Ratio)), 
+                                      to = c(0,1)), guide = "colourbar") + scale_size(guide = "none") +
+  labs(fill = expression(pi [N] / pi [S])) + 
   theme(legend.position = c(.1,.7)) + 
-  geom_nodelab(mapping = aes(label = node), nudge_x = -.2, size = 3)
-  #geom_nodelab(mapping = aes(label = round(prob,digits = 2)), nudge_x = -.25, size = 3) +
-  #geom_tiplab(mapping = aes(color = class), hjust = -0.3) + 
+  #geom_nodelab(mapping = aes(label = node)) +
+  geom_nodelab(mapping = aes(label = round(as.numeric(prob),digits = 2)), nudge_x = -.2, nudge_y = .2, size = 3) + 
+  geom_tiplab(hjust = -0.25) 
 p
 ```
 
-```{r full-ARFs-alignment}
-ARF_order <- fct_inorder(na.exclude(p$data$label[base::order(p$data$y, decreasing = TRUE)]), ordered = TRUE)
+
+(ref:full-TPLs-alignment) **Alignment of A. thaliana TPL/TPR genes showing variants.** This alignment should probably be paired down to a key region rather than the eniter AA sequence.
+
+```{r full-TPLs-alignment, fig.cap= "(ref:full-TPLs-alignment)"}
+TPL_order <- fct_inorder(na.exclude(p$data$label[base::order(p$data$y, decreasing = TRUE)]), ordered = TRUE)
 
 aln_df <- left_join(aln_df, dplyr::select(gene_info, "tair_locus",
                                        "tair_symbol", "transcript_ID"),
                         by = c("transcript_ID" = "transcript_ID"))
-aln_df$tair_symbol %<>% factor(levels = ARF_order, 
+aln_df$tair_symbol %<>% factor(levels = TPL_order, 
                                        ordered = TRUE)
 aln_df$tair_symbol %<>% fct_rev()
 
-aln_df <- addSNPsToAlnDF(aln_df, VCF, effect_order = effect_order)
+aln_df <- addSNPsToAlnDF(aln_df, VCF, effect_order = SNPeff_order)
 aln_df$gap <- aln_df$seq_pos == "-"
 
 p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
@@ -200,8 +157,8 @@ p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
                                             list(fill = c("grey85", "white")),
                        title = "alignment",
                        direction = "vertical")) + 
-   scale_fill_viridis(breaks = range(effect_order$strength),
-                      limits = range(effect_order$strength),
+   scale_fill_viridis(breaks = range(SNPeff_order$strength),
+                      limits = range(SNPeff_order$strength),
                       na.value = "grey85",
                       direction = -1,
                       labels = c("neutral", "deleterious"),

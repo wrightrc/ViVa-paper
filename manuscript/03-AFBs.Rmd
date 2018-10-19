@@ -51,7 +51,7 @@ if (knitr::is_html_output()) {
                                  "&pi; transcript")
   dt %<>% mutate_if(is.numeric, round, 6)
   names(dt) <- paste0("**", names(dt), "**")
-  kable(dt, caption = "(\\#tab:TIR1AFBdivstats)") 
+  kable(dt) 
 }
 ```
 
@@ -74,7 +74,7 @@ id <- scan(file = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/input.
 AAAlign_no_gaps <- as.matrix(alignment[[2]])[, id]
 write.nexus.data(AAAlign_no_gaps, file = "trees/AFBs.nex", format = "protein")
 ```
-```{bash IAA_phylogeny_construction, eval=FALSE}
+```{bash AFB_phylogeny_construction, eval=FALSE}
 cd ~/Desktop/natural-variation-webtool/manuscript/trees
 
 /Applications/MrBayes/mb
@@ -119,11 +119,14 @@ p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% AFB_data + theme_
   geom_tippoint(mapping = aes(size = 4*Pi_NS_Ratio, fill = Pi_NS_Ratio), shape = 21, color = "white", show.legend = TRUE) + 
   scale_fill_viridis(values = rescale(c(min(AFB_data$Pi_NS_Ratio),
                                         max(AFB_data$Pi_NS_Ratio)), 
-                                      to = c(0,1)), guide = "colourbar") + scale_size(guide = "none") + 
+                                      to = c(0,1)), guide = "colourbar") + scale_size(guide = "none") +
+  labs(fill = expression(pi [N] / pi [S])) + 
   theme(legend.position = c(.1,.7)) + 
-  geom_nodelab(mapping = aes(label = round(prob,digits = 2)), nudge_x = -.3, nudge_y = .5, size = 3) + 
+  #geom_nodelab(mapping = aes(label = node)) +
+  geom_nodelab(mapping = aes(label = round(as.numeric(prob),digits = 2)), nudge_x = -.2, nudge_y = .2, size = 3) + 
   geom_tiplab(hjust = -0.25) + 
-  scale_color_viridis(discrete = TRUE)
+  scale_color_viridis(discrete = TRUE)  
+p <- p %>% ggtree::rotate(12) %>% ggtree::rotate(9)
 p
 #ggsave("AFBs_tree.pdf", height = 3, width = 4)
 ```
@@ -137,14 +140,14 @@ aln_df <- left_join(aln_df, dplyr::select(gene_info, "tair_locus",
 aln_df$tair_symbol %<>% factor(levels = AFB_order, 
                                        ordered = TRUE)
 aln_df$tair_symbol %<>% fct_rev()
+VCF <- ldply(.data = VCF, .fun = subset, gt_GT != "0|0")
+VCF <- getCodingDiv(VCF)
 
 aln_df <- addSNPsToAlnDF(aln_df, VCF, effect_order = SNPeff_order)
 aln_df$gap <- aln_df$seq_pos == "-"
 
-p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
-  geom_raster(data = aln_df, 
-             # mapping = aes(fill = effects)) +
-              mapping = aes(fill = strength,
+p <-ggplot(subset(aln_df, tair_symbol != "COI1"), aes(x = aln_pos, y = tair_symbol)) +
+  geom_raster(mapping = aes(fill = strength,
                             alpha = gap)) +
   scale_alpha_manual(values = c("TRUE" = 0, "FALSE" = 1), 
                      labels = c("aligned", "gap"), 
@@ -152,8 +155,8 @@ p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
                                             list(fill = c("grey85", "white")),
                        title = "alignment",
                        direction = "vertical")) + 
-   scale_fill_viridis(breaks = range(effect_order$strength),
-                      limits = range(effect_order$strength),
+   scale_fill_viridis(breaks = range(SNPeff_order$strength),
+                      limits = range(SNPeff_order$strength),
                       na.value = "grey85",
                       direction = -1,
                       labels = c("neutral", "deleterious"),
@@ -179,9 +182,9 @@ p
 
 ```
 
-```{r AFB variants for PyMOL}
+```{r AFB variants for PyMOL, eval=FALSE}
 coding_vcf <- ldply(.data = VCF, .fun = subset, 
-             !is.na(Transcript_ID) & gt_GT != "0|0")
+             !is.na(transcript_ID) & gt_GT != "0|0")
 aln_df <- addSNPsToAlnDF(aln_df, coding_vcf, seq_name = Transcript_ID, 
                seq_pos = Codon_Number)
 collapsed_aln_df %<>% left_join(y = subset(aln_df, seq_name == gene_info[gene_info$tair_symbol == "TIR1", "transcript_ID"]))
@@ -340,7 +343,7 @@ Although most known functional regions are highly conserved in *AFB1*, there is 
 **not sure this is very informative, and a map doesn't seem very exciting, perhaps a domain scale alignment plot would be better here, or above, and would allow us to comment more on where the functional diversity lies within the family.** 
 
 ```{r AFB1 diversity plot}
-coding_variants <- getCodingDiv(VCF[[gene_info[gene_info$tair_symbol == "AFB1", "transcript_ID"]]])
+coding_variants <- VCF[VCF$Transcript_ID == gene_info[gene_info$tair_symbol == "AFB1", "transcript_ID"], ]
 p <- plotCodingDiv(uniqueCodingVars = coding_variants)
 annotation <- readAnnotationFile(filename = system.file("shiny-app", "gene_family_data",
                       "AFB_annotations.csv", package = "r1001genomes"), gene_info = gene_info)
@@ -374,27 +377,25 @@ aln_df <- left_join(aln_df, dplyr::select(gene_info, "tair_locus",
                         by = c("transcript_ID" = "transcript_ID"))
 aln_df$tair_symbol <- fct_rev(fct_relevel(aln_df$tair_symbol, "TIR1"))
 aln_df <- chunkAlnDF(aln_df = aln_df, chunk_width = 55)
-VCF <- ldply(.data = VCF, .fun = subset, gt_GT != "0|0")
-VCF <- getCodingDiv(VCF)
-aln_df <- addSNPsToAlnDF(aln_df, VCF)
+aln_df <- addSNPsToAlnDF(aln_df, VCF, effect_order = SNPeff_order)
 F_box <- subset(aln_df, aln_pos <= 96)
 F_box <- chunkAlnDF(aln_df = F_box, chunk_width = 80)
 p <-ggplot(F_box, aes(x = aln_pos, y = tair_symbol,
                              group = seq_pos, text = variants))
 p <- p +
   geom_tile(data = na.omit(F_box), mapping = aes(fill = effects),
-            width = 1, height = 1, alpha = 0.8) +
+            width = 1, height = 1, alpha = 0.5) +
   geom_text(aes(label=letter), alpha= 1, family = "Courier") +
-  scale_fill_brewer(type = "qual", palette = 1, direction = -1) +
   scale_x_continuous(breaks=seq(1,max(F_box$aln_pos), by = 10)) +
   scale_y_discrete() +
   # expand increases distance from axis
-  labs(x = "", y = "", fill = "variant") +
+  labs(x = "", y = "") +
   theme_logo(base_family = "Helvetica") +
   theme(panel.grid = element_blank(), panel.grid.minor = element_blank()) +
   facet_wrap(facets = ~chunk, ncol = 1, scales = "free") +
   theme(strip.background = element_blank(),
         strip.text.x = element_blank(),
-        legend.box = "vertical")
+        legend.box = "vertical") + 
+  scale_fill_viridis(option = "A", discrete = TRUE)
 p
 ```

@@ -1,2 +1,3 @@
-bookdown::html_document2:
+bookdown::word_document2:
     fig.caption: TRUE
+

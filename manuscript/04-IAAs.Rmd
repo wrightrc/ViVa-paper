@@ -122,7 +122,7 @@ p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% IAA_data + theme_
                                         max(IAA_data$PiN_PiS)), 
                                       to = c(0,1)), guide = "colourbar") + scale_size(guide = "none") + 
   theme(legend.position = c(.9,.7)) + 
-  geom_nodelab(mapping = aes(label = round(prob,digits = 2)), nudge_x = -.3, nudge_y = .5, size = 3) + 
+  geom_nodelab(mapping = aes(label = round(as.numeric(prob),digits = 2)), nudge_x = -.3, nudge_y = .5, size = 3) + 
   geom_tiplab(mapping = aes(color = Class), hjust = -0.25) + 
   scale_color_viridis(discrete = TRUE)
 p
@@ -140,8 +140,8 @@ Within the available natural sequence variation, we found several missense polym
 
 (ref:A-IAA-alignment) 
 ```{r A-IAA-alignment, fig.cap="(ref:A-IAA-alignment)"}
-A_IAAs <- subset(gene_info, tair_symbol %in% IAA_data[which(IAA_data$class == "A"), "name"])
-A_ARFs <- alignCDS(A_IAAs$transcript_ID)
+A_IAAs <- subset(gene_info, tair_symbol %in% IAA_data[which(IAA_data$Class == "A"), "name"])
+A_IAAs <- alignCDS(A_IAAs$transcript_ID)
 # make an alignment data frame
 A_IAAs <- makeAlnDF(A_IAAs[[2]])
 A_IAAs <- left_join(A_IAAs, dplyr::select(gene_info, "tair_locus",
@@ -150,32 +150,51 @@ A_IAAs <- left_join(A_IAAs, dplyr::select(gene_info, "tair_locus",
 A_IAAs$tair_symbol %<>% as.factor()
 A_IAAs$tair_symbol %<>% fct_reorder(
     {as.integer(str_remove(A_IAAs$tair_symbol, 
-                           pattern = "ARF"))}, 
+                           pattern = "IAA"))}, 
     .desc = TRUE)
-A_IAAs <- addSNPsToAlnDF(A_IAAs, VCF)
+VCF <- ldply(.data = VCF, .fun = subset, gt_GT != "0|0")
+coding_VCF <- getCodingDiv(VCF)
+A_IAAs <- addSNPsToAlnDF(aln_df = A_IAAs,SNPs = coding_VCF, effect_order = SNPeff_order)
+A_IAAs$gap <- A_IAAs$seq_pos == "-"
 
-p <-ggplot(A_IAAs, aes(x = aln_pos, y = tair_symbol,
-                             group = seq_pos, text = variants)) +
-  geom_raster(data = A_IAAs[A_IAAs$seq_pos == "-",], fill = "lightgrey") +
-  geom_raster(data = na.omit(A_IAAs), 
+
+p <-ggplot(A_IAAs, aes(x = aln_pos, y = tair_symbol)) +
+  geom_raster(data = A_IAAs, 
              # mapping = aes(fill = effects)) +
-              mapping = aes(fill = as.integer(as.factor(effects)))) +
-  #scale_fill_viridis(option = "A", discrete = TRUE) +
-   scale_fill_viridis(breaks = range(
-     as.integer(as.factor(na.omit(A_IAAs$effects)))),
-                      labels = c("deleterious", "neutral"),
+              mapping = aes(fill = strength,
+                            alpha = gap)) +
+  scale_alpha_manual(values = c("TRUE" = 0, "FALSE" = 1), 
+                     labels = c("aligned", "gap"), 
+                     guide = guide_legend(override.aes = 
+                                            list(fill = c("grey85", "white")),
+                       title = "alignment",
+                       direction = "vertical")) + 
+   scale_fill_viridis(breaks = range(SNPeff_order$strength),
+                      limits = range(SNPeff_order$strength),
+                      na.value = "grey85",
+                      direction = -1,
+                      labels = c("neutral", "deleterious"),
                       option = "A", 
                       guide = guide_colorbar(ticks = FALSE, 
-                                             title.vjust = .8)) +
-  scale_y_discrete() +
-  # expand increases distance from axis
+                                             title.vjust = .8, 
+                                             title.position = "top", 
+                                             title.hjust = 0.5)) +
+  scale_y_discrete(expand = c(0,0)) +
+  scale_x_continuous(expand = c(0,0)) +  # expand increases distance from axis
   labs(x = "codon position in alignment", y = "", fill = "variant effect") +
   theme_logo(base_family = "Helvetica") +
-  theme(panel.grid = element_blank(), panel.grid.minor = element_blank()) +
-  theme(strip.background = element_blank(),
+  theme(panel.grid = element_blank(), 
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
         strip.text.x = element_blank(),
-        legend.position = "bottom")  
+        #panel.background = element_rect(fill = "grey85", color = "white"),
+        legend.position = c("bottom"),
+        legend.key = element_rect(linetype = "solid"),
+        legend.spacing = unit(4, "char"), 
+        legend.box.spacing = unit(0.1,"line")) 
 p
+
+ggsave("A_IAAs.png", width = 7, height = 4)
 ```
 
 

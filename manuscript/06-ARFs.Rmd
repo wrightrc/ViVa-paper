@@ -64,7 +64,6 @@ aln_df <- makeAlnDF(alignment[[2]])
 #get
 VCF <- ldply(.data = VCF, .fun = subset, gt_GT != "0|0")
 VCF <- getCodingDiv(VCF)
-effect_order <- read.csv("~/Desktop/SNPeff_order.csv")
 
 # make a collapsed alignment for translating positions
 collapsed_aln_df <- 
@@ -134,7 +133,7 @@ p <- ggtree(tree, layout = "rectangular", color = "grey") %<+%
   geom_nodelab(mapping = aes(label = node), nudge_x = -.2, size = 3) +
   #geom_nodelab(mapping = aes(label = round(prob,digits = 2)), nudge_x = -.25, size = 3) +
   geom_tiplab(color = "black", hjust = -0.3) 
-p %<>% flip(28,32) %>% rotate(35)
+p %<>% ggtree::flip(28,32) %>% ggtree::rotate(35)
 p
 ```
 
@@ -162,8 +161,8 @@ p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
                                             list(fill = c("grey85", "white")),
                        title = "alignment",
                        direction = "vertical")) + 
-   scale_fill_viridis(breaks = range(effect_order$strength),
-                      limits = range(effect_order$strength),
+   scale_fill_viridis(breaks = range(SNPeff_order$strength),
+                      limits = range(SNPeff_order$strength),
                       na.value = "grey85",
                       direction = -1,
                       labels = c("neutral", "deleterious"),
@@ -192,7 +191,7 @@ p
 ### Class A *ARFs* 
 For all class A ARFs, the middle region of the protein was the predominant high diversity region. The DNA-binding domain had very few, low-diversity missense mutations, as did the PB1 domain. Considering the necessity of their conserved functions, the low level of variation in these key DNA and protein-protein interaction domains is expected. 
 
-```{r A ARF Alignment}
+```{r A-ARF-Alignment}
 A_ARFs <- subset(gene_info, tair_symbol %in% c("ARF5", "ARF6", "ARF7", "ARF8", "ARF19"))
 A_ARFs <- alignCDS(A_ARFs$transcript_ID)
 # make an alignment data frame
@@ -205,7 +204,7 @@ A_ARFs$tair_symbol %<>% factor(levels = ARF_order,
                                        ordered = TRUE)
 A_ARFs$tair_symbol %<>% fct_rev()
 
-A_ARFs <- addSNPsToAlnDF(A_ARFs, VCF, effect_order = effect_order)
+A_ARFs <- addSNPsToAlnDF(A_ARFs, VCF, effect_order = SNPeff_order)
 A_ARFs$gap <- A_ARFs$seq_pos == "-"
 
 p <-ggplot(A_ARFs, aes(x = aln_pos, y = tair_symbol)) +
@@ -219,8 +218,8 @@ p <-ggplot(A_ARFs, aes(x = aln_pos, y = tair_symbol)) +
                                             list(fill = c("grey85", "white")),
                        title = "alignment",
                        direction = "vertical")) + 
-   scale_fill_viridis(breaks = range(effect_order$strength),
-                      limits = range(effect_order$strength),
+   scale_fill_viridis(breaks = range(SNPeff_order$strength),
+                      limits = range(SNPeff_order$strength),
                       na.value = "grey85",
                       direction = -1,
                       labels = c("neutral", "deleterious"),
@@ -271,7 +270,7 @@ B_ARFs$tair_symbol %<>% factor(levels = ARF_order,
                                ordered = TRUE)
 B_ARFs$tair_symbol %<>% fct_rev()
 
-B_ARFs <- addSNPsToAlnDF(B_ARFs, VCF, effect_order = effect_order)
+B_ARFs <- addSNPsToAlnDF(B_ARFs, VCF, effect_order = SNPeff_order)
 B_ARFs$gap <- B_ARFs$seq_pos == "-"
 
 p <-ggplot(B_ARFs, aes(x = aln_pos, y = tair_symbol)) +
@@ -285,8 +284,8 @@ p <-ggplot(B_ARFs, aes(x = aln_pos, y = tair_symbol)) +
                                             list(fill = c("grey85", "white")),
                        title = "alignment",
                        direction = "vertical")) + 
-   scale_fill_viridis(breaks = range(effect_order$strength),
-                      limits = range(effect_order$strength),
+   scale_fill_viridis(breaks = range(SNPeff_order$strength),
+                      limits = range(SNPeff_order$strength),
                       na.value = "grey85",
                       direction = -1,
                       labels = c("neutral", "deleterious"),
@@ -335,7 +334,7 @@ C_ARFs$tair_symbol %<>% factor(levels = ARF_order,
 C_ARFs$tair_symbol %<>% fct_rev()
 
 C_ARFs <- addSNPsToAlnDF(C_ARFs, VCF, 
-                         effect_order = effect_order)
+                         effect_order = SNPeff_order)
 C_ARFs$gap <- C_ARFs$seq_pos == "-"
 
 p <-ggplot(C_ARFs, aes(x = aln_pos, y = tair_symbol)) +
@@ -347,8 +346,8 @@ p <-ggplot(C_ARFs, aes(x = aln_pos, y = tair_symbol)) +
                                             list(fill = c("grey85", "white")),
                        title = "alignment",
                        direction = "vertical")) + 
-   scale_fill_viridis(breaks = range(effect_order$strength),
-                      limits = range(effect_order$strength),
+   scale_fill_viridis(breaks = range(SNPeff_order$strength),
+                      limits = range(SNPeff_order$strength),
                       na.value = "grey85",
                       direction = -1,
                       labels = c("neutral", "deleterious"),

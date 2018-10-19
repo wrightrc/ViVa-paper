@@ -2,7 +2,7 @@
 title: Predicting structure--function relationships using natural genetic variation 
 author:  |
   | R. Clay Wright^[Corresponding author: wrightrc@vt.edu] $^1$, 
-  | Morgan O. Hamm $^2$, 
+  | Morgan O. Hamm $^2$,
   | Jennifer Nemhauser $^2$
   | $^1$Biological Systems Engineering, Virginia Tech, Blacksburg, VA 24061, 
   | $^2$Deparment of Biology, University of Washington, Seattle, WA 98195
@@ -37,6 +37,7 @@ library(tidyverse)
 library(magrittr)
 library(RColorBrewer)
 library(ggpmisc)
+library(gginnards)
 library(ggthemes)
 library(ggseqlogo)
 library(ggtree)
