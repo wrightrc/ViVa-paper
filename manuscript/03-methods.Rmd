@@ -3,7 +3,7 @@
 ## Data Sources
 
 ### Variant Data
-Variant data was queried from the 1001 genomes project website (http://1001genomes.org) via URL requests to an (undocumented) API service that provides subset files of the whole-genome VCF. The whole-genome VCF file can be found on the project’s website at http://1001genomes.org/data/GMI-MPI/releases/v3.1/ 
+Variant data was queried from the 1001 genomes project (http://1001genomes.org) via URL requests to their API service (http://tools.1001genomes.org/api/index.html). These queries provided subsets of the whole-genome VCF. The whole-genome VCF file can be found on the project’s website at http://1001genomes.org/data/GMI-MPI/releases/v3.1/ 
 
 ### Accession Information
 Details on each of the 1135 accessions including CS stock numbers, and geographic location where the samples were collected were taken from the 1001 genomes website at http://1001genomes.org/accessions.html, via the download link at the bottom of the page. This data file has been embedded in the R package.
