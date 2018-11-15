@@ -5,19 +5,37 @@
 The current version of ViVa is specifically focused on visualizes natural variation in the coding sequences of genes. Future versions will expand upon this to examine noncoding sequences; however, indels are much more common in noncoding sequences, which limits the certainty of this resequencing data. 
 
 **Morgan will provide screenshots**
+
 ### Data input: Select the desired genes
+At the top of the app, below the title but above the tab selection bar are two collapsible panels used for inputting the genes to query and additional annotation for those genes. The first collapsible panel is used to input the desired genes to investigate, either by typing in the TAIR gene IDs, or uploading a file. The second collapsible panel is optionally used to upload annotation files that will be plotted on some of the tabs of the apps second/analysis section.
 
 ### SNPstats: Summary of gene information, structure, and diversity
+Below the data input section, the rest of the app is divided into several tabs containing the interactive output of the program. 
+
+The first tab is the SNP stats tab. This tab provides general information on the gene transcripts being queried, as well as some calculated counts/statistics on the content of variants found in the sample population. The first table of this section is basic information of the transcripts, including TAIR locus and symbol, the chromosomal start and end position of the transcript and the transcript length. This information is collected from the Araport 11 database stored in a local GFF file.  
+
+The next two tables provide counts of occurrence of different effect types within the VCF dataset for each transcript. These counts are based on the “Effect” subfield of the “EFF” field in the VCF file. One table provides the total variant counts of each variant type from the reference genome (Col-0) in each accession. The unique allele count table only counts the number of unique variants/alleles, so if multiple accessions have the same variant allele relative the reference, that allele will only be counted once in the unique counts table.
+
+The final table on the SNP Stats tab provides Nei’s diversity statistic for the transcript and the coding region of each gene, as well as the diversity calculated for only synonymous and non-synonymous sites, and the ratio of the non-synonymous to synonymous diversity.
 
 ### Diversity plot: Visualize allelic diversity across the coding sequence
+The Diversity Plot tab shows Nei’s nucleotide diversity by nucleotide position of the protein coding region of a selected gene. Although the X-axis is marked by codon number from the N-terminus for interpretability, the diversity values are based on single nucleotide sites. The colors of markers on the plot identify the effect classes, based on fields from the VCF. If annotation files are provided, the background of the plot will be color coded by the annotated regions. If points on the plot are selected by clicking and dragging a box over them, the data for the selected points will appear in the grey box below the plot. Below this is a complete data table with the data provided for all points on the plot which can be downloaded as a .csv file.
 
 ### Accession mapping
+The SNP Mapping tab plots the location of accessions on a world map, and colors the points based on selected variants.
+
+After selecting the genes and filtering on the SNP type and level of nucleotide diversity, a checkbox group becomes available to select variant alleles to display on the map. The variant alleles are labeled with the Transcript_ID and Amino_Acid_Change fields, in the form [Transcript_ID|Amino_Acid_Change]. 
+
+After selecting the variant alleles and updating the map, the accessions on the map will be grouped and colored by each present unique combination of the selected alleles.
+Below the map is a table containing the accession details for all mapped accessions. 
 
 ### Alignment
+The Alignment tab provides DNA and amino acid sequence alignments of selected genes, with loci colored by variants present. The content of this tab is most useful if the selected genes are all family members or have significant sequence homology. If annotation files are uploaded, the background of the sequences will be colored by annotation region. Hovering the mouse over sequence elements with polymorphisms will provide additional details about the SNP present at that loci.
 
 ### Gene tree
 
 ### SNP browser
+The Browser tab provides a way to search and filter the contents of the VCF file by different fields. After selecting the transcripts to include, a number of filters can be applied to the dataset to match text values, or set min and max limits on the values of numeric fields. When these filters are applied, the table below will update to only contain rows meeting the criteria for all filters.
 
 
 ## Visualizing Variation within the auxin signaling pathway
