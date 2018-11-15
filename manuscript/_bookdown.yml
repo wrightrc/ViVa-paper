@@ -2,5 +2,9 @@ book_filename: "manuscript"
 delete_merged_file: true
 output_dir: book_output
 language:
+  label:
+  fig: "Figure"
+  eq: "Equation"
   ui:
     chapter_name: ""
+

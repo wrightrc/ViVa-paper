@@ -36,7 +36,7 @@ a more general form, that treats each sequence in the population as unique can b
 (\#eq:nei-gen)
 \end{equation}
 
-where $N_{ik}$ is the nucleotide (A, T, C or G) at position k on the ith sequence of the population.
+where $N_{ik}$ is the nucleotide (A, T, C or G) at position k on the *i*th sequence of the population.
 $L$ is the length of the sequence (the same for all sequences in the population, 
 assumes only SNPs exist, no indels). n is the total number of sequences in the population.
 
@@ -54,10 +54,10 @@ the nucleotide diversity of a sequence of length 1 at location k. we can calcula
 site, then average those over the sequence length to calculate $\pi$, the nucleotide diversity 
 of the sequence.
 
-The function `Nucleotide_diversity` in the r1001genomes package calculates $\pi_k$ for each position in the gene or region that contains a variant. note, $\pi_k$ is equal to 0 at all locations without variants.
+The function `Nucleotide_diversity` in the r1001genomes package calculates $\pi_k$ for each position in the gene or region that contains a variant. Note, $\pi_k$ is equal to 0 at all locations without variants.
 This is also what is displayed in the Diversity Plot tab of the web app.
 
-## Detailed $\pi_k$ calculaiton simplification.
+## Detailed $\pi_k$ calculation simplification.
 
 The formula for $\pi_k$ above requires comparing every sequence to every other sequence at location k,
 however, we know there are only a few variant forms at each individual location.
@@ -66,8 +66,8 @@ so we can revert back to using Nei's original formula \@ref(eq:nei), modifying i
 replacing $x_i$ with $\frac{n_i}{n}$, $n_i$ being the number of sequences in the population of the form $N_i$ at location k.
 
 \begin{equation}
-\displaystyle \pi_k = \sum_{ij} \frac{n_i}{n}\frac{n_j}{n} \pi_{ij} = 
-\frac{1}{n^2}\sum_{ij} n_i n_j \pi_{ij}\\
+\displaystyle \pi_k = \sum_{ij} \frac{n_i}{n}\frac{n_j}{n} \pi_{ij} = \frac{1}{n^2}\sum_{ij} n_i n_j \pi_{ij}
+\qquad
 \pi_{ij(k)} = \left\{\begin{array}{l}
 1 \quad \textrm{if} \quad i \neq j \\
 0 \quad \textrm{if} \quad i = j

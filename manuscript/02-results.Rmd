@@ -1,7 +1,24 @@
 # Results and Discussion {#rd}
 
 ## An introduction to ViVa 
+
+The current version of ViVa is specifically focused on visualizes natural variation in the coding sequences of genes. Future versions will expand upon this to examine noncoding sequences; however, indels are much more common in noncoding sequences, which limits the certainty of this resequencing data. 
+
 **Morgan will provide screenshots**
+### Data input: Select the desired genes
+
+### SNPstats: Summary of gene information, structure, and diversity
+
+### Diversity plot: Visualize allelic diversity across the coding sequence
+
+### Accession mapping
+
+### Alignment
+
+### Gene tree
+
+### SNP browser
+
 
 ## Visualizing Variation within the auxin signaling pathway
 
@@ -9,7 +26,7 @@ To test the useability and accessibility of this tool we assembled a group of al
 
 Assuming there is selective pressure against mutations which alter a protein's function, nonsynonymous genetic variation in critical functional domains of a protein should be low. Therefore scanning gene coding sequences for regions of low nonsynonymous diversity, may predict functional domains. Within the auxin signaling pathway several domains have been identified as critical to transmitting auxin signals. 
 
-Perhaps the most critical domain is the degron of the Aux/IAA transcriptional repressor proteins. Mutations which prevent this domain from being recognized and marked for proteasomal degradation by SCF^TIR1/AFB^ are dominant and often result in obvious phenotypes [@berleth_auxin_2004; @yang_iaa1_2004]. As expected this critical functional region is highly conserved at the amino acid level \@ref(fig:A-IAA-alignment). Similarly, the EAR motif which facilitates Aux/IAA interaction with TPL/TPR transcriptional repressors, are also conserved. 
+Perhaps the most critical domain is the degron of the Aux/IAA transcriptional repressor proteins. Mutations which prevent this domain from being recognized and marked for proteasomal degradation by SCF^TIR1/AFB^ are dominant and often result in obvious phenotypes [@berleth_auxin_2004; @yang_iaa1_2004]. As expected this critical functional region is highly conserved at the amino acid level (\@ref(fig:A-IAA-alignment)). Similarly, the EAR motif which facilitates Aux/IAA interaction with TPL/TPR transcriptional repressors, are also conserved. 
 
 ```{r Load IAA gene info and VCF}
 gene_info <- geneInfoFromFile(
@@ -73,7 +90,7 @@ IAA_data <- IAA_data[match(gsub(x = tree@phylo$tip.label, pattern = "\\.1",repla
 tree@phylo$tip.label <- IAA_data$name
 ```
 
-(ref:A-IAA-alignment) **Canonical IAAs have conserved Degron and EAR motifs** Protein sequences were aligned [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the most deleterious variant at that position, with light colors being less deleterious and darker colors being more deleterious. Red indicates nonsynonymous variants. Color scale is explained in {#methods}. EAR motif is highlighted by a black box including alignment positions 70-74. Degron domain is highlighted by a gray box including alignment positions 194-201.
+(ref:A-IAA-alignment) **Canonical IAAs have conserved Degron and EAR motifs.** Protein sequences were aligned [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the most deleterious variant at that position, with light colors being less deleterious and darker colors being more deleterious. Red indicates missense variants. Color scale is explained in [Methods](#methods). EAR motif is highlighted by a black box including alignment positions 70-74. Degron domain is highlighted by a gray box including alignment positions 194-201.
 ```{r A-IAA-alignment, fig.cap="(ref:A-IAA-alignment)"}
 A_IAAs <- subset(gene_info, tair_symbol %in% IAA_data[which(IAA_data$Class == "A"), "name"])
 A_IAAs <- alignCDS(A_IAAs$transcript_ID)
@@ -130,7 +147,7 @@ p <-ggplot(A_IAAs, aes(x = aln_pos, y = tair_symbol)) +
 p + geom_rect(mapping = aes(xmin = 193, xmax = 202, ymin = 0, ymax = length(levels((tair_symbol)))+1), color= "black", fill = NA) + geom_rect(mapping = aes(xmin = 69, xmax = 75, ymin = 0, ymax = length(levels((tair_symbol)))+1), color= "black", fill = NA)
 ```
 
-The Aux/IAA proteins bind to ARF transcription factors allowing the Aux/IAA's to effect transcriptional repression at specific loci. Thus in the ARF transcription factor proteins we expect the DNA-binding function to be conserved. Indead, the DNA-binding domains of the ARFs had very few, low-diversity missense polymorphisms, as did the PB1 domain which facilitates ARF-Aux/IAA interaction \@ref(fig:A-ARF-Alignment).  
+The Aux/IAA proteins bind to ARF transcription factors allowing the Aux/IAA's to effect transcriptional repression at specific loci. Thus in the ARF transcription factor proteins we expect the DNA-binding function to be conserved. Indead, the DNA-binding domains of the ARFs had very few, low-diversity missense polymorphisms, as did the PB1 domain which facilitates ARF-Aux/IAA interaction (Figure \@ref(fig:A-ARF-Alignment)).  
 
 ```{r ARF diversity stats}
 gene_info <- geneInfoFromFile(
@@ -188,7 +205,7 @@ tree@phylo$tip.label <- ARF_data$name
 ```
 
 
-(ref:A-ARF-Alignment) **Canonical ARFs have conserved DNA binding and PB1 domains** Protein sequences were aligned [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the most deleterious variant at that position, with light colors being less deleterious and darker colors being more deleterious. Red indicates nonsynonymous variants. Color scale is explained in {#methods}. 
+(ref:A-ARF-Alignment) **Canonical ARFs have conserved DNA binding and PB1 domains.** Protein sequences were aligned [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the most deleterious variant at that position, with light colors being less deleterious and darker colors being more deleterious. Red indicates missense variants. Color scale is explained in [Methods](#methods).
 ```{r A-ARF-Alignment, fig.cap="(ref:A-ARF-Alignment)"}
 A_ARFs <- subset(gene_info, tair_symbol %in% c("ARF5", "ARF6", "ARF7", "ARF8", "ARF19"))
 A_ARFs <- alignCDS(A_ARFs$transcript_ID)
