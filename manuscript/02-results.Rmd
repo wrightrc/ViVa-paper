@@ -2,9 +2,10 @@
 
 ## An introduction to ViVa 
 
-The current version of ViVa is specifically focused on visualizes natural variation in the coding sequences of genes. Future versions will expand upon this to examine noncoding sequences; however, indels are much more common in noncoding sequences, which limits the certainty of this resequencing data. 
+ViVa is meant to visualize natural variation in the coding sequences of genes. For this first iteration, non-coding sequence variation is intentionally excluded from the analysis tools. This reflects challenges both in alignment of non-coding sequences and the increased difficulty in assessing variation in these regions [@alexandre_complex_2018].
 
 **Morgan will provide screenshots**
+
 ### Data input: Select the desired genes
 
 ### SNPstats: Summary of gene information, structure, and diversity
@@ -22,11 +23,9 @@ The current version of ViVa is specifically focused on visualizes natural variat
 
 ## Visualizing Variation within the auxin signaling pathway
 
-To test the useability and accessibility of this tool we assembled a group of alpha testers comprising postdoctoral, graduate, and undergraduate researchers. This team of researchers analyzed natural variation in the nuclear auxin signaling pathway. This signaling pathway has been well studied, revealing abundant functional knowledge and crystal structures of several protein domains, providing several points of ground truth reference for comparing structure-function variation and natural genetic variation. 
+To test the useability and accessibility of ViVa, we assembled a group of alpha testers comprising postdoctoral, graduate, and undergraduate researchers at a research university (University of Washington) and at a primarily-undergraduate institutions (Whitman College). Our testers focused their investigation of natural variation on the nuclear auxin signaling pathway. We selected this signaling pathway for multiple reasons including a wealth of functional data and solved structures of several domains or entire proteins. In this way, we were able to assess the predictive ability of the ViVa modules. Summary information about each family examined can be found in the supplement. Below, we describe the results for the Aux/IAA family in more detail. 
 
-Assuming there is selective pressure against mutations which alter a protein's function, nonsynonymous genetic variation in critical functional domains of a protein should be low. Therefore scanning gene coding sequences for regions of low nonsynonymous diversity, may predict functional domains. Within the auxin signaling pathway several domains have been identified as critical to transmitting auxin signals. 
-
-Perhaps the most critical domain is the degron of the Aux/IAA transcriptional repressor proteins. Mutations which prevent this domain from being recognized and marked for proteasomal degradation by SCF^TIR1/AFB^ are dominant and often result in obvious phenotypes [@berleth_auxin_2004; @yang_iaa1_2004]. As expected this critical functional region is highly conserved at the amino acid level (\@ref(fig:A-IAA-alignment)). Similarly, the EAR motif which facilitates Aux/IAA interaction with TPL/TPR transcriptional repressors, are also conserved. 
+In most cases, natural selection is expected to minimize the persistence of nonsynonymous mutations in sequences that encode critical functional domains  relative to their persistance in non-critical domains. Therefore, we reasoned that scanning gene coding sequences for regions of relatively low nonsynonymous diversity should highlight functional domains. This general principle can be seen clearly in the analysis of the Aux/IAA family of transcriptional co-repressors/co-receptors. Aux/IAAs have three major domains: domain I facilitates interaction with TPL/TPR transcriptional repressors, domain II facilitates interactions with the TIR1/AFB receptors in the presence of auxin, and the PB1 domain which failitates interactions with the ARF transcription factors. Domain 1 and Domain II can be readily identified (\@ref(fig:A-IAA-alignment)), perhaps because the multiple contributing residues are spread out in linear sequence space. It is worth noting that the most important residues within the PB1 domain also show very little variation. 
 
 ```{r Load IAA gene info and VCF}
 gene_info <- geneInfoFromFile(
@@ -90,7 +89,7 @@ IAA_data <- IAA_data[match(gsub(x = tree@phylo$tip.label, pattern = "\\.1",repla
 tree@phylo$tip.label <- IAA_data$name
 ```
 
-(ref:A-IAA-alignment) **Canonical IAAs have conserved Degron and EAR motifs.** Protein sequences were aligned [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the most deleterious variant at that position, with light colors being less deleterious and darker colors being more deleterious. Red indicates missense variants. Color scale is explained in [Methods](#methods). EAR motif is highlighted by a black box including alignment positions 70-74. Degron domain is highlighted by a gray box including alignment positions 194-201.
+(ref:A-IAA-alignment) **Canonical IAAs have conserved Degron and EAR motifs.** Protein sequences were aligned [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the most deleterious variant at that position, with light colors being less deleterious and darker colors being more deleterious. Red indicates missense variants. Color scale is explained in [Methods](#methods). EAR motif is highlighted by a black box including alignment positions 70-74. Degron domain is highlighted by a box including alignment positions 194-201. Critical residues for PB1 domain interactions are highlighted at alignment positions 246, 253, 316, and 320.
 ```{r A-IAA-alignment, fig.cap="(ref:A-IAA-alignment)"}
 A_IAAs <- subset(gene_info, tair_symbol %in% IAA_data[which(IAA_data$Class == "A"), "name"])
 A_IAAs <- alignCDS(A_IAAs$transcript_ID)
@@ -144,128 +143,16 @@ p <-ggplot(A_IAAs, aes(x = aln_pos, y = tair_symbol)) +
         legend.key = element_rect(linetype = "solid"),
         legend.spacing = unit(4, "char"), 
         legend.box.spacing = unit(0.1,"line")) 
-p + geom_rect(mapping = aes(xmin = 193, xmax = 202, ymin = 0, ymax = length(levels((tair_symbol)))+1), color= "black", fill = NA) + geom_rect(mapping = aes(xmin = 69, xmax = 75, ymin = 0, ymax = length(levels((tair_symbol)))+1), color= "black", fill = NA)
-```
-
-The Aux/IAA proteins bind to ARF transcription factors allowing the Aux/IAA's to effect transcriptional repression at specific loci. Thus in the ARF transcription factor proteins we expect the DNA-binding function to be conserved. Indead, the DNA-binding domains of the ARFs had very few, low-diversity missense polymorphisms, as did the PB1 domain which facilitates ARF-Aux/IAA interaction (Figure \@ref(fig:A-ARF-Alignment)).  
-
-```{r ARF diversity stats}
-gene_info <- geneInfoFromFile(
-  fname = system.file("shiny-app", "gene_family_data",
-                      "ARF_gene_ids.csv", package = "r1001genomes"))
-
-VCF <- readRDS(system.file("shiny-app", "gene_family_data",
-                      "ARF_VCF.rds", package = "r1001genomes"))
-
-VCF <- ldply(.data = VCF, .fun = subset, gt_GT != "0|0")
-VCF <- getCodingDiv(VCF)
-```
-
-```{r Mask_ARF_alignment, eval=FALSE}
-aliscore(as.AAbin(alignment[[2]]), path = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/")
-id <- scan(file = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/input.fas_List_random.txt", sep = " ", quiet = TRUE)
-AAAlign_no_gaps <- as.matrix(alignment[[2]])[, id]
-write.nexus.data(AAAlign_no_gaps, file = "ARFs.nex", format = "protein")
-```
-```{bash ARF_phylogeny_construction, eval=FALSE}
-/Applications/MrBayes/mb
-
-execute ARFs.nex
-# set ARF17 as the outgroup
-outgroup AT1G77850.1
-
-lset nucmodel=protein Rates=invgamma
-# or include Nst=6  ngammacat=4 omegavar=M3 
-prset aamodelpr=fixed(jones) statefreqpr=fixed(empirical) 
-# initial run with aamodelpr=mixed yielded posterior prob of 1 for jones model
-propset ExtTBR$prob=0
-
-mcmcp ngen=250000 nchains=4 printfreq=1000 samplefreq=100 burnin=200
-
-mcmc
-sump
-sumt
-
-```
-
-```{r Load ARF phylogeny and data}
-tree <- treeio::read.beast(file = "trees/ARFs.nex.con.tre")
-
-ARF_data <- read.csv(system.file("shiny-app", "gene_family_data",
-                      "ARF_gene_ids.csv", package = "r1001genomes"))
-
-#tip_labels need to be in the first column
-ARF_data %<>% dplyr::select(name, everything())
-ARF_data$tair_locus %<>% as.character()
-
-ARF_data <- ARF_data[match(gsub(x = tree@phylo$tip.label, pattern = "\\.1",replacement = ""), ARF_data$tair_locus), ] 
-
-tree@phylo$tip.label <- ARF_data$name
-
+p + geom_rect(mapping = aes(xmin = 193, xmax = 202, ymin = 0, ymax = length(levels((tair_symbol)))+1), color= "black", fill = NA) + geom_rect(mapping = aes(xmin = 69, xmax = 75, ymin = 0, ymax = length(levels((tair_symbol)))+1), color= "black", fill = NA) + geom_rect(mapping = aes(xmin = 245, xmax = 247, ymin = 0, ymax = length(levels((tair_symbol)))+1), color = "black", fill = NA, size = .2) +
+geom_rect(mapping = aes(xmin = 319, xmax = 321, ymin = 0, ymax = length(levels((tair_symbol)))+1), color = "black", fill = NA, size = 0.2) +
+  geom_rect(mapping = aes(xmin = 252, xmax = 254, ymin = 0, ymax = length(levels((tair_symbol)))+1), color = "black", fill = NA, size = 0.2) +
+  geom_rect(mapping = aes(xmin = 315, xmax = 317, ymin = 0, ymax = length(levels((tair_symbol)))+1), color = "black", fill = NA, size = 0.2) 
 ```
 
 
-(ref:A-ARF-Alignment) **Canonical ARFs have conserved DNA binding and PB1 domains.** Protein sequences were aligned [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the most deleterious variant at that position, with light colors being less deleterious and darker colors being more deleterious. Red indicates missense variants. Color scale is explained in [Methods](#methods).
-```{r A-ARF-Alignment, fig.cap="(ref:A-ARF-Alignment)"}
-A_ARFs <- subset(gene_info, tair_symbol %in% c("ARF5", "ARF6", "ARF7", "ARF8", "ARF19"))
-A_ARFs <- alignCDS(A_ARFs$transcript_ID)
-# make an alignment data frame
-A_ARFs <- makeAlnDF(A_ARFs[[2]])
+Natural variation also provides a means to study how gene families are evolving. To do this, we used ViVa to map the diversity at nonsynonymous variant sites relative to synonymous sites to phylogenetic trees. This visualization makes it straightforward to compare rates of recent functional divergence within the context of rates of sequence divergence across the entire gene family. In this way, a researcher chould hone in on gene clades that are likely to exhibit high rates of functional redundancy or, conversely, gene clades where there is a greater likelihood that novel functions have emerged.
 
-A_ARFs <- left_join(A_ARFs, dplyr::select(gene_info, "tair_locus",
-                                       "tair_symbol", "transcript_ID"),
-                        by = c("transcript_ID" = "transcript_ID"))
-#A_ARFs$tair_symbol %<>% factor(levels = ARF_order, 
-#                                       ordered = TRUE)
-A_ARFs$tair_symbol %<>% fct_rev()
-
-A_ARFs <- addSNPsToAlnDF(A_ARFs, VCF, effect_order = SNPeff_order)
-A_ARFs$gap <- A_ARFs$seq_pos == "-"
-
-p <-ggplot(A_ARFs, aes(x = aln_pos, y = tair_symbol)) +
-  geom_raster(data = A_ARFs, 
-             # mapping = aes(fill = effects)) +
-              mapping = aes(fill = strength,
-                            alpha = gap)) +
-  scale_alpha_manual(values = c("TRUE" = 0, "FALSE" = 1), 
-                     labels = c("aligned", "gap"), 
-                     guide = guide_legend(override.aes = 
-                                            list(fill = c("grey85", "white")),
-                       title = "alignment",
-                       direction = "vertical")) + 
-   scale_fill_viridis(breaks = range(SNPeff_order$strength),
-                      limits = range(SNPeff_order$strength),
-                      na.value = "grey85",
-                      direction = -1,
-                      labels = c("neutral", "deleterious"),
-                      option = "A", 
-                      guide = guide_colorbar(ticks = FALSE, 
-                                             title.vjust = .8, 
-                                             title.position = "top", 
-                                             title.hjust = 0.5)) +
-  scale_y_discrete(expand = c(0,0)) +
-  scale_x_continuous(expand = c(0,0)) +  # expand increases distance from axis
-  labs(x = "codon position in alignment", y = "", fill = "variant effect") +
-  theme_logo(base_family = "Helvetica") +
-  theme(panel.grid = element_blank(), 
-        panel.grid.minor = element_blank(),
-        strip.background = element_blank(),
-        strip.text.x = element_blank(),
-        #panel.background = element_rect(fill = "grey85", color = "white"),
-        legend.position = c("bottom"),
-        legend.key = element_rect(linetype = "solid"),
-        legend.spacing = unit(4, "char"), 
-        legend.box.spacing = unit(0.1,"line")) 
-p
-#ggsave(p,filename = "A_ARFs_alignment_variants.pdf", width = 12, height = 4)
-```
-   
-Natural variation also provides a means to study how gene families are evolving. Mapping diversity at nonsynonymous variant sites relative to synonymous sites to gene trees allows comparison of recent functional divergence to the sequence divergence throughout the growth of the gene family. This visualization facilitates hypothesis generation regarding the functional redundancy or novelty of recent gene duplications. 
-
-Previous research has found evidence of both broad genetic redundancy and specificity within closely related pairs or groups of IAA proteins [@overvoorde_functional_2005]. For example, the *iaa8-1 iaa9-1* double mutant and the *iaa5-1 iaa6-1 iaa19-1* triple mutant have wild-type phenotypes [@overvoorde_functional_2005], yet the *IAA6/19* sister pair has significant differences in expression patterns, protein abundances and functions suggesting they have undergone functional specialization since their divergence [@winkler_variation_2017]. 
-
-In our analysis of the *IAA* gene family, we frequently observed that one member of most *IAA* sister pairs had high nonsynonymous diversity while the other sister was more conserved \@ref(fig:IAAtree). In an interspecific comparison between *A. thaliana* and *A. lyrata*, *IAA19* is more conserved, while *IAA6* has regions of increased sequence divergence upstream of the degron and in the N-terminal half of the PB1 domain [@winkler_variation_2017]. Consistent with these results, our analysis of intraspecific natural variation revealed higher conservation for *IAA19* (${\pi_N/\pi_S}$ = 0.55) compared to *IAA6* (${\pi_N/\pi_S}$ = 2.3) \@ref(fig:IAAtree), and also detected high diversity within the same regions of *IAA6* as seen in Winkler *et al*. 
-
+Previous research has found evidence of both broad genetic redundancy and specificity within closely related pairs or groups of IAA proteins [@overvoorde_functional_2005; @winkler_variation_2017]. For example, the *iaa8-1 iaa9-1* double mutant and the *iaa5-1 iaa6-1 iaa19-1* triple mutant have wild-type phenotypes [@overvoorde_functional_2005], yet the *IAA6/19* sister pair has significant differences in expression patterns, protein abundances and functions suggesting they have undergone functional specialization since their divergence [@winkler_variation_2017]. A closer examination of the *IAA19* and *IAA6* pair in *A. thaliana* and *A. lyrata* found that *IAA6* was diversifying far faster than [@winkler_variation_2017]. Consistent with these results, ViVa revealed higher conservation for *IAA19* (${\pi_N/\pi_S}$ = 0.55) compared to *IAA6* (${\pi_N/\pi_S}$ = 2.3) (Figure \@ref(fig:IAAtree)), and also detected high diversity within the same regions of *IAA6* as seen in [@winkler_variation_2017]. This pattern---one *Aux/IAA* sister showing high nonsynonymous diversity while the other sister was more conserved---was observed frequently across the family, suggesting this could be a recurring feature in *Aux/IAA* evolution supporting the large diversity in auxin functions. 
 
 
 (ref:IAAtree) **IAA protein sequence tree mapped with ${\pi_N/\pi_S}$.** Protein sequences were aligned [@wright_decipher_2015] and low information content regions were masked [@kuck_parametric_2010] prior to infering a phylogeny [@ronquist_mrbayes_2003]. Tips of the tree are mapped with circles of diameter proportional to ${\pi_N/\pi_S}$ and also are colored according to ${\pi_N/\pi_S}$. Nodes are labeled with the poster probability of monophyly.
@@ -296,8 +183,7 @@ p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% IAA_data + theme_
 p
 ```
 
-Within the Group B *IAA* genes, there are four sister pairs---*IAA10*/*IAA11*, *IAA12*/*IAA13*, *IAA18*/*IAA26*, and *IAA20*/*IAA30* \@ref(fig:IAAtree) [@remington_contrasting_2004]. Interestingly, among these sister pairs only *IAA12* and *IAA13* have a noticeable difference in nonsynonymous diversity. The *Arabidopsis thaliana* EFP browser shows that *IAA10* and *IAA11* have almost identical expression patterns, with the exception of *IAA10* being more highly expressed in the developing seed, and *IAA11* being more highly expressed in root tissue during lateral root development **need to cite original data source here**. In our analysis, *IAA10* and *IAA11* both showed functional conservation (${\pi_N/\pi_S}$ of 0.80 and 0.67 respectively) in support of *IAA10* and *IAA11* playing redundant roles. Accessions and associated variants identified here provide a potentially expedited route to elucidating the extent of redundancy between family members such as *IAA10* and *IAA11*.
-
+The notable exception to the patter of one conserved and one diersifying sister was observed within the Group B *IAA* genes (*IAA10*/*IAA11*, *IAA12*/*IAA13*, *IAA18*/*IAA26*, and *IAA20*/*IAA30*) [@remington_contrasting_2004]. Among these sister pairs only *IAA12* and *IAA13* have a noticeable difference in nonsynonymous diversity. In our analysis, *IAA10* and *IAA11* both showed functional conservation (${\pi_N/\pi_S}$ of 0.80 and 0.67 respectively). In support of *IAA10* and *IAA11* playing largely redundant roles, the *Arabidopsis thaliana* EFP browser indicates that *IAA10* and *IAA11* have almost identical expression patterns.
 
 # Conclusion
 
