@@ -1,24 +1,54 @@
 # Results and Discussion {#rd}
 
-## An introduction to ViVa 
+## An overview of ViVa
 
 ViVa is meant to visualize natural variation in the coding sequences of genes. For this first iteration, non-coding sequence variation is intentionally excluded from the analysis tools. This reflects challenges both in alignment of non-coding sequences and the increased difficulty in assessing variation in these regions [@alexandre_complex_2018].
 
+<<<<<<< HEAD
 **Morgan will provide screenshots**
+=======
+```{r}
+appFigCaption <- "(ref:app_figure_elements) \n **Key elements of the web application** (a) The first section contains two collapsible panels and is used to input information about the genes to be investigated. (b) The SNP Stats tab provides gene level counts and statistics on SNPs. (c) The Diversity Plot tab plots the nucleotide diversity of SNP sites along the length of the coding region of a selected gene. (d) The SNP Mapping tab plots accessions on a world map colored to indicate what SNPs they have. (e) The  Browser tab allows searching for and filtering variants by text and numeric fields. (f) The Alignments tab aligns DNA and RNA sequences of homologous genes, and colors sequence elements based on SNPs and annotations."
+```
+
+```{r, echo = FALSE, fig.cap = appFigCaption, out.width="100%"}
+knitr::include_graphics("app_figure/App_figure.png")
+```
+
+>>>>>>> 38a901f87f4df713fcce59a8c5f0f1ca7219f0d8
 
 ### Data input: Select the desired genes
+At the top of the app, below the title but above the tab selection bar are two collapsible panels used for inputting the genes to query and additional annotation for those genes. The first collapsible panel is used to input the desired genes to investigate, either by typing in the TAIR gene IDs, or uploading a file. The second collapsible panel is optionally used to upload annotation files that will be plotted on some of the tabs of the apps second/analysis section.
 
 ### SNPstats: Summary of gene information, structure, and diversity
+Below the data input section, the rest of the app is divided into several tabs containing the interactive output of the program. 
+
+The first tab is the SNP stats tab. This tab provides general information on the gene transcripts being queried, as well as some calculated counts/statistics on the content of variants found in the sample population. The first table of this section is basic information of the transcripts, including TAIR locus and symbol, the chromosomal start and end position of the transcript and the transcript length. This information is collected from the Araport 11 database stored in a local GFF file.  
+
+The next two tables provide counts of occurrence of different effect types within the VCF dataset for each transcript. These counts are based on the “Effect” subfield of the “EFF” field in the VCF file. One table provides the total variant counts of each variant type from the reference genome (Col-0) in each accession. The unique allele count table only counts the number of unique variants/alleles, so if multiple accessions have the same variant allele relative the reference, that allele will only be counted once in the unique counts table.
+
+The final table on the SNP Stats tab provides Nei’s diversity statistic for the transcript and the coding region of each gene, as well as the diversity calculated for only synonymous and non-synonymous sites, and the ratio of the non-synonymous to synonymous diversity.
 
 ### Diversity plot: Visualize allelic diversity across the coding sequence
+The Diversity Plot tab shows Nei’s nucleotide diversity by nucleotide position of the protein coding region of a selected gene. Although the X-axis is marked by codon number from the N-terminus for interpretability, the diversity values are based on single nucleotide sites. The colors of markers on the plot identify the effect classes, based on fields from the VCF. If annotation files are provided, the background of the plot will be color coded by the annotated regions. If points on the plot are selected by clicking and dragging a box over them, the data for the selected points will appear in the grey box below the plot. Below this is a complete data table with the data provided for all points on the plot which can be downloaded as a .csv file.
 
-### Accession mapping
+### Accession mapping: View distribution of SNPs across the globe
+The SNP Mapping tab plots the location of accessions on a world map, and colors the points based on selected variants.
 
-### Alignment
+After selecting the genes and filtering on the SNP type and level of nucleotide diversity, a checkbox group becomes available to select variant alleles to display on the map. The variant alleles are labeled with the Transcript_ID and Amino_Acid_Change fields, in the form [Transcript_ID|Amino_Acid_Change]. 
 
-### Gene tree
+After selecting the variant alleles and updating the map, the accessions on the map will be grouped and colored by each present unique combination of the selected alleles.
+Below the map is a table containing the accession details for all mapped accessions. 
 
-### SNP browser
+### SNP browser: Filter and Search for Variants
+The Browser tab provides a way to search and filter the contents of the VCF file by different fields. After selecting the transcripts to include, a number of filters can be applied to the dataset to match text values, or set min and max limits on the values of numeric fields. When these filters are applied, the table below will update to only contain rows meeting the criteria for all filters.
+
+### Alignment: Visualize SNPs on alignments of homologous genes
+The Alignment tab provides DNA and amino acid sequence alignments of selected genes, with loci colored by variants present. The content of this tab is most useful if the selected genes are all family members or have significant sequence homology. If annotation files are uploaded, the background of the sequences will be colored by annotation region. Hovering the mouse over sequence elements with polymorphisms will provide additional details about the SNP present at that loci.
+
+### ViVa R package: Programmatic access to ViVa's functionality
+All of the functionality of the ViVa web application are implemented through function calls to the ViVa R package. In addition to being able to  generate all figures and tables the web application can, users of the R package gain direct access to the underlying data structures and greater controll over parameters when processing and visualizing that data. The ViVa R package can be found at https://github.com/wrightrc/r1001genomes, or installed by typing the line 
+`devtools::install_github("wrightrc/r1001genomes")` into an R console. 
 
 
 ## Visualizing Variation within the auxin signaling pathway

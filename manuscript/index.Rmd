@@ -21,6 +21,7 @@ bibliography:
 - TPL.bib
 biblio-style: apalike
 link-citations: yes
+fig_caption: yes
 
 ---
 
