@@ -1,0 +1,11 @@
+# Conclusion {#conclusion}
+
+ViVa has allowed our team of testers from various skill levels and backgrounds to meaningfully access the 1001 genomes dataset. The visualizations of natural variation further supported much of the existing structure-function knowledge of this well studied signaling pathway and facilitated the generation of new hypotheses. Application of ViVa to less studied genes and gene families promises to yield more novel hypotheses, which can be evaluated with mutagenesis and functional assays to glean novel structure/function knowledge from this rich dataset.
+
+ViVa results are intended to inform and inspire hypothesis generation, not be taken as absolute evidence of trends in gene or gene family evolution. Among the cautions worth noting in interpreting results are limitations of short-read sequencing that lead to regions of missing data where low read quality may have prevented variant calls. We have assumed these missing variants are reference alleles, leading to undercounting in ViVa's diversity estimations. Recent advances in sequencing technologies have been combined to generate extremely high quality genomes [@michael_high_2018], and will reduce this source of uncertainty in future resequencing datasets. Another limitation is that the geographic coverage of accessions in the 1001 Genomes dataset is far from uniform, and thus diversity scores may not accurately reflect the allelic distributions of the global *Arabidopsis thaliana* population.  
+
+We hope that ViVa will advance understanding of genotype-phenotype relationships by allowing all researchers access to large resequencing datasets. In the future, we intend to expand ViVa beyond the plant genetics workhorse, *Arabidopsis thaliana*, to more agriculturally relevant species with existing resequencing projects, such as rice [@wang_genomic_2018] and soybean [@zhou_resequencing_2015]. Indeed, the ViVa framework is readily adaptable to any source of targeted resequencing data. If François Jacob’s metaphor holds true, and evolution is indeed a tinkerer and not an engineer [@jacob_evolution_1977], it is only by examining the largest possible number of nature’s solutions that we may eventually decipher the principles constraining innovations in form and function. 
+
+
+
+

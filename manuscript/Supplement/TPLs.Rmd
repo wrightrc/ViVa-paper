@@ -1,0 +1,185 @@
+# *TPL/TPR* genes {#TPLs}
+
+The Auxin signaling pathway utilizes the TOPLESS (TPL) and TOPLESS-related (TPR) family of Gro/TLE/TUP1 type co-repressor proteins to maintain auxin responsive genes in a transcriptionally-repressed state in the absence of auxin [@szemenyei_topless_2008]. In *Arabidopsis thaliana* the five member *TPL/TPR* family includes *TPL* and *TPR1-4*. The resulting proteins are comprised of three structural domains: an N-terminal TPL domain and two WD-40 domains [@long_topless_2006]. TPL/TPR proteins are recruited to the AUX/IAA proteins through interaction with the conserved Ethylene-responsive element binding factor-associated amphiphilic repression (EAR) domain [@szemenyei_topless_2008]. Canonical EAR domains have the amino acid sequence LxLxL, as found in most AUX/IAAs (figure xA) [@overvoorde_functional_2005]. TPL/TPR co-repressors bind EAR domains via their C-terminal to LisH (CTLH) domains found near their N-termini (citations of pre-structure founding papers/reviews). Recent structural analyses of the TPL N-terminal domain have highlighted the precise interaction interface between TPL and AUX/IAA EAR domains, as well as the TPL-TPL dimerization and tetramerization motifs [@martin-arevalillo_structure_2017; @ke_structural_2015]. The residues required for higher-order multimers of TPL tetramers have also been identified [@ma_d53_2017]. Additional interactions with transcriptional regulation and chromatin modifying machinery are likely mediated by two tandem beta propeller domains of TPL/TPRs. These domain have not yet been crystallized, however numerous high resolution crystal structures of beta propeller domains allow for structural prediction of the TPL C-terminal beta propeller domains and the locations of likely interaction faces (Figure, X). 
+  
+The TOPLESS co-repressor family generally exhibits a high level of sequence conservation at the amino acid sequence level across resequenced *Arabidopsis thaliana* accessions, with all ${\pi_N/\pi_S}$ values below 1 (Table X). The closely related *TPL* and *TPR1* have the highest ${\pi_N/\pi_S}$ values, suggesting that these these two related genes tolerate a higher degree of sequence and potentially functional diversity compared to *TPR2/3/4*. The N-terminal TPL domain of the TPL/TPR family is particularly conserved (Figure X). All nonsynonymous polymorphisms observed in this region are either in the coils between helices or are highly conservative mutations within helices (i.e. Valine to Isoleucine), which would be predicted to exhibit little effect on folding and function. 
+
+```{r TPL SNP stats, fig.height=11}
+gene_info <- geneInfoFromFile(
+  fname = system.file("shiny-app", "gene_family_data",
+                      "TPL_gene_ids.csv", package = "r1001genomes"))
+#annotation <- readAnnotationFile(filename = system.file("shiny-app", "gene_family_data",
+#                      "TPL_annotations.csv", package = "r1001genomes"), gene_info = gene_info)
+
+VCF <- readRDS(system.file("shiny-app", "gene_family_data",
+                      "TPL_VCF.rds", package = "r1001genomes"))
+div_stats <- ldply(VCF, diversityStats, geneInfo=gene_info, .id="transcript_ID")
+div_stats$tair_symbol %<>% fct_reorder(.x = , div_stats$tair_symbol, 
+                                       .fun = function(x) 
+                                         {as.integer(str_remove(x, 
+                                              pattern = "TPR"))})
+div_stats$tair_symbol %<>% fct_relevel("TPL")
+div_stats %<>% arrange(tair_symbol)
+div_stats %<>% dplyr::select(tair_symbol, everything())
+
+if (knitr::is_html_output()) {
+  formatRound(datatable(div_stats,
+                  colnames = c("transcript",
+                               "symbol",
+                               "&pi;<sub>N</sub>",
+                               "&pi;<sub>S</sub>",
+                               "&pi;<sub>N</sub>/&pi;<sub>S</sub>",
+                               "&pi; coding",
+                               "&pi; transcript"),
+                  rownames = FALSE, escape = FALSE,
+                  options = list(paging=FALSE, searching=FALSE)),
+                columns = 2:7, digits = 6)
+  } else 
+{
+  dt <- div_stats
+  names(dt) <- c("transcript",
+                                 "symbol",
+                                 "&pi;~N~",
+                                 "&pi;~S~",
+                                 "&pi;~N~/&pi;~S~",
+                                 "&pi; coding",
+                                 "&pi; transcript")
+  dt %<>% mutate_if(is.numeric, round, 6)
+  names(dt) <- paste0("**", names(dt), "**")
+  kable(dt) 
+}
+```
+
+  
+The high degree of conservation in the entire N-terminal domain underscores its importance in TPL/TPR function. For example, the initial *tpl-1* mutation (N176H) in the ninth helix is a dominant gain-of-function allele [@long_topless_2006], which is capable of binding wild-type TPL protein and inducing protein aggregation [@ma_d53_2017]. It is therefore understandable that this helix had very low diversity as nonsynonymous variants in this domain could act in a dominant negative fashion. Addtionally, the crystal structure of TPL has revealed that the The LisH domain and CRA domain coordinate TPL dimerization and tetramerization respectively (26601214, 28698367), the CTLH domain is critical for interaction with DNA-binding transcription factors (26601214), and helix nine within the CRA domain may be critical for the formation of higher-order TPL complexes (multimers of TPL tetramers, 28630893). 
+  
+  
+```{r TPL-alignment-coding-vars}
+alignment <- alignCDS(gene_info$transcript_ID)
+#possible outgroups  AtLUG, At4g32551; AtLUH, At2g32700
+# make an alignment data frame
+aln_df <- makeAlnDF(alignment[[2]])
+
+#get
+VCF <- ldply(.data = VCF, .fun = subset, gt_GT != "0|0")
+VCF <- getCodingDiv(VCF)
+
+# make a collapsed alignment for translating positions
+collapsed_aln_df <- 
+  aln_df %>% dplyr::select(aln_pos, seq_pos, seq_name) %>%
+  tidyr::spread(key = seq_name, value = seq_pos)
+```
+
+
+```{r Mask_TPL_alignment, eval=FALSE}
+aliscore(as.AAbin(alignment[[2]]), path = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/")
+id <- scan(file = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/input.fas_List_random.txt", sep = " ", quiet = TRUE)
+AAAlign_no_gaps <- as.matrix(alignment[[2]])[, id]
+write.nexus.data(AAAlign_no_gaps, file = "TPLs.nex", format = "protein")
+```
+```{bash TPL_phylogeny_construction, eval=FALSE}
+/Applications/MrBayes/mb
+
+execute TPLs.nex
+# set ARF17 as the outgroup
+outgroup AT1G77850.1
+
+lset nucmodel=protein Rates=invgamma
+# or include Nst=6  ngammacat=4 omegavar=M3 
+prset aamodelpr=fixed(jones) statefreqpr=fixed(empirical) 
+# initial run with aamodelpr=mixed yielded posterior prob of 1 for jones model
+propset ExtTBR$prob=0
+
+mcmcp ngen=250000 nchains=4 printfreq=1000 samplefreq=100 burnin=200
+
+mcmc
+sump
+sumt
+
+```
+```{r Load TPL phylogeny and data}
+tree <- treeio::read.beast(file = "trees/TPLs.nex.con.tre")
+
+
+TPL_data <- read.csv(system.file("shiny-app", "gene_family_data",
+                      "TPL_gene_ids.csv", package = "r1001genomes"))
+TPL_data$name <- as.character(TPL_data$name)
+TPL_data %<>% left_join(y = div_stats, by = c("name" = "tair_symbol"))
+#tip_labels need to be in the first column
+TPL_data %<>% dplyr::select(name, everything())
+TPL_data$tair_locus %<>% as.character()
+
+TPL_data <- TPL_data[match(gsub(x = tree@phylo$tip.label, pattern = "\\.1",replacement = ""), TPL_data$tair_locus), ] 
+
+tree@phylo$tip.label <- TPL_data$name
+
+```
+
+```{r Visualize TPL tree, fig.height=2, fig.width=3}
+p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% TPL_data + theme_tree() + scale_x_continuous(expand = c(0, 1.2)) + 
+  geom_tippoint(mapping = aes(size = 4*Pi_NS_Ratio, fill = Pi_NS_Ratio), shape = 21, color = "white", show.legend = TRUE) + 
+  scale_fill_viridis(values = rescale(c(min(TPL_data$Pi_NS_Ratio),
+                                        max(TPL_data$Pi_NS_Ratio)), 
+                                      to = c(0,1)), guide = "colourbar") + scale_size(guide = "none") +
+  labs(fill = expression(pi [N] / pi [S])) + 
+  theme(legend.position = c(.1,.7)) + 
+  #geom_nodelab(mapping = aes(label = node)) +
+  geom_nodelab(mapping = aes(label = round(as.numeric(prob),digits = 2)), nudge_x = -.2, nudge_y = .2, size = 3) + 
+  geom_tiplab(hjust = -0.25) 
+p
+```
+
+
+(ref:full-TPLs-alignment) **Alignment of A. thaliana TPL/TPR genes** 
+```{r full-TPLs-alignment, fig.cap= "(ref:full-TPLs-alignment)"}
+TPL_order <- fct_inorder(na.exclude(p$data$label[base::order(p$data$y, decreasing = TRUE)]), ordered = TRUE)
+
+aln_df <- left_join(aln_df, dplyr::select(gene_info, "tair_locus",
+                                       "tair_symbol", "transcript_ID"),
+                        by = c("transcript_ID" = "transcript_ID"))
+aln_df$tair_symbol %<>% factor(levels = TPL_order, 
+                                       ordered = TRUE)
+aln_df$tair_symbol %<>% fct_rev()
+
+aln_df <- addSNPsToAlnDF(aln_df, VCF, effect_order = SNPeff_order)
+aln_df$gap <- aln_df$seq_pos == "-"
+
+p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
+  geom_raster(data = aln_df, 
+             # mapping = aes(fill = effects)) +
+              mapping = aes(fill = strength,
+                            alpha = gap)) +
+  scale_alpha_manual(values = c("TRUE" = 0, "FALSE" = 1), 
+                     labels = c("aligned", "gap"), 
+                     guide = guide_legend(override.aes = 
+                                            list(fill = c("grey85", "white")),
+                       title = "alignment",
+                       direction = "vertical")) + 
+   scale_fill_viridis(breaks = range(SNPeff_order$strength),
+                      limits = range(SNPeff_order$strength),
+                      na.value = "grey85",
+                      direction = -1,
+                      labels = c("neutral", "deleterious"),
+                      option = "A", 
+                      guide = guide_colorbar(ticks = FALSE, 
+                                             title.vjust = .8, 
+                                             title.position = "top", 
+                                             title.hjust = 0.5)) +
+  scale_y_discrete(expand = c(0,0)) +
+  scale_x_continuous(expand = c(0,0)) +  # expand increases distance from axis
+  labs(x = "codon position in alignment", y = "", fill = "variant effect") +
+  theme_logo(base_family = "Helvetica") +
+  theme(panel.grid = element_blank(), 
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        #panel.background = element_rect(fill = "grey85", color = "white"),
+        legend.position = c("bottom"),
+        legend.key = element_rect(linetype = "solid"),
+        legend.spacing = unit(4, "char"), 
+        legend.box.spacing = unit(0.1,"line")) 
+p
+
+```
+
+

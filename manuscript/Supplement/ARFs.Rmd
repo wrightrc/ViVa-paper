@@ -1,0 +1,369 @@
+# *ARF* genes {#ARFs} 
+
+Auxin response is ultimately mediated by the auxin responsive transcription factors (ARFs). There are 23 ARFs in *Arabidopsis thaliana* that are divided into three phylogenetic classes. Class A ARFs (ARF5, ARF6, ARF7, ARF8 and ARF19) activate transcription. These ARFs have a glutamine-rich region in the middle of the protein that may mediate activation [@guilfoyle_auxin_2007]. It has recently been shown that the middle region of ARF5 interacts with the SWI/SNF chromatin remodeling ATPases BRAMA and SPLAYED, possibly to reduce nucleosome occupancy and allow for the recruitment of transcription machinery [@wu_auxinregulated_2015]. Additionally, ARF7 interacts with Mediator subunits, directly tethering transcriptional activation machinery to its binding sites in the chromosome [@ito_auxindependent_2016]. Class B and C ARFs are historically categorized as repressor ARFs, though the mechanism through which they confer repression has not been identified. Their middle regions tend to be proline- and serine-rich. 
+
+Canonical ARFs are comprised of three major domains. Recent crystallization of these domains have informed structure-function analysis of the ARFs [@boer_structural_2014; @korasick_molecular_2014; @nanao_structural_2014]. These domains are conserved throughout land plants [@mutte_origin_2018]. ARFs share an N-terminal B3 DNA binding domain. Flanking this DNA-binding domain is a dimerization domain, which folds up into a single “taco-shaped” domain to allow for dimerization between ARFs. There is an auxiliary domain that immediately follows and interacts with the dimerization domain. The middle region is the most variable between ARFs, as mentioned above, but is characterized by repetitive units of glutamine (class A), serine, or proline residues (classes B and C).
+
+The C-terminal domain of the ARF is a protein-protein interaction domain mediating interactions among ARFs, between ARFs and other transcription factors, and between ARFs and the Aux/IAA repressors. This interaction domain was recently characterized as a Phox and Bem1 (PB1) domain, which is comprised of a positive and negative face with conserved basic and acidic residues, respectively [@korasick_molecular_2014; @nanao_structural_2014]. The dipolar nature of the PB1 domain may mediate multimerization by the pairwise interaction of these faces on different proteins as the ARF7 PB1 domain was crystallized as a multimer [@korasick_molecular_2014]. However, it is unclear whether ARF multimerization occurs or plays a developmental significant role in vivo. Interfering with ARF dimerization in either the DNA-binding proximal dimerization domain or the PB1 domain decreases the ability of class A ARFs to activate transcription in a heterologous yeast system [@pierre-jerome_functional_2016]. 
+
+While domain architecture is broadly conserved among the ARFs, there are exceptional cases. Three ARFs do not contain a PB1 domain at all, ARF3, ARF13, and ARF17, and several more have lost the conserved acidic or basic residues in the PB1 domain, suggesting they may be reduced to a single interaction domain. Several ARFs additionally have an expanded conserved region within the DNA-binding domain, of unknown function. The majority of domain variation among ARFs occurs in the large B-class subfamily. The liverwort *Marchantia polymorpha* has a single representative ARF of each class [@flores-sandoval_simple_2015]. The expansion of these classes in flowering plants is the result of both whole genome and tandem duplication events [@remington_contrasting_2004]. The growth of the ARF family may have allowed for the expansion of the quantity and complexity of loci regulated by the ARFs and subsequent expansion in their regulation of developmental processes.  
+
+Class A *ARFs* are the most well-studied ARF subfamily---the five family members all act as transcriptional activators and have well-characterized, distinct developmental targets. Overall the diversity of class A *ARFs* was generally low, especially compared to the class B and C *ARFs*, suggesting that class A *ARFs* are central to auxin signal transduction and plant development. Analysis of class A *ARF* nonsynonymous diversity suggests that the majority of these *ARFs* are highly functionally conserved, with ${\pi_N/\pi_S}$ values much lower than 1 with the exception of *ARF19*, with ${\pi_N/\pi_S}$ value of 1.8. Comparing diversity within sister pairs, there is a similar trade-off as seen in most *IAA* sister pairs, with one sister being highly conserved and the other more divergent. *ARF19* and *ARF8* are the more divergent class A *ARFs*, with ${\pi_N/\pi_S}$ values at least three time those of their sisters, *ARF7* and *ARF6* respectively. This may suggest that ARF6 and ARF7 serve more essential purposes in plant development. 
+
+```{r ARF diversity stats}
+gene_info <- geneInfoFromFile(
+  fname = system.file("shiny-app", "gene_family_data",
+                      "ARF_gene_ids.csv", package = "r1001genomes"))
+annotation <- readAnnotationFile(filename = system.file("shiny-app", 
+  "gene_family_data", "ARF_annotations.csv", 
+  package = "r1001genomes"), gene_info = gene_info)
+
+VCF <- readRDS(system.file("shiny-app", "gene_family_data",
+                      "ARF_VCF.rds", package = "r1001genomes"))
+div_stats <- ldply(VCF, diversityStats, geneInfo=gene_info, .id="transcript_ID")
+div_stats$tair_symbol %<>% fct_reorder(.x =  div_stats$tair_symbol, 
+                                       .fun = function(x) 
+                                         {as.integer(str_remove(x, 
+                                              pattern = "ARF"))})
+div_stats %<>% arrange(tair_symbol)
+div_stats %<>% dplyr::select(tair_symbol, everything())
+
+if (knitr::is_html_output()) {
+  formatRound(datatable(div_stats,
+                  colnames = c("transcript",
+                               "symbol",
+                               "&pi;<sub>N</sub>",
+                               "&pi;<sub>S</sub>",
+                               "&pi;<sub>N</sub>/&pi;<sub>S</sub>",
+                               "&pi; coding",
+                               "&pi; transcript"),
+                  rownames = FALSE, escape = FALSE,
+                  options = list(paging=FALSE, searching=FALSE)),
+                columns = 2:7, digits = 6)
+  } else 
+{
+  dt <- div_stats
+  names(dt) <- c("transcript",
+                                 "symbol",
+                                 "&pi;~N~",
+                                 "&pi;~S~",
+                                 "&pi;~N~/&pi;~S~",
+                                 "&pi; coding",
+                                 "&pi; transcript")
+  dt %<>% mutate_if(is.numeric, round, 6)
+  names(dt) <- paste0("**", names(dt), "**")
+  kable(dt) 
+}
+```
+
+```{r ARF-alignment-coding-vars}
+alignment <- alignCDS(gene_info$transcript_ID)
+# make an alignment data frame
+aln_df <- makeAlnDF(alignment[[2]])
+
+#get
+VCF <- ldply(.data = VCF, .fun = subset, gt_GT != "0|0")
+VCF <- getCodingDiv(VCF)
+
+# make a collapsed alignment for translating positions
+collapsed_aln_df <- 
+  aln_df %>% dplyr::select(aln_pos, seq_pos, seq_name) %>%
+  tidyr::spread(key = seq_name, value = seq_pos)
+```
+
+```{r Mask_ARF_alignment, eval=FALSE}
+aliscore(as.AAbin(alignment[[2]]), path = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/")
+id <- scan(file = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/input.fas_List_random.txt", sep = " ", quiet = TRUE)
+AAAlign_no_gaps <- as.matrix(alignment[[2]])[, id]
+write.nexus.data(AAAlign_no_gaps, file = "ARFs.nex", format = "protein")
+```
+```{bash ARF_phylogeny_construction, eval=FALSE}
+/Applications/MrBayes/mb
+
+execute ARFs.nex
+# set ARF17 as the outgroup
+outgroup AT1G77850.1
+
+lset nucmodel=protein Rates=invgamma
+# or include Nst=6  ngammacat=4 omegavar=M3 
+prset aamodelpr=fixed(jones) statefreqpr=fixed(empirical) 
+# initial run with aamodelpr=mixed yielded posterior prob of 1 for jones model
+propset ExtTBR$prob=0
+
+mcmcp ngen=250000 nchains=4 printfreq=1000 samplefreq=100 burnin=200
+
+mcmc
+sump
+sumt
+
+```
+
+```{r Load ARF phylogeny and data}
+tree <- treeio::read.beast(file = "trees/ARFs.nex.con.tre")
+
+
+ARF_data <- read.csv(system.file("shiny-app", "gene_family_data",
+                      "ARF_gene_ids.csv", package = "r1001genomes"))
+ARF_data %<>% left_join(y = div_stats, by = c("name" = "tair_symbol"))
+#tip_labels need to be in the first column
+ARF_data %<>% dplyr::select(name, everything())
+ARF_data$tair_locus %<>% as.character()
+
+ARF_data <- ARF_data[match(gsub(x = tree@phylo$tip.label, pattern = "\\.1",replacement = ""), ARF_data$tair_locus), ] 
+
+tree@phylo$tip.label <- ARF_data$name
+
+```
+
+```{r Visualize ARF tree, fig.height=5, fig.width=5}
+p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% 
+  ARF_data + theme_tree() + scale_x_continuous(expand = c(0, 1.2)) +
+  geom_hilight(node = 28, extend = 1) + 
+  geom_hilight(node = 25, extend = 1) +
+  geom_tippoint(mapping = 
+                  aes(size = 4*Pi_NS_Ratio, fill = Pi_NS_Ratio),
+                shape = 21, show.legend = TRUE,
+                position = position_nudge(x = 0.01)) + 
+  geom_rootpoint(color = "grey") + 
+  scale_fill_viridis(values = rescale(c(min(ARF_data$Pi_NS_Ratio), 1,
+                                        max(ARF_data$Pi_NS_Ratio)), 
+                                    to = c(0,1)), guide = "colourbar") +
+  scale_size(guide = "none") + 
+  theme(legend.position = c(.1,.7)) + 
+  geom_nodelab(mapping = aes(label = node), nudge_x = -.2, size = 3) +
+  #geom_nodelab(mapping = aes(label = round(prob,digits = 2)), nudge_x = -.25, size = 3) +
+  geom_tiplab(color = "black", hjust = -0.3) 
+p %<>% ggtree::flip(28,32) %>% ggtree::rotate(35)
+p
+```
+
+```{r full-ARFs-alignment}
+ARF_order <- fct_inorder(na.exclude(p$data$label[base::order(p$data$y, decreasing = TRUE)]), ordered = TRUE)
+
+aln_df <- left_join(aln_df, dplyr::select(gene_info, "tair_locus",
+                                       "tair_symbol", "transcript_ID"),
+                        by = c("transcript_ID" = "transcript_ID"))
+aln_df$tair_symbol %<>% factor(levels = ARF_order, 
+                                       ordered = TRUE)
+aln_df$tair_symbol %<>% fct_rev()
+
+aln_df <- addSNPsToAlnDF(aln_df, VCF)
+aln_df$gap <- aln_df$seq_pos == "-"
+
+p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
+  geom_raster(data = aln_df, 
+             # mapping = aes(fill = effects)) +
+              mapping = aes(fill = strength,
+                            alpha = gap)) +
+  scale_alpha_manual(values = c("TRUE" = 0, "FALSE" = 1), 
+                     labels = c("aligned", "gap"), 
+                     guide = guide_legend(override.aes = 
+                                            list(fill = c("grey85", "white")),
+                       title = "alignment",
+                       direction = "vertical")) + 
+   scale_fill_viridis(breaks = range(SNPeff_order$strength),
+                      limits = range(SNPeff_order$strength),
+                      na.value = "grey85",
+                      direction = -1,
+                      labels = c("neutral", "deleterious"),
+                      option = "A", 
+                      guide = guide_colorbar(ticks = FALSE, 
+                                             title.vjust = .8, 
+                                             title.position = "top", 
+                                             title.hjust = 0.5)) +
+  scale_y_discrete(expand = c(0,0)) +
+  scale_x_continuous(expand = c(0,0)) +  # expand increases distance from axis
+  labs(x = "codon position in alignment", y = "", fill = "variant effect") +
+  theme_logo(base_family = "Helvetica") +
+  theme(panel.grid = element_blank(), 
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        #panel.background = element_rect(fill = "grey85", color = "white"),
+        legend.position = c("bottom"),
+        legend.key = element_rect(linetype = "solid"),
+        legend.spacing = unit(4, "char"), 
+        legend.box.spacing = unit(0.1,"line")) 
+p
+
+```
+
+### Class A *ARFs* 
+For all class A ARFs, the middle region of the protein was the predominant high diversity region. The DNA-binding domain had very few, low-diversity missense mutations, as did the PB1 domain. Considering the necessity of their conserved functions, the low level of variation in these key DNA and protein-protein interaction domains is expected. 
+
+```{r A-ARF-Alignment}
+A_ARFs <- subset(gene_info, tair_symbol %in% c("ARF5", "ARF6", "ARF7", "ARF8", "ARF19"))
+A_ARFs <- alignCDS(A_ARFs$transcript_ID)
+# make an alignment data frame
+A_ARFs <- makeAlnDF(A_ARFs[[2]])
+
+A_ARFs <- left_join(A_ARFs, dplyr::select(gene_info, "tair_locus",
+                                       "tair_symbol", "transcript_ID"),
+                        by = c("transcript_ID" = "transcript_ID"))
+A_ARFs$tair_symbol %<>% factor(levels = ARF_order, 
+                                       ordered = TRUE)
+A_ARFs$tair_symbol %<>% fct_rev()
+
+A_ARFs <- addSNPsToAlnDF(A_ARFs, VCF, effect_order = SNPeff_order)
+A_ARFs$gap <- A_ARFs$seq_pos == "-"
+
+p <-ggplot(A_ARFs, aes(x = aln_pos, y = tair_symbol)) +
+  geom_raster(data = A_ARFs, 
+             # mapping = aes(fill = effects)) +
+              mapping = aes(fill = strength,
+                            alpha = gap)) +
+  scale_alpha_manual(values = c("TRUE" = 0, "FALSE" = 1), 
+                     labels = c("aligned", "gap"), 
+                     guide = guide_legend(override.aes = 
+                                            list(fill = c("grey85", "white")),
+                       title = "alignment",
+                       direction = "vertical")) + 
+   scale_fill_viridis(breaks = range(SNPeff_order$strength),
+                      limits = range(SNPeff_order$strength),
+                      na.value = "grey85",
+                      direction = -1,
+                      labels = c("neutral", "deleterious"),
+                      option = "A", 
+                      guide = guide_colorbar(ticks = FALSE, 
+                                             title.vjust = .8, 
+                                             title.position = "top", 
+                                             title.hjust = 0.5)) +
+  scale_y_discrete(expand = c(0,0)) +
+  scale_x_continuous(expand = c(0,0)) +  # expand increases distance from axis
+  labs(x = "codon position in alignment", y = "", fill = "variant effect") +
+  theme_logo(base_family = "Helvetica") +
+  theme(panel.grid = element_blank(), 
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        #panel.background = element_rect(fill = "grey85", color = "white"),
+        legend.position = c("bottom"),
+        legend.key = element_rect(linetype = "solid"),
+        legend.spacing = unit(4, "char"), 
+        legend.box.spacing = unit(0.1,"line")) 
+p
+#ggsave(p,filename = "A_ARFs_alignment_variants.pdf", width = 12, height = 4)
+```
+
+
+Class A ARFs all contain the canonical B3 DNA-binding domain, PB1 interaction domain and glutamine-rich middle region [@guilfoyle_auxin_2007]. In the analyzed natural variation, ARF7 had several expansions of polyglutamine sequences in the middle region. Polyglutamine regions are known to readily expand and contract throughout evolutionary time due to replication error, and variation in polyglutamine length can be acted on by natural selection and have phenotypic consequences [@press_overdue_2014]. 
+
+### Class B *ARFs*
+
+ARF23 has a truncated DNA-binding domain and had a high ${\pi_N/\pi_S}$ value of 4.1 and several high-frequency nonsense variants, as may be expected of a gene that is pseudogenizing. 
+
+ARF3, ARF13 and ARF17 all lack a C-terminal PB1 domain, which suggests they may be unable to interact with Aux/IAA repressors, possibly acting as auxin-insensitive competitive inhibitors of ARF-mediated transcription (Fig ARF3_13_17 alignment). These ARFs span the range of ${\pi_N/\pi_S}$ ratios relative to the other ARFs, ranging from 0.85 to 4.1. ARF17 is more conserved than the activator ARF, ARF19. ARF13 has many nonsense variants of high diversity and may be pseudogenizing. 
+
+```{r B-ARF-alignment, fig.cap="(ref:B-ARFalignment)"}
+B_ARFs <- subset(gene_info, tair_symbol %in% 
+                   ARF_data[which(ARF_data$class == "B"), "name"])
+B_ARFs <- alignCDS(B_ARFs$transcript_ID)
+# make an alignment data frame
+B_ARFs <- makeAlnDF(B_ARFs[[2]])
+B_ARFs <- left_join(B_ARFs, dplyr::select(gene_info, "tair_locus",
+                                       "tair_symbol", "transcript_ID"),
+                        by = c("transcript_ID" = "transcript_ID"))
+B_ARFs$tair_symbol %<>% factor(levels = ARF_order, 
+                               ordered = TRUE)
+B_ARFs$tair_symbol %<>% fct_rev()
+
+B_ARFs <- addSNPsToAlnDF(B_ARFs, VCF, effect_order = SNPeff_order)
+B_ARFs$gap <- B_ARFs$seq_pos == "-"
+
+p <-ggplot(B_ARFs, aes(x = aln_pos, y = tair_symbol)) +
+  geom_raster(data = B_ARFs, 
+             # mapping = aes(fill = effects)) +
+              mapping = aes(fill = strength,
+                            alpha = gap)) +
+  scale_alpha_manual(values = c("TRUE" = 0, "FALSE" = 1), 
+                     labels = c("aligned", "gap"), 
+                     guide = guide_legend(override.aes = 
+                                            list(fill = c("grey85", "white")),
+                       title = "alignment",
+                       direction = "vertical")) + 
+   scale_fill_viridis(breaks = range(SNPeff_order$strength),
+                      limits = range(SNPeff_order$strength),
+                      na.value = "grey85",
+                      direction = -1,
+                      labels = c("neutral", "deleterious"),
+                      option = "A", 
+                      guide = guide_colorbar(ticks = FALSE, 
+                                             title.vjust = .8, 
+                                             title.position = "top", 
+                                             title.hjust = 0.5)) +
+  scale_y_discrete(expand = c(0,0)) +
+  scale_x_continuous(expand = c(0,0)) +  # expand increases distance from axis
+  labs(x = "codon position in alignment", y = "", fill = "variant effect") +
+  theme_logo(base_family = "Helvetica") +
+  theme(panel.grid = element_blank(), 
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        #panel.background = element_rect(fill = "grey85", color = "white"),
+        legend.position = c("bottom"),
+        legend.key = element_rect(linetype = "solid"),
+        legend.spacing = unit(4, "char"), 
+        legend.box.spacing = unit(0.1,"line")) 
+
+p
+```
+
+### Class C *ARFs*
+
+Class C ARFs show low nucleotide diversity scores, all ${\pi_N/\pi_S}$ values substantially lower than 1.
+ARF16 was the most conserved, whereas its clade members (ARF10, ARF17) had scores at least four times higher [@remington_contrasting_2004].
+
+Structurally, all three members of Class C ARFs contain a canonical B3 DNA-binding domain, but only ARF10 and ARF16 contain a PB1 domain. The DNA binding domains exhibit overall low diversity. Only the ARF10 DNA binding domain contains missense variants (S147T and A157S) (Fig. ARF10_DBD Variants distribution). **Any insights into whether these may affect function? They are quite conservative.** Of the PB1 domain containing class C ARFs, ARF16 exhibits several missense variants which are sporadically distributed, in contrast to the conserved PB1 domain of ARF10 (Fig. Arf16_PB_variants distribution). **Interesting that the PB1 domain of ARF10 is conserved and the DBD of ARF16 is conserved. It this suggestive of subfunctionalization in this family, where one retains DNA and/or dimerization specificity and the other retains specificity for IAAs?**
+
+```{r C-ARFs-alignment}
+C_ARFs <- subset(gene_info, tair_symbol %in% ARF_data[which(ARF_data$class == "C"), "name"])
+C_ARFs <- alignCDS(C_ARFs$transcript_ID)
+# make an alignment data frame
+C_ARFs <- makeAlnDF(C_ARFs[[2]])
+C_ARFs <- left_join(C_ARFs, dplyr::select(gene_info, "tair_locus",
+                                       "tair_symbol", "transcript_ID"),
+                        by = c("transcript_ID" = "transcript_ID"))
+C_ARFs$tair_symbol %<>% factor(levels = ARF_order, 
+                               ordered = TRUE)
+C_ARFs$tair_symbol %<>% fct_rev()
+
+C_ARFs <- addSNPsToAlnDF(C_ARFs, VCF, 
+                         effect_order = SNPeff_order)
+C_ARFs$gap <- C_ARFs$seq_pos == "-"
+
+p <-ggplot(C_ARFs, aes(x = aln_pos, y = tair_symbol)) +
+  geom_raster(mapping = aes(fill = strength,
+                            alpha = gap)) +
+  scale_alpha_manual(values = c("TRUE" = 0, "FALSE" = 1), 
+                     labels = c("aligned", "gap"), 
+                     guide = guide_legend(override.aes = 
+                                            list(fill = c("grey85", "white")),
+                       title = "alignment",
+                       direction = "vertical")) + 
+   scale_fill_viridis(breaks = range(SNPeff_order$strength),
+                      limits = range(SNPeff_order$strength),
+                      na.value = "grey85",
+                      direction = -1,
+                      labels = c("neutral", "deleterious"),
+                      option = "A", 
+                      guide = guide_colorbar(ticks = FALSE, 
+                                             title.vjust = .8, 
+                                             title.position = "top", 
+                                             title.hjust = 0.5)) +
+  scale_y_discrete(expand = c(0,0)) +
+  scale_x_continuous(expand = c(0,0)) +  # expand increases distance from axis
+  labs(x = "codon position in alignment", y = "", fill = "variant effect") +
+  theme_logo(base_family = "Helvetica") +
+  theme(panel.grid = element_blank(), 
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        #panel.background = element_rect(fill = "grey85", color = "white"),
+        legend.position = c("bottom"),
+        legend.key = element_rect(linetype = "solid"),
+        legend.spacing = unit(4, "char"), 
+        legend.box.spacing = unit(0.1,"line")) 
+
+p
+```
+

@@ -1,32 +1,34 @@
 ---
-title: Accelerating structure–function mapping using the ViVa webtool to mine natural variation 
-author:  |
-  | R. Clay Wright^[Corresponding author: wrightrc@vt.edu] $^1$, 
-  | Morgan O. Hamm $^2$,
-  | Jennifer Nemhauser $^2$
-  | $^1$Biological Systems Engineering, Virginia Tech, Blacksburg, VA 24061, 
-  | $^2$Deparment of Biology, University of Washington, Seattle, WA 98195
-
+title: Accelerating structure-function mapping using the ViVa webtool to mine natural variation 
+shorttitle: 'ViVa: Visualizing Variation' 
+author:
+  - Morgan O. Hamm^1^, Britney L. Moss^2^, Alexander R. Leydon^1^,  Hardik P. Gala^1^,  Amy Lanctot^1^, Romi Ramos^1^, Hannah Klaeser^2^, Andrew C. Lemmex^1^, Mollye L. Zahler^1^, Jennifer L. Nemhauser^1^, R. Clay Wright^3^$*$ 
+  - ^1^Department of Biology, University of Washington, Seattle, WA, USA.
+  - ^2^Department of Biology, Whitman College, Walla Walla, WA, USA. 
+  - ^3^Biological Systems Engineering, Virginia Tech, Blacksburg, VA, USA. Previous affiliation$:$ Department of Biology, University of Washington, Seattle, WA, USA.
+  - $*$Direct correspondence to$:$ wrightrc@vt.edu. 
+  
 date: "`r Sys.Date()`"
+abstract: "Thousands of sequenced genomes are now publicly available capturing a significant amount of natural variation within plant species; yet, much of this data remains inaccessible to researchers without significant bioinformatics experience. Here, we present a webtool called ViVa (Visualizing Variation) which aims to empower any researcher to take advantage of the amazing genetic resource collected in the *Arabidopsis thaliana* 1001 Genomes Project (http://1001genomes.org). ViVa facilitates data mining on the gene, gene family or gene network level. To test the utility and accessibility of ViVa, we assembled a team with a range of expertise within biology and bioinformatics to analyze the natural variation within the well-studied nuclear auxin signaling pathway. Our analysis has provided further confirmation of existing knowledge and has also helped generate new hypotheses regarding this well studied pathway. These results highlight how natural variation could be used to generate and test hypotheses about less studied gene families and networks, especially when paired with biochemical and genetic characterization. ViVa is also readily extensible to databases of interspecific genetic variation in plants as well as other organisms, such as the 3,000 Rice Genomes Project (http://snp-seek.irri.org/) and human genetic variation (https://www.ncbi.nlm.nih.gov/clinvar/). 
 
-abstract: Thousands of sequenced genomes are now publically available and represent a large swath of plant evolution; yet, much of this data remains inaccessible to researchers without significant bioinformatics experience. Here, we present a webtool called ViVa (Visualizing Variation) which aims to empower any researcher to take advantage of the amazing genetic resource collected in the Arabidopsis 1001 Genomes Project (http://1001genomes.org). ViVa facilates data mining on the gene, gene family or gene network level. To test the utility and accessibility of ViVa, we assembled a team with a range of expertise with biology and bioinformatics to analyze the natural variation in the well-studied nuclear auxin signaling pathway. Our analysis has provided further confirmation of existing knowledge and has also helped generate new hypotheses regarding this well studied pathway. These results highlight how natural variation could be used to generate and test hypotheses about less studied gene families and networks, especially when paired with biochemical and genetic characterization. ViVa is also readily extensible to newly emerging databases of genetic variation, such as the 3,000 Rice Genomes Project (http://snp-seek.irri.org/). 
 
-keywords: natural variation, Arabidopsis thaliana, genome diversity, structure, function, genotype, phenotype, bioconductor, bookdown, r markdown
+Keywords: natural variation, Arabidopsis thaliana, genome diversity, structure, function, genotype, phenotype, bioconductor, bookdown, r  
 
-bibliography:
-- natural-variation.bib
-- TIR1_AFB.bib
-- Aux_IAA.bib
-- ARF.bib
-- TPL.bib
+
+
+"  
+
+bibliography: 
+- natural-variation.bib 
+- packages.bib 
+
 biblio-style: apalike
 link-citations: yes
 fig_caption: yes
-
 ---
 
 ```{r setup, message=FALSE, warning=FALSE, include=FALSE}
-knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE, collapse = TRUE, comment = "#>", tidy = TRUE, cache = TRUE, cache.lazy = FALSE, out.width = "90%", fig.height=4, fig.width=7, out.extra='style="margin: auto; display: block; padding-top: 15px;"')
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE, collapse = TRUE, comment = "#>", tidy = TRUE, cache = TRUE, cache.lazy = FALSE, fig.height=4, fig.width=7, dpi = 600, out.extra='style="margin: auto; display: block; padding-top: 15px;"')
 
 #devtools::install_github("wrightrc/r1001genomes", ref = "auxin-natural-variation")
 library(bookdown)
@@ -48,17 +50,10 @@ library(ips)
 library(knitr)
 library(dplyr)
 library(stringr)
+library(treeio)
 
 #use_python(python = "/usr/local/bin/python")
 ```
-
-## List of working titles  
-* Predicting structure--function relationships using natural genetic variation 
-* Accelerating structure--function mapping using natural genetic variation 
-* A comprehensive analysis of natural sequence variation within the <i>Arabidopsis thaliana</i> nuclear auxin signaling pathway 
-* Visualizing natural variation with ViVa, a new webtool
-* Accelerating structure–function mapping using a new webtool to mine natural variation
-
 
 ```{r include=FALSE}
 # automatically create a bib database for R packages
@@ -66,3 +61,5 @@ knitr::write_bib(c(
   .packages(), 'bookdown', 'knitr', 'rmarkdown'
 ), 'packages.bib')
 ```
+
+\newpage 

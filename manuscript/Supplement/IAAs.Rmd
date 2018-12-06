@@ -1,0 +1,163 @@
+# *Aux/IAA* genes {#IAAs} 
+
+(ref:IAAdivstats) **_Aux/IAA_ family nucleotide diversity.** The nucleotide diversity as Nei and Li's $\pi$ (the average number of nucleotide differences per site between all possible pairs of sequences at synonymous ($\pi_S$) and nonsynonymous ($\pi_N$) sites, as well as all sites in the coding sequence and full transcript of the *Aux/IAA* family.
+
+```{r IAAdivstats, fig.cap="(ref:IAAdivstats)"}
+gene_info <- geneInfoFromFile(
+  fname = system.file("shiny-app", "gene_family_data",
+                      "IAA_gene_ids.csv", package = "r1001genomes"))
+#annotation <- readAnnotationFile(filename = system.file("shiny-app", "gene_family_data",
+#                      "IAA_annotations.csv", package = "r1001genomes"), gene_info = gene_info)
+
+VCF <- readRDS(system.file("shiny-app", "gene_family_data",
+                      "IAAs_VCF.rds", package = "r1001genomes"))
+div_stats <- ldply(VCF, diversityStats, geneInfo=gene_info, .id="transcript_ID")
+div_stats$tair_symbol %<>% fct_reorder(.x = , div_stats$tair_symbol, 
+                                       .fun = function(x) 
+                                         {as.integer(str_remove(x, 
+                                              pattern = "IAA"))})
+div_stats %<>% arrange(tair_symbol)
+div_stats %<>% dplyr::select(tair_symbol, everything())
+
+if (knitr::is_html_output()) {
+  formatRound(datatable(div_stats,
+                  colnames = c("transcript",
+                               "symbol",
+                               "&pi;<sub>N</sub>",
+                               "&pi;<sub>S</sub>",
+                               "&pi;<sub>N</sub>/&pi;<sub>S</sub>",
+                               "&pi; coding",
+                               "&pi; transcript"),
+                  rownames = FALSE, escape = FALSE,
+                  options = list(paging=FALSE, searching=FALSE)),
+                columns = 2:7, digits = 6)
+  } else 
+{
+  dt <- div_stats
+  names(dt) <- c("transcript",
+                                 "symbol",
+                                 "&pi;~N~",
+                                 "&pi;~S~",
+                                 "&pi;~N~/&pi;~S~",
+                                 "&pi; coding",
+                                 "&pi; transcript")
+  dt %<>% mutate_if(is.numeric, round, 6)
+  names(dt) <- paste0("**", names(dt), "**")
+  kable(dt) 
+}
+```
+
+
+```{r IAA alignment}
+alignment <- alignCDS(gene_info$transcript_ID)
+# make an alignment data frame
+aln_df <- makeAlnDF(alignment[[2]])
+
+# make a collapsed alignment for translating positions
+collapsed_aln_df <- 
+  aln_df %>% dplyr::select(aln_pos, seq_pos, seq_name) %>%
+  tidyr::spread(key = seq_name, value = seq_pos)
+```
+
+
+```{r Mask_IAA_alignment, eval=FALSE}
+aliscore(as.AAbin(alignment[[2]]), path = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/")
+id <- scan(file = "input.fas_List_random.txt", sep = " ", quiet = TRUE)
+AAAlign_no_gaps <- as.matrix(alignment[[2]])[, id]
+write.nexus.data(AAAlign_no_gaps, file = "manuscript/IAAs.nex", format = "protein")
+```
+```{bash IAA_phylogeny_construction, eval=FALSE}
+~/Desktop/natural-variation-webtool/manuscript
+
+/Applications/MrBayes/mb
+
+execute IAAs.nex
+# set IAA33 as the outgroup
+outgroup AT5G57420.1
+
+lset nucmodel=protein Rates=invgamma
+# or include Nst=6  ngammacat=4 omegavar=M3 
+prset aamodelpr=fixed(jones) statefreqpr=fixed(empirical) 
+# initial run with aamodelpr=mixed yielded posterior prob of 1 for jones model
+propset ExtTBR$prob=0
+
+mcmcp ngen=250000 nchains=4 printfreq=1000 samplefreq=100 burnin=200
+
+mcmc
+sump
+sumt
+
+```
+
+```{r Load IAA phylogeny and data}
+tree <- treeio::read.beast(file = "trees/IAAs.nex.con.tre")
+
+
+IAA_data <- read.csv("tables/IAAs_table.csv")
+#tip_labels need to be in the first column
+IAA_data %<>% dplyr::select(name, everything())
+IAA_data$name %<>% as.character()
+IAA_data$AGI %<>% as.character()
+
+IAA_data <- IAA_data[match(gsub(x = tree@phylo$tip.label, pattern = "\\.1",replacement = ""), IAA_data$AGI), ] 
+tree@phylo$tip.label <- IAA_data$name
+```
+
+
+(ref:full-IAA-alignment) 
+```{r full-IAA-alignment, fig.cap="(ref:full-IAA-alignment)"}
+IAAs <- alignCDS(gene_info$transcript_ID)
+# make an alignment data frame
+IAAs <- makeAlnDF(IAAs[[2]])
+IAAs <- left_join(IAAs, dplyr::select(gene_info, "tair_locus",
+                                       "tair_symbol", "transcript_ID"),
+                        by = c("transcript_ID" = "transcript_ID"))
+IAAs$tair_symbol %<>% as.factor()
+IAAs$tair_symbol %<>% fct_reorder(
+    {as.integer(str_remove(IAAs$tair_symbol, 
+                           pattern = "IAA"))}, 
+    .desc = TRUE)
+VCF <- ldply(.data = VCF, .fun = subset, gt_GT != "0|0")
+coding_VCF <- getCodingDiv(VCF)
+IAAs <- addSNPsToAlnDF(aln_df = IAAs,SNPs = coding_VCF, effect_order = SNPeff_order)
+IAAs$gap <- IAAs$seq_pos == "-"
+
+
+p <-ggplot(IAAs, aes(x = aln_pos, y = tair_symbol)) +
+  geom_raster(data = IAAs, 
+             # mapping = aes(fill = effects)) +
+              mapping = aes(fill = strength,
+                            alpha = gap)) +
+  scale_alpha_manual(values = c("TRUE" = 0, "FALSE" = 1), 
+                     labels = c("aligned", "gap"), 
+                     guide = guide_legend(override.aes = 
+                                            list(fill = c("grey85", "white")),
+                       title = "alignment",
+                       direction = "vertical")) + 
+   scale_fill_viridis(breaks = range(SNPeff_order$strength),
+                      limits = range(SNPeff_order$strength),
+                      na.value = "grey85",
+                      direction = -1,
+                      labels = c("neutral", "deleterious"),
+                      option = "A", 
+                      guide = guide_colorbar(ticks = FALSE, 
+                                             title.vjust = .8, 
+                                             title.position = "top", 
+                                             title.hjust = 0.5)) +
+  scale_y_discrete(expand = c(0,0)) +
+  scale_x_continuous(expand = c(0,0)) +  # expand increases distance from axis
+  labs(x = "codon position in alignment", y = "", fill = "variant effect") +
+  theme_logo(base_family = "Helvetica") +
+  theme(panel.grid = element_blank(), 
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        #panel.background = element_rect(fill = "grey85", color = "white"),
+        legend.position = c("bottom"),
+        legend.key = element_rect(linetype = "solid"),
+        legend.spacing = unit(4, "char"), 
+        legend.box.spacing = unit(0.1,"line")) 
+p
+
+#ggsave("IAAs.png", width = 7, height = 4)
+```
