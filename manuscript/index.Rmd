@@ -2,7 +2,7 @@
 title: Accelerating structure-function mapping using the ViVa webtool to mine natural variation 
 shorttitle: 'ViVa: Visualizing Variation' 
 author:
-  - Morgan O. Hamm^1^, Britney L. Moss^2^, Alexander R. Leydon^1^,  Hardik P. Gala^1^,  Amy Lanctot^1^, Romi Ramos^1^, Hannah Klaeser^2^, Andrew C. Lemmex^1^, Mollye L. Zahler^1^, Jennifer L. Nemhauser^1^, R. Clay Wright^3^$*$ 
+  - Morgan O. Hamm^1^, Britney L. Moss^2^, Alexander R. Leydon^1^,  Hardik P. Gala^1^,  Amy Lanctot^1^, Román Ramos^1^, Hannah Klaeser^2^, Andrew C. Lemmex^1^, Mollye L. Zahler^1^, Jennifer L. Nemhauser^1^, R. Clay Wright^3^$*$ 
   - ^1^Department of Biology, University of Washington, Seattle, WA, USA.
   - ^2^Department of Biology, Whitman College, Walla Walla, WA, USA. 
   - ^3^Biological Systems Engineering, Virginia Tech, Blacksburg, VA, USA. Previous affiliation$:$ Department of Biology, University of Washington, Seattle, WA, USA.
@@ -28,7 +28,19 @@ fig_caption: yes
 ---
 
 ```{r setup, message=FALSE, warning=FALSE, include=FALSE}
-knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE, collapse = TRUE, comment = "#>", tidy = TRUE, cache = TRUE, cache.lazy = FALSE, fig.height=4, fig.width=7, dpi = 600, out.extra='style="margin: auto; display: block; padding-top: 15px;"')
+knitr::opts_chunk$set(
+  warning = FALSE, 
+  message = FALSE, 
+  echo = FALSE,
+  collapse = TRUE, 
+  comment = "#>", 
+  tidy = TRUE, 
+  cache = TRUE, 
+  cache.lazy = FALSE, 
+  fig.height=4, 
+  fig.width=7, 
+  dpi = 600, 
+  out.extra='style="margin: auto; display: block; padding-top: 15px;"')
 
 #devtools::install_github("wrightrc/r1001genomes", ref = "auxin-natural-variation")
 library(bookdown)

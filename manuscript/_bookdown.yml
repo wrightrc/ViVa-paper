@@ -1,5 +1,5 @@
 book_filename: "manuscript"
-delete_merged_file: true
+delete_merged_file: false
 output_dir: book_output
 language:
   label:

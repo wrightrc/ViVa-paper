@@ -1,4 +1,3 @@
 # Acknowledgements
 
-The authors would like to thank Oghenemega Okolo for assistance testing the ViVa software, and Song Li and Bo Zhang for helpful comments on the manuscript. This work was supported by the National Institute of Health (R01-GM107084) and the Howard Hughes Medical Institute. R.C.W. received fellowship support from the National Science Foundation
-(DBI-1402222). B.L.M. and H.K. received support from the M.J. Murdock Charitable Trust. A.R.L. is a Simons Foundation Fellow of the Life Sciences Research Foundation.
+The authors would like to thank Oghenemega Okolo for assistance testing the ViVa software, and Song Li and Bo Zhang for helpful comments on the manuscript. This work was supported by the National Institute of Health (R01-GM107084), the National Science Foundation (IOS-1546873) and the Howard Hughes Medical Institute. R.C.W. received fellowship support from the National Science Foundation (DBI-1402222). B.L.M. and H.K. received support from the M.J. Murdock Charitable Trust. A.R.L. is a Simons Foundation Fellow of the Life Sciences Research Foundation. A.L. was supported by an NSF Graduate Research Fellowship DGE-1256082.
