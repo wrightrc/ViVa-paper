@@ -25,6 +25,7 @@ div_stats %<>% dplyr::select(tair_symbol, everything())
 
 ```{r AFB_ alignment}
 alignment <- alignCDS(gene_info$transcript_ID)
+consensus <- BALCONY::RealValET_conservativity(as.alignment(Biostrings::as.matrix(alignment[[2]])))
 # make an alignment data frame
 aln_df <- makeAlnDF(alignment[[2]])
 
@@ -141,7 +142,7 @@ p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
                                              title.vjust = .8, 
                                              title.position = "top", 
                                              title.hjust = 0.5)) +
-  scale_y_discrete(expand = c(0,0)) +
+  scale_y_discrete(expand = expand_scale(add = c(1,2.5))) +
   scale_x_continuous(expand = c(0,0)) +  # expand increases distance from axis
   labs(x = "codon position in alignment", y = "", fill = "variant functional effect") +
   theme_logo(base_family = "Helvetica") +
@@ -153,162 +154,23 @@ p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
         legend.position = c("bottom"),
         legend.key = element_rect(linetype = "solid"),
         legend.spacing = unit(4, "char"), 
-        legend.box.spacing = unit(0.1,"line")) 
+        legend.box.spacing = unit(0.1,"line"))  +
+  annotation_raster(matrix(gray(rescale(consensus, to = c(0,1))), nrow = 1),  xmin = -Inf, xmax = Inf, ymin = -10, ymax = 0.4)
 p
 
 
 ```
 
-(ref:full-AFBs-alignment) **Alignment of the AFB family** Protein sequences were aligned with DECIPHER [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the allele of strongest effect at that position, with light colors having weaker effects on function and darker colors stronger effects. Red indicates missense variants. Color scale is explained in [Methods](#methods).
+(ref:full-AFBs-alignment) **Alignment of the AFB family** Protein sequences were aligned with DECIPHER [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the allele of strongest effect at that position, with light colors having weaker effects on function and darker colors stronger effects. Red indicates missense variants. Color scale is explained in [Methods](#methods). In grayscale underneath the plot, alignment consensus is shown as measured by Evolutionary trace [@pluciennik_balcony_2018; @wilkins_evolutionary_2012], with high consensus positions in black and low consensus in white.
 
 Although most known functional regions are highly conserved in *AFB1*, there are some nonsynonymous polymorphism in the oligomerization domain that are only present in single accessions (F125E in Can-0 and I163N in Pu2-23). Mutations in this domain of *TIR1* frequently have a semidominant effect on root phenotypes [@dezfulian_oligomerization_2016; @wright_insights_2017]. Characterization of this allele and accession may help determine the role of *AFB1* in this pathway.
 
-The AFB4 and AFB5 receptors have an N-terminal extension prior to their F-box domains. This extension had very high nonsynonymous diversity (Figure \@ref(fig:full-AFBs-alignment), suggesting that this extension does not play an important functional role in these proteins. Additionally, two frameshift variants and one stop-gained variant were observed in *AFB4* supporting its pseudogenization. 
-
-## *Aux/IAA* genes {#IAAs} 
-
-For simplicity we have included only the alignment of the class A Aux/IAAs in the main manuscript. For completion we include here the complete alignment of the family. 
-
-```{r IAAdivstats}
-gene_info <- geneInfoFromFile(
-  fname = system.file("shiny-app", "gene_family_data",
-                      "IAA_gene_ids.csv", package = "r1001genomes"))
-#annotation <- readAnnotationFile(filename = system.file("shiny-app", "gene_family_data",
-#                      "IAA_annotations.csv", package = "r1001genomes"), gene_info = gene_info)
-
-VCF <- readRDS(system.file("shiny-app", "gene_family_data",
-                      "IAAs_VCF.rds", package = "r1001genomes"))
-div_stats <- ldply(VCF, diversityStats, geneInfo=gene_info, .id="transcript_ID")
-div_stats$tair_symbol %<>% fct_reorder(.x = , div_stats$tair_symbol, 
-                                       .fun = function(x) 
-                                         {as.integer(str_remove(x, 
-                                              pattern = "IAA"))})
-div_stats %<>% arrange(tair_symbol)
-div_stats %<>% dplyr::select(tair_symbol, everything())
-
+```{r AFB1-map, fig.cap="(ref: AFB1-map)"}
+knitr::include_graphics("app_figure/Map_figure.png")
 ```
+(ref: AFB1-map) **Map of AFB1 Oligomerization domain variant accessions** (a) Map showing the two accessions with variants in the AFB1 oligomerization domain (b) The user selectable parameters of the mapping tab used to generate the map are provided as an example of using the SNP Mapping tab in the ViVa webtool. See Figure \@ref(fig:app-workflow) for details on filling in the parameters.
 
-
-```{r IAA alignment sup}
-alignment <- alignCDS(gene_info$transcript_ID)
-# make an alignment data frame
-aln_df <- makeAlnDF(alignment[[2]])
-
-# make a collapsed alignment for translating positions
-collapsed_aln_df <- 
-  aln_df %>% dplyr::select(aln_pos, seq_pos, seq_name) %>%
-  tidyr::spread(key = seq_name, value = seq_pos)
-```
-
-
-```{r Mask_IAA_alignment_sup, eval=FALSE}
-aliscore(as.AAbin(alignment[[2]]), path = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/")
-id <- scan(file = "input.fas_List_random.txt", sep = " ", quiet = TRUE)
-AAAlign_no_gaps <- as.matrix(alignment[[2]])[, id]
-write.nexus.data(AAAlign_no_gaps, file = "manuscript/IAAs.nex", format = "protein")
-```
-```{bash IAA_phylogeny_construction_sup, eval=FALSE}
-~/Desktop/natural-variation-webtool/manuscript
-
-/Applications/MrBayes/mb
-
-execute IAAs.nex
-# set IAA33 as the outgroup
-outgroup AT5G57420.1
-
-lset nucmodel=protein Rates=invgamma
-# or include Nst=6  ngammacat=4 omegavar=M3 
-prset aamodelpr=fixed(jones) statefreqpr=fixed(empirical) 
-# initial run with aamodelpr=mixed yielded posterior prob of 1 for jones model
-propset ExtTBR$prob=0
-
-mcmcp ngen=250000 nchains=4 printfreq=1000 samplefreq=100 burnin=200
-
-mcmc
-sump
-sumt
-
-```
-
-```{r Load IAA phylogeny and data_sup}
-tree <- treeio::read.beast(file = "trees/IAAs.nex.con.tre")
-
-IAA_data <- read.csv("tables/IAAs_table.csv")
-#tip_labels need to be in the first column
-IAA_data %<>% dplyr::select(name, everything())
-IAA_data$name %<>% as.character()
-IAA_data$AGI %<>% as.character()
-
-IAA_data <- IAA_data[match(gsub(x = tree@phylo$tip.label, pattern = "\\.1",replacement = ""), IAA_data$AGI), ] 
-tree@phylo$tip.label <- IAA_data$name
-```
-
-
-(ref:full-IAA-alignment) **Alignment of the complete Aux/IAA family.** Protein sequences were aligned with DECIPHER [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the allele of strongest effect at that position, with light colors having weaker effects on function and darker colors stronger effects. Red indicates missense variants. Color scale is explained in [Methods](#methods).
-
-```{r full-IAA-alignment, fig.cap="(ref:full-IAA-alignment)", fig.height=8}
-IAAs <- alignCDS(gene_info$transcript_ID)
-# make an alignment data frame
-IAAs <- makeAlnDF(IAAs[[2]])
-IAAs <- left_join(IAAs, dplyr::select(gene_info, "tair_locus",
-                                       "tair_symbol", "transcript_ID"),
-                        by = c("transcript_ID" = "transcript_ID"))
-IAAs$tair_symbol %<>% as.factor()
-IAAs$tair_symbol %<>% factor(levels = IAA_order, 
-                                       ordered = TRUE)
-IAAs$tair_symbol %<>% fct_rev()
-VCF <- ldply(.data = VCF, .fun = subset, gt_GT != "0|0")
-coding_VCF <- getCodingDiv(VCF)
-IAAs <- addSNPsToAlnDF(aln_df = IAAs,SNPs = coding_VCF, effect_order = SNPeff_order)
-IAAs$gap <- IAAs$seq_pos == "-"
-
-
-p <-ggplot(IAAs, aes(x = aln_pos, y = tair_symbol)) +
-  geom_raster(data = IAAs, 
-             # mapping = aes(fill = effects)) +
-              mapping = aes(fill = strength,
-                            alpha = gap)) +
-  scale_alpha_manual(values = c("TRUE" = 0, "FALSE" = 1), 
-                     labels = c("aligned", "gap"), 
-                     guide = guide_legend(override.aes = 
-                                            list(fill = c("grey85", "white")),
-                       title = "alignment",
-                       direction = "vertical")) + 
-   scale_fill_viridis(breaks = range(SNPeff_order$strength),
-                      limits = range(SNPeff_order$strength),
-                      na.value = "grey85",
-                      direction = -1,
-                      labels = c("weak", "strong"),
-                      option = "A", 
-                      guide = guide_colorbar(ticks = FALSE, 
-                                             title.vjust = .8, 
-                                             title.position = "top", 
-                                             title.hjust = 0.5)) +
-  scale_y_discrete(expand = c(0,0)) +
-  scale_x_continuous(expand = c(0,0)) +  # expand increases distance from axis
-  labs(x = "codon position in alignment", y = "", fill = "variant functional effect") +
-  theme_logo(base_family = "Helvetica") +
-  theme(panel.grid = element_blank(), 
-        panel.grid.minor = element_blank(),
-        strip.background = element_blank(),
-        strip.text.x = element_blank(),
-        #panel.background = element_rect(fill = "grey85", color = "white"),
-        legend.position = c("bottom"),
-        legend.key = element_rect(linetype = "solid"),
-        legend.spacing = unit(4, "char"), 
-        legend.box.spacing = unit(0.1,"line")) 
-p
-
-#ggsave("IAAs.png", width = 7, height = 4)
-```
-
-```{r, IAA6-div-plot, fig.cap="(ref:IAA6-div-plot)"}
-coding_variants <- VCF[VCF$Transcript_ID == gene_info[gene_info$tair_symbol == "IAA6", "transcript_ID"], ]
-p <- plotCodingDiv(uniqueCodingVars = coding_variants)
-p + annotate("rect", xmin = 106, xmax = 127, ymin = 0.001, ymax = 1, color = "lightgrey", alpha =.1) + annotate("text", x = 116.5, y = 0.5, label = "region of positive\nselection identified\nin Winkler et al.")
-```
-(ref:IAA6-div-plot) **IAA6 diversity plot.** Nucleotide diversity of variant positions throughout the IAA6 coding sequence are plotted and colored according to the effect of the variant alleles at each position. The region of positive selection identified by Winkler et al. is highlighed.
-
+The AFB4 and AFB5 receptors have an N-terminal extension prior to their F-box domains. This extension had very high nonsynonymous diversity (Figure \@ref(fig:full-AFBs-alignment)), suggesting that this extension does not play an important functional role in these proteins. Additionally, two frameshift variants and one stop-gained variant were observed in *AFB4* supporting its pseudogenization. 
 
 ## *TPL/TPR* genes {#TPLs}
 
@@ -337,6 +199,7 @@ div_stats %<>% dplyr::select(tair_symbol, everything())
 
 ```{r TPL-alignment-coding-vars}
 alignment <- alignCDS(gene_info$transcript_ID)
+consensus <- BALCONY::RealValET_conservativity(as.alignment(Biostrings::as.matrix(alignment[[2]])))
 #possible outgroups  AtLUG, At4g32551; AtLUH, At2g32700
 # make an alignment data frame
 aln_df <- makeAlnDF(alignment[[2]])
@@ -419,7 +282,7 @@ p
   
 The high degree of conservation in the entire N-terminal domain underscores its importance in TPL/TPR function (Figure \@ref(fig:full-TPLs-alignment). For example, the initial *tpl-1* mutation (N176H) in the ninth helix is a dominant gain-of-function allele [@long_topless_2006], which is capable of binding wild-type TPL protein and inducing protein aggregation [@ma_d53_2017]. It is therefore understandable that this helix had very low diversity as nonsynonymous variants in this domain could act in a dominant negative fashion. 
 
-(ref:full-TPLs-alignment) **Alignment of the TPL/TPR family.** Protein sequences were aligned with DECIPHER [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the allele of strongest effect at that position, with light colors having weaker effects on function and darker colors stronger effects. Red indicates missense variants. Color scale is explained in [Methods](#methods).
+(ref:full-TPLs-alignment) **Alignment of the TPL/TPR family.** Protein sequences were aligned with DECIPHER [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the allele of strongest effect at that position, with light colors having weaker effects on function and darker colors stronger effects. Red indicates missense variants. Color scale is explained in [Methods](#methods). In grayscale underneath the plot, alignment consensus is shown as measured by Evolutionary trace [@pluciennik_balcony_2018; @wilkins_evolutionary_2012], with high consensus positions in black and low consensus in white.
 ```{r full-TPLs-alignment, fig.cap= "(ref:full-TPLs-alignment)"}
 TPL_order <- fct_inorder(na.exclude(p$data$label[base::order(p$data$y, decreasing = TRUE)]), ordered = TRUE)
 
@@ -454,7 +317,7 @@ p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
                                              title.vjust = .8, 
                                              title.position = "top", 
                                              title.hjust = 0.5)) +
-  scale_y_discrete(expand = c(0,0)) +
+  scale_y_discrete(expand = expand_scale(add = c(1,2.5))) +
   scale_x_continuous(expand = c(0,0)) +  # expand increases distance from axis
   labs(x = "codon position in alignment", y = "", fill = "variant functional effect") +
   theme_logo(base_family = "Helvetica") +
@@ -466,7 +329,8 @@ p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
         legend.position = c("bottom"),
         legend.key = element_rect(linetype = "solid"),
         legend.spacing = unit(4, "char"), 
-        legend.box.spacing = unit(0.1,"line")) 
+        legend.box.spacing = unit(0.1,"line")) +
+  annotation_raster(matrix(gray(rescale(consensus, to = c(0,1))), nrow = 1),  xmin = -Inf, xmax = Inf, ymin = -10, ymax = 0.4)
 p
 
 ```
@@ -503,6 +367,7 @@ div_stats %<>% dplyr::select(tair_symbol, everything())
 
 ```{r ARF-alignment-coding-vars}
 alignment <- alignCDS(gene_info$transcript_ID)
+consensus <- BALCONY::RealValET_conservativity(as.alignment(Biostrings::as.matrix(alignment[[2]])))
 # make an alignment data frame
 aln_df <- makeAlnDF(alignment[[2]])
 
@@ -625,7 +490,7 @@ p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
                                              title.vjust = .8, 
                                              title.position = "top", 
                                              title.hjust = 0.5)) +
-  scale_y_discrete(expand = c(0,0)) +
+  scale_y_discrete(expand = expand_scale(add = c(1,2.5))) +
   scale_x_continuous(expand = c(0,0)) +  # expand increases distance from axis
   labs(x = "codon position in alignment", y = "", fill = "variant functional effect") +
   theme_logo(base_family = "Helvetica") +
@@ -637,16 +502,164 @@ p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
         legend.position = c("bottom"),
         legend.key = element_rect(linetype = "solid"),
         legend.spacing = unit(4, "char"), 
-        legend.box.spacing = unit(0.1,"line")) 
+        legend.box.spacing = unit(0.1,"line")) +
+  annotation_raster(matrix(gray(rescale(consensus, to = c(0,1))), nrow = 1),  xmin = -Inf, xmax = Inf, ymin = -10, ymax = 0.4)
 p
 
 ```
 
-(ref:full-ARFs-alignment) **Alignment of the full ARF family.** Protein sequences were aligned with DECIPHER [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the allele of strongest effect at that position, with light colors having weaker effects on function and darker colors stronger effects. Red indicates missense variants. Color scale is explained in [Methods](#methods).
+(ref:full-ARFs-alignment) **Alignment of the full ARF family.** Protein sequences were aligned with DECIPHER [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the allele of strongest effect at that position, with light colors having weaker effects on function and darker colors stronger effects. Red indicates missense variants. Color scale is explained in [Methods](#methods). In grayscale underneath the plot, alignment consensus is shown as measured by Evolutionary trace [@pluciennik_balcony_2018; @wilkins_evolutionary_2012], with high consensus positions in black and low consensus in white.
 
 Many of the class B *ARF*s have very high ${\pi_N/\pi_S}$ ratios relative to the other *ARF*s. ARF23 has a truncated DNA-binding domain and had a high ${\pi_N/\pi_S}$ value of 4.1. ARF13 has many high-diversity nonsense variants and lacks a C-terminal PB1 domain. This high level of diversity, prevelance of high-frequency nonsense variants and frequent loss of critical domains, may suggest that several genes in this class are undergoing pseudogenization.
 
 There are also a few highly conserved class B *ARF*s. The high conservation of *ARF1* and *ARF2* is expected as they play critical, redundant roles in senescence and abscission [@ellis_auxin_2005]. Little is known about *ARF9* however, and its low nonsynonymous diversity maybe worthy of investigation. 
 
 Class C ARFs show low nucleotide diversity scores, with all ${\pi_N/\pi_S}$ values substantially lower than 1. *ARF16* was the most conserved, whereas its clade members (*ARF10*, *ARF17*) had scores at least four times higher. Structurally, all three members of Class C ARFs contain a canonical B3 DNA-binding domain, but only ARF10 and ARF16 contain a PB1 domain. The DNA binding domains exhibit overall low diversity. Of the PB1 domain containing class C ARFs, ARF16 exhibits several missense variants which are sporadically distributed, in contrast to the conserved PB1 domain of ARF10. This conservation in the PB1 domain of ARF10 and the DBD of ARF16 may suggest subfunctionalization in this family.
+
+## *Aux/IAA* genes {#IAAs} 
+
+For simplicity we have included only the alignment of the class A Aux/IAAs in the main manuscript. For completion we include here the complete alignment of the family (Figure \@ref(fig:full-IAA-alignment)). 
+
+```{r IAAdivstats}
+gene_info <- geneInfoFromFile(
+  fname = system.file("shiny-app", "gene_family_data",
+                      "IAA_gene_ids.csv", package = "r1001genomes"))
+#annotation <- readAnnotationFile(filename = system.file("shiny-app", "gene_family_data",
+#                      "IAA_annotations.csv", package = "r1001genomes"), gene_info = gene_info)
+
+VCF <- readRDS(system.file("shiny-app", "gene_family_data",
+                      "IAAs_VCF.rds", package = "r1001genomes"))
+div_stats <- ldply(VCF, diversityStats, geneInfo=gene_info, .id="transcript_ID")
+div_stats$tair_symbol %<>% fct_reorder(.x = , div_stats$tair_symbol, 
+                                       .fun = function(x) 
+                                         {as.integer(str_remove(x, 
+                                              pattern = "IAA"))})
+div_stats %<>% arrange(tair_symbol)
+div_stats %<>% dplyr::select(tair_symbol, everything())
+
+```
+
+
+```{r IAA alignment sup}
+alignment <- alignCDS(gene_info$transcript_ID)
+# make an alignment data frame
+aln_df <- makeAlnDF(alignment[[2]])
+
+# make a collapsed alignment for translating positions
+collapsed_aln_df <- 
+  aln_df %>% dplyr::select(aln_pos, seq_pos, seq_name) %>%
+  tidyr::spread(key = seq_name, value = seq_pos)
+```
+
+
+```{r Mask_IAA_alignment_sup, eval=FALSE}
+aliscore(as.AAbin(alignment[[2]]), path = "/Volumes/SSD/Applications/ALISCORE_v2.0/Aliscore_v.2.0/")
+id <- scan(file = "input.fas_List_random.txt", sep = " ", quiet = TRUE)
+AAAlign_no_gaps <- as.matrix(alignment[[2]])[, id]
+write.nexus.data(AAAlign_no_gaps, file = "manuscript/IAAs.nex", format = "protein")
+```
+```{bash IAA_phylogeny_construction_sup, eval=FALSE}
+~/Desktop/natural-variation-webtool/manuscript
+
+/Applications/MrBayes/mb
+
+execute IAAs.nex
+# set IAA33 as the outgroup
+outgroup AT5G57420.1
+
+lset nucmodel=protein Rates=invgamma
+# or include Nst=6  ngammacat=4 omegavar=M3 
+prset aamodelpr=fixed(jones) statefreqpr=fixed(empirical) 
+# initial run with aamodelpr=mixed yielded posterior prob of 1 for jones model
+propset ExtTBR$prob=0
+
+mcmcp ngen=250000 nchains=4 printfreq=1000 samplefreq=100 burnin=200
+
+mcmc
+sump
+sumt
+
+```
+
+```{r Load IAA phylogeny and data_sup}
+tree <- treeio::read.beast(file = "trees/IAAs.nex.con.tre")
+
+IAA_data <- read.csv("tables/IAAs_table.csv")
+#tip_labels need to be in the first column
+IAA_data %<>% dplyr::select(name, everything())
+IAA_data$name %<>% as.character()
+IAA_data$AGI %<>% as.character()
+
+IAA_data <- IAA_data[match(gsub(x = tree@phylo$tip.label, pattern = "\\.1",replacement = ""), IAA_data$AGI), ] 
+tree@phylo$tip.label <- IAA_data$name
+```
+
+
+(ref:full-IAA-alignment) **Alignment of the complete Aux/IAA family.** Protein sequences were aligned with DECIPHER [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the allele of strongest effect at that position, with light colors having weaker effects on function and darker colors stronger effects. Red indicates missense variants. Color scale is explained in [Methods](#methods). In grayscale underneath the plot, alignment consensus is shown as measured by Evolutionary trace [@pluciennik_balcony_2018; @wilkins_evolutionary_2012], with high consensus positions in black and low consensus in white.
+
+```{r full-IAA-alignment, fig.cap="(ref:full-IAA-alignment)", fig.height=8}
+IAAs <- alignCDS(gene_info$transcript_ID)
+consensus <- BALCONY::RealValET_conservativity(as.alignment(Biostrings::as.matrix(IAAs[[2]])))
+# make an alignment data frame
+IAAs <- makeAlnDF(IAAs[[2]])
+IAAs <- left_join(IAAs, dplyr::select(gene_info, "tair_locus",
+                                       "tair_symbol", "transcript_ID"),
+                        by = c("transcript_ID" = "transcript_ID"))
+IAAs$tair_symbol %<>% as.factor()
+IAAs$tair_symbol %<>% factor(levels = IAA_order, 
+                                       ordered = TRUE)
+IAAs$tair_symbol %<>% fct_rev()
+VCF <- ldply(.data = VCF, .fun = subset, gt_GT != "0|0")
+coding_VCF <- getCodingDiv(VCF)
+IAAs <- addSNPsToAlnDF(aln_df = IAAs,SNPs = coding_VCF, effect_order = SNPeff_order)
+IAAs$gap <- IAAs$seq_pos == "-"
+
+
+p <-ggplot(IAAs, aes(x = aln_pos, y = tair_symbol)) +
+  geom_raster(data = IAAs, 
+             # mapping = aes(fill = effects)) +
+              mapping = aes(fill = strength,
+                            alpha = gap)) +
+  scale_alpha_manual(values = c("TRUE" = 0, "FALSE" = 1), 
+                     labels = c("aligned", "gap"), 
+                     guide = guide_legend(override.aes = 
+                                            list(fill = c("grey85", "white")),
+                       title = "alignment",
+                       direction = "vertical")) + 
+   scale_fill_viridis(breaks = range(SNPeff_order$strength),
+                      limits = range(SNPeff_order$strength),
+                      na.value = "grey85",
+                      direction = -1,
+                      labels = c("weak", "strong"),
+                      option = "A", 
+                      guide = guide_colorbar(ticks = FALSE, 
+                                             title.vjust = .8, 
+                                             title.position = "top", 
+                                             title.hjust = 0.5)) +
+  scale_y_discrete(expand = expand_scale(add = c(1,2.5))) +
+  scale_x_continuous(expand = c(0,0)) +  # expand increases distance from axis
+  labs(x = "codon position in alignment", y = "", fill = "variant functional effect") +
+  theme_logo(base_family = "Helvetica") +
+  theme(panel.grid = element_blank(), 
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        #panel.background = element_rect(fill = "grey85", color = "white"),
+        legend.position = c("bottom"),
+        legend.key = element_rect(linetype = "solid"),
+        legend.spacing = unit(4, "char"), 
+        legend.box.spacing = unit(0.1,"line"))  +
+  annotation_raster(matrix(gray(rescale(consensus, to = c(0,1))), nrow = 1),  xmin = -Inf, xmax = Inf, ymin = -10, ymax = 0.4)
+p
+
+#ggsave("IAAs.png", width = 7, height = 4)
+```
+
+```{r IAA6-div-plot, fig.cap="(ref:IAA6-div-plot)"}
+coding_variants <- VCF[VCF$Transcript_ID == gene_info[gene_info$tair_symbol == "IAA6", "transcript_ID"], ]
+p <- plotCodingDiv(uniqueCodingVars = coding_variants)
+p + annotate("rect", xmin = 106, xmax = 127, ymin = 0.001, ymax = 1, color = "lightgrey", alpha =.1) + annotate("text", x = 116.5, y = 0.5, label = "region of positive\nselection identified\nin Winkler et al.")
+```
+(ref:IAA6-div-plot) **IAA6 diversity plot.** Nucleotide diversity of variant positions throughout the IAA6 coding sequence are plotted and colored according to the effect of the variant alleles at each position. The region of positive selection identified by Winkler et al. is highlighted.
+
 
