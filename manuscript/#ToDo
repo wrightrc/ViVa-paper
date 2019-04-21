@@ -2,12 +2,20 @@ To Do
 x set up factor for full variant effect list
 x order alignments according to trees
 x flip ARFtree to get rid of node label overlaps
-- fix trees
+X fix trees
 x Silence alignCDS, getGeneInfo
-- Finish figures
+X Finish figures
 x Outline discussion
-- write discussion
+X write discussion
 x Write abstract
-- Cut down results
-- think about a couple correlation or covariation calculations
+X Cut down results
+X think about a couple correlation or covariation calculations
+Manuscript
 - get ARF annotations working
+
+ViVa
+- write annotation functions
+- make tree tab
+- add condensed alignment to alignments
+- add workflow figure
+- add caveats and intended usage

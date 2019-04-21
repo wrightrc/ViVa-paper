@@ -38,7 +38,7 @@ knitr::opts_chunk$set(
   cache.lazy = FALSE, 
   fig.height=4, 
   fig.width=7, 
-  dpi = 600, 
+  dpi = 800, 
   out.extra='style="margin: auto; display: block; padding-top: 15px;"')
 
 #devtools::install_github("wrightrc/r1001genomes", ref = "auxin-natural-variation")
