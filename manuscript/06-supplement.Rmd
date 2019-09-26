@@ -136,7 +136,7 @@ p <-ggplot(IAAs, aes(x = aln_pos, y = tair_symbol)) +
   annotation_raster(matrix(gray(rescale(consensus, to = c(0,1))), nrow = 1),  xmin = -Inf, xmax = Inf, ymin = -10, ymax = 0.4)
 p
 
-#ggsave("IAAs.png", width = 7, height = 4)
+ggsave("full-IAA-alignment.tiff", dpi = 800)
 ```
 
 ```{r IAA6-div-plot, fig.cap="(ref:IAA6-div-plot)", fig.height=4}
@@ -147,6 +147,8 @@ p + annotate("rect", xmin = 106, xmax = 127, ymin = 0.001, ymax = 1,
   annotate("text", x = 116.5, y = 0.1, 
            label = 
              "region of positive selection\nidentified in Winkler et al.") + labs(color = "", y = "nucleotide diversity,\nlog scale") + theme(legend.position = "bottom", legend.text = element_text(size = 8), axis.title = element_text(size = 12)) + guides(color=guide_legend(nrow=5))
+
+ggsave("IAA6-div-plot.tiff", dpi = 800)
 ```
 (ref:IAA6-div-plot) **IAA6 diversity plot.** Nucleotide diversity of variant positions throughout the IAA6 coding sequence are plotted and colored according to the effect of the variant alleles at each position. The region of positive selection identified by Winkler et al. is highlighted.
 
@@ -253,7 +255,8 @@ p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% AFB_data + theme_
   scale_color_viridis(discrete = TRUE)  
 p <- p %>% ggtree::rotate(12) %>% ggtree::rotate(9)
 p
-#ggsave("AFBs_tree.pdf", height = 3, width = 4)
+
+ggsave("AFB_tree.tiff", dpi = 800)
 ```
 (ref:AFBtree) **AFB protein sequence tree mapped with ${\pi_N/\pi_S}$.** Protein sequences were aligned with DECIPHER [@wright_decipher_2015] and low information content regions were masked with Aliscore [@kuck_parametric_2010] prior to inferring a phylogeny with MrBayes [@ronquist_mrbayes_2003]. Tips of the tree are mapped with circles of diameter proportional to ${\pi_N/\pi_S}$ and also are colored according to ${\pi_N/\pi_S}$. Nodes are labeled with the posterior probability of monophyly.
 
@@ -309,7 +312,7 @@ p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
   annotation_raster(matrix(gray(rescale(consensus, to = c(0,1))), nrow = 1),  xmin = -Inf, xmax = Inf, ymin = -10, ymax = 0.4)
 p
 
-
+ggsave("full-AFBs-alignment.tiff", dpi = 800)
 ```
 
 (ref:full-AFBs-alignment) **Alignment of the AFB family** Protein sequences were aligned with DECIPHER [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the allele of strongest effect at that position, with light colors having weaker effects on function and darker colors stronger effects. Red indicates missense variants. Color scale is explained in [Methods](#methods). In grayscale underneath the plot, alignment consensus is shown as measured by Evolutionary trace [@pluciennik_balcony_2018; @wilkins_evolutionary_2012], with high consensus positions in black and low consensus in white.
@@ -426,6 +429,8 @@ p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% TPL_data + theme_
   geom_nodelab(mapping = aes(label = round(as.numeric(prob),digits = 2)), nudge_x = -.2, nudge_y = .2, size = 3) + 
   geom_tiplab(hjust = -0.25) 
 p
+
+ggsave("TPLtree.tiff", dpi = 800)
 ```
 
 (ref:TPLtree) **TPL protein sequence tree mapped with ${\pi_N/\pi_S}$.** Protein sequences were aligned with DECIPHER [@wright_decipher_2015] and low information content regions were masked with Aliscore [@kuck_parametric_2010] prior to inferring a phylogeny with MrBayes [@ronquist_mrbayes_2003]. Tips of the tree are mapped with circles of diameter proportional to ${\pi_N/\pi_S}$ and also are colored according to ${\pi_N/\pi_S}$. Nodes are labeled with the poster probability of monophyly.
@@ -483,6 +488,7 @@ p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
   annotation_raster(matrix(gray(rescale(consensus, to = c(0,1))), nrow = 1),  xmin = -Inf, xmax = Inf, ymin = -10, ymax = 0.4)
 p
 
+ggsave("full-TPLs-alignment.tiff", dpi = 800)
 ```
 
 ## Natural Variation in the *ARF* genes {#ARFs} 
@@ -600,6 +606,8 @@ p <- ggtree(tree, layout = "rectangular", color = "grey") %<+%
   labs(fill = expression(pi [N] / pi [S]), color = "ARF class")
 p %<>% ggtree::flip(28,32) %>% ggtree::rotate(35)
 p 
+
+ggsave("ARFtree.tiff", dpi = 800)
 ```
 
 (ref:ARFtree) **ARF protein sequence tree mapped with ${\pi_N/\pi_S}$.** Protein sequences were aligned with DECIPHER [@wright_decipher_2015] and low information content regions were masked with Aliscore [@kuck_parametric_2010] prior to inferring a phylogeny with MrBayes [@ronquist_mrbayes_2003]. Tips of the tree are mapped with circles of diameter proportional to ${\pi_N/\pi_S}$ and also are colored according to ${\pi_N/\pi_S}$. Nodes are labeled with the poster probability of monophyly.
@@ -655,6 +663,8 @@ p <-ggplot(aln_df, aes(x = aln_pos, y = tair_symbol)) +
         legend.box.spacing = unit(0.1,"line")) +
   annotation_raster(matrix(gray(rescale(consensus, to = c(0,1))), nrow = 1),  xmin = -Inf, xmax = Inf, ymin = -10, ymax = 0.4)
 p
+
+ggsave("full-ARFs-alignment.tiff", dpi = 800)
 
 ```
 

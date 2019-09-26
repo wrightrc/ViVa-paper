@@ -46,6 +46,7 @@ ggplot(data = SNPeff_order, aes(x = effect, y = 1)) +
   scale_color_gradient(low = "black", high = "white", guide = "none") + 
   labs(y = "strength of functional effect", x = "variant effect")
 
+ggsave("SNPeff-order.tiff", dpi = 800)
 ```
 
  

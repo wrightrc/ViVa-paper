@@ -14,6 +14,7 @@ knitr::include_graphics("app_figure/App_figure.png")
 (ref:app-workflow) **ViVa workflow** (a) Workflow diagram of ViVa. Blue indicates user actions, yellow indicates processing steps performed by the application. (b) Detailed look at mapping tab parameters: User selects which genes to look at (1) then clicks the Submit button (2). The "Allele selection" pane is then filled in with all non-reference variants meeting the criteria. The user can adjust the range of nucleotide diversity and the type of SNP with a slider and radio buttons (3) to make the list of variants a manageable size. The list of variants is updated as changes are made to these controls. The user then selects variants to display on the map (4). Clicking the Update Map button (5) populates the map below with points located at the collection coordinates of each accession and colored by the selected alleles. (c) Detailed look at the browser tab options: The user first selects which genes to analyze and clicks submit (1). The “hide 0|0 genotype?” checkbox (2) removes rows from the table containing the reference allele. Four configurable filters of two types are provided. The first filter type is text matching (3); the user selects a column to filter from a drop-down menu then enters one or more text strings to match in that column. The second type of filter is numeric range matching (4); the user again selects a column, then specifies a range to match by typing or selecting minimum and maximum values. After configuring the filters, the user clicks the Apply Filters button (5) to update the table. The table is updated such that only rows that meet all filter conditions are displayed.
 ```{r app-workflow, fig.cap = "(ref:app-workflow)"}
 knitr::include_graphics("app_figure/workflow_fig.png")
+
 ```
 
 ### Gene Select and Annotation Files  
@@ -209,7 +210,7 @@ p + annotate("rect", xmin = 69, xmax = 75, ymin = 0.4,
            fill = NA) +
   annotate("text", x = (327-245)/2+245, y= length(levels(A_IAAs$tair_symbol)) + 1.2, label = "PB1 domain", family="Arial")
 
-#ggsave("A-IAAs_alignment.png", width = 6, height = 4)
+ggsave("A-IAAs_alignment.tiff", dpi = 800)
 ```
 
 (ref:A-IAA-alignment) **Critical functional domains of the conserved *Aux/IAA* genes show low nonsynonymous variation compared to regions of unknown functional importance.** Protein sequences were aligned with DECIPHER [@wright_decipher_2015] and variants were mapped to this alignment and colored according to the predicted functional effect of the allele of strongest effect at that position, with light colors having weaker effects on function and darker colors stronger effects. Red indicates missense variants. Color scale is further explained in [Methods](#methods). Alignment consensus is shown in grayscale underneath the plot as measured by Evolutionary trace [@pluciennik_balcony_2018; @wilkins_evolutionary_2012], with high consensus positions in black and low consensus in white. Key functional domains are outlined in black and labeled above the plot. The EAR domain spans codon alignment positions 70 to 74, corresponding to IAA1 amino acids LRLGL, 14-18. The degron domain spans alignment positions 194-201, corresponding to IAA1 amino acids QIVGWPPV, 55-62. The charged residues of the PB1 domain correspond to alignment positions 246, 256, 316, 318, 320, and 326 corresponding to IAA1 amino acids K77, R88, D133, D135, D137, and D143.
@@ -249,7 +250,7 @@ p <- ggtree(tree, layout = "rectangular", color = "grey") %<+% IAA_data + theme_
   labs(fill = expression(pi [N] / pi [S]), color = "Aux/IAA class")
 p
 
-#ggsave("IAA-tree.png", width = 6, height = 5.5)
+ggsave("IAA-tree.tiff", dpi = 800)
 ```
 
 ```{r IAA-tree-order}
